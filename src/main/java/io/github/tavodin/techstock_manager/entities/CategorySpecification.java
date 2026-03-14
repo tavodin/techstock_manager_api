@@ -15,4 +15,12 @@ public class CategorySpecification {
 
     @Column(nullable = false)
     private Integer displayOrder;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    @ManyToOne
+    @JoinColumn(name = "specification_id")
+    private Specification specification;
 }

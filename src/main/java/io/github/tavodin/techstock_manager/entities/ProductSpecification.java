@@ -1,8 +1,6 @@
 package io.github.tavodin.techstock_manager.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "product_specification")
@@ -16,4 +14,12 @@ public class ProductSpecification extends BaseEntity {
 
     @Column(name = "value_boolean", nullable = false)
     private Boolean valueBoolean;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
+
+    @ManyToOne
+    @JoinColumn(name = "specification_id")
+    private Specification specification;
 }
