@@ -17,3 +17,7 @@ spring:
         highlight_sql: true
     hibernate:
       ddl-auto: none
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
