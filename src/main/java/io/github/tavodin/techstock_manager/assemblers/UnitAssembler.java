@@ -4,6 +4,7 @@ import io.github.tavodin.techstock_manager.controllers.UnitController;
 import io.github.tavodin.techstock_manager.dto.UnitDTO;
 import io.github.tavodin.techstock_manager.dto.UnitResponseDTO;
 import io.github.tavodin.techstock_manager.entities.Unit;
+import io.github.tavodin.techstock_manager.mappers.UnitMapper;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 
@@ -13,15 +14,16 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Component
 public class UnitAssembler implements RepresentationModelAssembler<Unit, UnitDTO> {
 
+    private final UnitMapper unitMapper;
+
+    public UnitAssembler(UnitMapper unitMapper) {
+        this.unitMapper = unitMapper;
+    }
+
     @Override
     public UnitDTO toModel(Unit entity) {
-        UnitDTO model = new UnitDTO();
 
-        model.setId(entity.getId());
-        model.setName(entity.getName());
-        model.setSymbol(entity.getSymbol());
-        model.setCreatedAt(entity.getCreatedAt());
-        model.setUpdatedAt(entity.getUpdatedAt());
+        UnitDTO model = unitMapper.toModel(entity);
 
         model.add(linkTo(methodOn(UnitController.class)
                 .findById(entity.getId()))
@@ -50,6 +52,4 @@ public class UnitAssembler implements RepresentationModelAssembler<Unit, UnitDTO
 
         return model;
     }
-
-
 }

@@ -3,10 +3,14 @@ package io.github.tavodin.techstock_manager.controllers;
 import io.github.tavodin.techstock_manager.dto.UnitDTO;
 import io.github.tavodin.techstock_manager.dto.UnitResponseDTO;
 import io.github.tavodin.techstock_manager.services.UnitService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/unit")
@@ -29,8 +33,15 @@ public class UnitController {
     }
 
     @PostMapping
-    public ResponseEntity<UnitDTO> save(@RequestBody UnitResponseDTO responseDTO) {
-        return null;
+    public ResponseEntity<UnitDTO> save(@RequestBody @Valid UnitResponseDTO responseDTO) {
+        UnitDTO dto = unitService.save(responseDTO);
+
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri()
+                .path("/{id}")
+                .buildAndExpand(dto.getId())
+                .toUri();
+
+        return ResponseEntity.created(uri).body(dto);
     }
 
     @PutMapping("/{id}")
