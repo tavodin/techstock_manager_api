@@ -3,6 +3,7 @@ package io.github.tavodin.techstock_manager.controllers.handlers;
 import io.github.tavodin.techstock_manager.dto.error.CustomError;
 import io.github.tavodin.techstock_manager.dto.error.FieldError;
 import io.github.tavodin.techstock_manager.dto.error.ValidationError;
+import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,19 @@ public class ExceptionHandlerController {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<CustomError> resourceNotFoundHandler(ResourceNotFoundException ex, HttpServletRequest request) {
         HttpStatus status = HttpStatus.NOT_FOUND;
+
+        CustomError error = new CustomError(
+                Instant.now(),
+                status.value(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(EntityInUseException.class)
+    public ResponseEntity<CustomError> entityInUseHandler(EntityInUseException ex, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.CONFLICT;
 
         CustomError error = new CustomError(
                 Instant.now(),

@@ -45,12 +45,13 @@ public class UnitController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UnitDTO> update(@PathVariable Long id, @RequestBody UnitResponseDTO responseDTO) {
-        return null;
+    public ResponseEntity<UnitDTO> update(@PathVariable Long id, @RequestBody @Valid UnitResponseDTO responseDTO) {
+        return ResponseEntity.ok(unitService.update(id, responseDTO));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        return null;
+        unitService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

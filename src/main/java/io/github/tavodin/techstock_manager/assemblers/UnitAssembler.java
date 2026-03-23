@@ -23,7 +23,7 @@ public class UnitAssembler implements RepresentationModelAssembler<Unit, UnitDTO
     @Override
     public UnitDTO toModel(Unit entity) {
 
-        UnitDTO model = unitMapper.toModel(entity);
+        UnitDTO model = unitMapper.toDto(entity);
 
         model.add(linkTo(methodOn(UnitController.class)
                 .findById(entity.getId()))

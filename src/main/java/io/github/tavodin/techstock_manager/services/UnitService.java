@@ -4,10 +4,11 @@ import io.github.tavodin.techstock_manager.assemblers.UnitAssembler;
 import io.github.tavodin.techstock_manager.dto.UnitDTO;
 import io.github.tavodin.techstock_manager.dto.UnitResponseDTO;
 import io.github.tavodin.techstock_manager.entities.Unit;
+import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.mappers.UnitMapper;
 import io.github.tavodin.techstock_manager.repository.UnitRepository;
-import jakarta.validation.Valid;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -32,8 +33,7 @@ public class UnitService {
 
     @Transactional(readOnly = true)
     public UnitDTO findById(Long id) {
-        Unit entity = unitRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Unit not found!"));
+        Unit entity = getUnitOrElseThrow(id);
 
         return unitAssembler.toModel(entity);
     }
@@ -49,6 +49,34 @@ public class UnitService {
     public UnitDTO save(UnitResponseDTO responseDTO) {
         Unit entity = unitMapper.toEntity(responseDTO);
         entity = unitRepository.save(entity);
-        return unitMapper.toModel(entity);
+        return unitAssembler.toModel(entity);
+    }
+
+    @Transactional
+    public UnitDTO update(Long id, UnitResponseDTO responseDTO) {
+        Unit entity = getUnitOrElseThrow(id);
+
+        entity.setName(responseDTO.name());
+        entity.setSymbol(responseDTO.symbol());
+
+        entity = unitRepository.saveAndFlush(entity);
+
+        return unitAssembler.toModel(entity);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        try {
+            Unit entity = getUnitOrElseThrow(id);
+            unitRepository.delete(entity);
+        } catch (DataIntegrityViolationException e) {
+            throw new EntityInUseException("Unit is in use and cannot be deleted");
+        }
+
+    }
+
+    private Unit getUnitOrElseThrow(Long id) {
+        return unitRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Unit not found!"));
     }
 }
