@@ -1,4 +1,4 @@
-package io.github.tavodin.techstock_manager.security;
+package io.github.tavodin.techstock_manager.config.security;
 
 import io.github.tavodin.techstock_manager.utils.JwtUtil;
 import jakarta.servlet.FilterChain;

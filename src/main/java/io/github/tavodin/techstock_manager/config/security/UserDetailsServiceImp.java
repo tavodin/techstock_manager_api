@@ -1,4 +1,4 @@
-package io.github.tavodin.techstock_manager.security;
+package io.github.tavodin.techstock_manager.config.security;
 
 import io.github.tavodin.techstock_manager.entities.Role;
 import io.github.tavodin.techstock_manager.entities.User;

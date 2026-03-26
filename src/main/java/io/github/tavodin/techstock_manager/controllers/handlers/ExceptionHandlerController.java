@@ -45,8 +45,8 @@ public class ExceptionHandlerController {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ValidationError> businessHandler(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        HttpStatus status = HttpStatus.CONFLICT;
+    public ResponseEntity<ValidationError> validationErrorHandler(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
 
         List<FieldError> errors = ex.getFieldErrors()
                 .stream()

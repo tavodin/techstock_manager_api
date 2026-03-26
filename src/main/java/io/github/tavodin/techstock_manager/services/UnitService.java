@@ -66,13 +66,13 @@ public class UnitService {
 
     @Transactional
     public void delete(Long id) {
+        Unit entity = getUnitOrElseThrow(id);
         try {
-            Unit entity = getUnitOrElseThrow(id);
             unitRepository.delete(entity);
+            unitRepository.flush();
         } catch (DataIntegrityViolationException e) {
             throw new EntityInUseException("Unit is in use and cannot be deleted");
         }
-
     }
 
     private Unit getUnitOrElseThrow(Long id) {

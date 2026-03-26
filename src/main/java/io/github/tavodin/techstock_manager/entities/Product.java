@@ -12,17 +12,17 @@ public class Product extends AuditableEntity {
     @Column(length = 200, nullable = false)
     private String name;
 
-    @Column(name = "cost_price", nullable = false)
+    @Column(name = "cost_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal costPrice;
 
-    @Column(name = "sale_price", nullable = false)
+    @Column(name = "sale_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal salePrice;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(length = 10, nullable = false)
-    private String varchar;
+    private String sku;
 
     @Column(name = "quantity_in_stock", nullable = false)
     private Integer quantityInStock;
@@ -50,12 +50,12 @@ public class Product extends AuditableEntity {
     public Product() {
     }
 
-    public Product(String name, BigDecimal costPrice, BigDecimal salePrice, String description, String varchar, Integer quantityInStock, Integer minimumStock, Boolean active, Brand brand, Set<Category> categories, Set<ProductSpecification> specifications) {
+    public Product(String name, BigDecimal costPrice, BigDecimal salePrice, String description, String sku, Integer quantityInStock, Integer minimumStock, Boolean active, Brand brand, Set<Category> categories, Set<ProductSpecification> specifications) {
         this.name = name;
         this.costPrice = costPrice;
         this.salePrice = salePrice;
         this.description = description;
-        this.varchar = varchar;
+        this.sku = sku;
         this.quantityInStock = quantityInStock;
         this.minimumStock = minimumStock;
         this.active = active;
@@ -96,12 +96,12 @@ public class Product extends AuditableEntity {
         this.description = description;
     }
 
-    public String getVarchar() {
-        return varchar;
+    public String getSku() {
+        return sku;
     }
 
-    public void setVarchar(String varchar) {
-        this.varchar = varchar;
+    public void setSku(String sku) {
+        this.sku = sku;
     }
 
     public Integer getQuantityInStock() {

@@ -1,4 +1,4 @@
-package io.github.tavodin.techstock_manager.security;
+package io.github.tavodin.techstock_manager.config.security;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
