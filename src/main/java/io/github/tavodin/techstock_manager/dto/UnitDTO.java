@@ -14,6 +14,17 @@ public class UnitDTO extends RepresentationModel<UnitDTO> {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    public UnitDTO() {
+    }
+
+    public UnitDTO(Long id, String name, String symbol, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.id = id;
+        this.name = name;
+        this.symbol = symbol;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
     public Long getId() {
         return id;
     }

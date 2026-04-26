@@ -1,44 +1,24 @@
 package io.github.tavodin.techstock_manager.integrationtests.testcontainers;
 
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.MapPropertySource;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.lifecycle.Startables;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.Map;
-import java.util.stream.Stream;
+@Testcontainers
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public abstract class AbstractIntegrationTest {
 
-@ContextConfiguration(initializers = AbstractIntegrationTest.Initializer.class)
-public class AbstractIntegrationTest {
+    @Container
+    static final MySQLContainer<?> mysql =
+            new MySQLContainer<>("mysql:8.0.28");
 
-    static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
-
-        static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0.28");
-
-        private static void startContainers() {
-            Startables.deepStart(Stream.of(mysql)).join();
-        }
-
-        private static Map<String, String> createConnectionConfiguration(){
-            return Map.of(
-                    "spring.datasource.url", mysql.getJdbcUrl(),
-                    "spring.datasource.username", mysql.getUsername(),
-                    "spring.datasource.password", mysql.getPassword());
-        }
-
-        @Override
-        public void initialize(ConfigurableApplicationContext applicationContext) {
-            startContainers();
-            ConfigurableEnvironment environment = applicationContext.getEnvironment();
-            MapPropertySource testcontainers =
-                    new MapPropertySource(
-                            "testcontainers",
-                            (Map) createConnectionConfiguration());
-
-            environment.getPropertySources().addFirst(testcontainers);
-        }
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", mysql::getJdbcUrl);
+        registry.add("spring.datasource.username", mysql::getUsername);
+        registry.add("spring.datasource.password", mysql::getPassword);
     }
 }

@@ -3,7 +3,7 @@ package io.github.tavodin.techstock_manager.config.security;
 import io.github.tavodin.techstock_manager.entities.Role;
 import io.github.tavodin.techstock_manager.entities.User;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
-import io.github.tavodin.techstock_manager.repository.UserRepository;
+import io.github.tavodin.techstock_manager.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

@@ -1,4 +1,4 @@
-package io.github.tavodin.techstock_manager.repository;
+package io.github.tavodin.techstock_manager.repositories;
 
 import io.github.tavodin.techstock_manager.entities.User;
 import org.springframework.data.jpa.repository.EntityGraph;

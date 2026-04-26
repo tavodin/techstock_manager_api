@@ -13,7 +13,7 @@ public class CategorySpecification {
     @Column(nullable = false)
     private Boolean required;
 
-    @Column(nullable = false)
+    @Column(name = "display_order", nullable = false)
     private Integer displayOrder;
 
     @ManyToOne

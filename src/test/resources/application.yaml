@@ -11,9 +11,17 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: update
-    show-sql: false
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
 
 jwt:
-  secret: test-secret-123
+  secret: z7K9pWm1Vd2s9xQeY3R5bG1hY2hhZGVjb21zZWNyZXRrZXk=
   expiration: 3600000

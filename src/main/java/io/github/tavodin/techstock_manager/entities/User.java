@@ -2,10 +2,12 @@ package io.github.tavodin.techstock_manager.entities;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
+@Table(name = "users")
 public class User extends BaseEntity {
 
     @Column(length = 250, nullable = false)
@@ -14,7 +16,7 @@ public class User extends BaseEntity {
     @Column(length = 45, nullable = false)
     private String username;
 
-    @Column(length = 45, nullable = false)
+    @Column(length = 60, nullable = false)
     private String password;
 
     @Column(nullable = false)
@@ -22,8 +24,8 @@ public class User extends BaseEntity {
 
     @ManyToMany
     @JoinTable(
-            name = "user_role",
-            joinColumns = @JoinColumn(name = "user_id"),
+            name = "users_role",
+            joinColumns = @JoinColumn(name = "users_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 

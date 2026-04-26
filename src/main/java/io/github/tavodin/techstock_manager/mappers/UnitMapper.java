@@ -1,7 +1,7 @@
 package io.github.tavodin.techstock_manager.mappers;
 
 import io.github.tavodin.techstock_manager.dto.UnitDTO;
-import io.github.tavodin.techstock_manager.dto.UnitResponseDTO;
+import io.github.tavodin.techstock_manager.dto.UnitRequestDTO;
 import io.github.tavodin.techstock_manager.entities.Unit;
 import org.mapstruct.Mapper;
 
@@ -9,5 +9,5 @@ import org.mapstruct.Mapper;
 public interface UnitMapper {
 
     UnitDTO toDto(Unit unit);
-    Unit toEntity(UnitResponseDTO dto);
+    Unit toEntity(UnitRequestDTO dto);
 }

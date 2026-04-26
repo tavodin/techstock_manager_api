@@ -2,12 +2,11 @@ package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.UnitAssembler;
 import io.github.tavodin.techstock_manager.dto.UnitDTO;
-import io.github.tavodin.techstock_manager.dto.UnitResponseDTO;
+import io.github.tavodin.techstock_manager.dto.UnitRequestDTO;
 import io.github.tavodin.techstock_manager.entities.Unit;
 import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
-import io.github.tavodin.techstock_manager.mappers.UnitMapper;
-import io.github.tavodin.techstock_manager.repository.UnitRepository;
+import io.github.tavodin.techstock_manager.repositories.UnitRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,13 +21,11 @@ public class UnitService {
     private final UnitRepository unitRepository;
     private final UnitAssembler unitAssembler;
     private final PagedResourcesAssembler<Unit> pagedAssembler;
-    private final UnitMapper unitMapper;
 
-    public UnitService(UnitRepository unitRepository, UnitAssembler unitAssembler, PagedResourcesAssembler<Unit> pagedAssembler, UnitMapper unitMapper) {
+    public UnitService(UnitRepository unitRepository, UnitAssembler unitAssembler, PagedResourcesAssembler<Unit> pagedAssembler) {
         this.unitRepository = unitRepository;
         this.unitAssembler = unitAssembler;
         this.pagedAssembler = pagedAssembler;
-        this.unitMapper = unitMapper;
     }
 
     @Transactional(readOnly = true)
@@ -46,14 +43,14 @@ public class UnitService {
     }
 
     @Transactional
-    public UnitDTO save(UnitResponseDTO responseDTO) {
-        Unit entity = unitMapper.toEntity(responseDTO);
+    public UnitDTO save(UnitRequestDTO responseDTO) {
+        Unit entity = new Unit(responseDTO.name(), responseDTO.symbol());
         entity = unitRepository.save(entity);
         return unitAssembler.toModel(entity);
     }
 
     @Transactional
-    public UnitDTO update(Long id, UnitResponseDTO responseDTO) {
+    public UnitDTO update(Long id, UnitRequestDTO responseDTO) {
         Unit entity = getUnitOrElseThrow(id);
 
         entity.setName(responseDTO.name());

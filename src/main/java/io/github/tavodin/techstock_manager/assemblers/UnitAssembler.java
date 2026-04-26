@@ -2,7 +2,7 @@ package io.github.tavodin.techstock_manager.assemblers;
 
 import io.github.tavodin.techstock_manager.controllers.UnitController;
 import io.github.tavodin.techstock_manager.dto.UnitDTO;
-import io.github.tavodin.techstock_manager.dto.UnitResponseDTO;
+import io.github.tavodin.techstock_manager.dto.UnitRequestDTO;
 import io.github.tavodin.techstock_manager.entities.Unit;
 import io.github.tavodin.techstock_manager.mappers.UnitMapper;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
@@ -36,12 +36,12 @@ public class UnitAssembler implements RepresentationModelAssembler<Unit, UnitDTO
                 .withType("GET"));
 
         model.add(linkTo(methodOn(UnitController.class)
-                .save(new UnitResponseDTO(entity.getName(), entity.getSymbol())))
+                .save(new UnitRequestDTO(entity.getName(), entity.getSymbol())))
                 .withRel("save")
                 .withType("POST"));
 
         model.add(linkTo(methodOn(UnitController.class)
-                .update(entity.getId(), new UnitResponseDTO(entity.getName(), entity.getSymbol())))
+                .update(entity.getId(), new UnitRequestDTO(entity.getName(), entity.getSymbol())))
                 .withRel("update")
                 .withType("PUT"));
 

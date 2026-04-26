@@ -1,5 +1,6 @@
 package io.github.tavodin.techstock_manager.config.security;
 
+import io.github.tavodin.techstock_manager.config.security.filters.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
