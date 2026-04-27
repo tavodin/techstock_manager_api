@@ -8,12 +8,16 @@ import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class ExceptionHandlerController {
@@ -40,6 +44,41 @@ public class ExceptionHandlerController {
                 status.value(),
                 ex.getMessage(),
                 request.getRequestURI());
+
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<CustomError> HttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        Throwable cause = ex.getCause();
+
+        List<FieldError> errors = new ArrayList<>();
+
+        if(cause instanceof com.fasterxml.jackson.databind.exc.InvalidFormatException invalidEx) {
+            String fieldName = invalidEx.getPath().get(0).getFieldName();
+
+            Class<?> targetType = invalidEx.getTargetType();
+
+            if(targetType.isEnum()) {
+                Object[] enumValues = targetType.getEnumConstants();
+
+                String allowedValues = Arrays.stream(enumValues)
+                        .map(Object::toString)
+                        .collect(Collectors.joining(", "));
+
+                errors.add(new FieldError(
+                        fieldName,
+                        "Invalid value. Allowed values: " + allowedValues
+                ));
+            }
+        }
+
+        ValidationError error = new ValidationError(Instant.now(),
+                status.value(),
+                "Entity validation error",
+                request.getRequestURI(),
+                errors);
 
         return ResponseEntity.status(status).body(error);
     }

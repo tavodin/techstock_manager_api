@@ -6,12 +6,12 @@ import jakarta.persistence.*;
 @Entity
 public class Specification extends BaseEntity {
 
-    @Column(length = 45, nullable = false)
+    @Column(length = 100, nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name = "data_type", nullable = false)
     @Enumerated(EnumType.STRING)
-    private SpecificationType type;
+    private SpecificationType dataType;
 
     @Column(nullable = false)
     private Boolean filterable;
@@ -25,7 +25,7 @@ public class Specification extends BaseEntity {
 
     public Specification(String name, SpecificationType type, Boolean filterable, Unit unit) {
         this.name = name;
-        this.type = type;
+        this.dataType = type;
         this.filterable = filterable;
         this.unit = unit;
     }
@@ -38,12 +38,12 @@ public class Specification extends BaseEntity {
         this.name = name;
     }
 
-    public SpecificationType getType() {
-        return type;
+    public SpecificationType getDataType() {
+        return dataType;
     }
 
-    public void setType(SpecificationType type) {
-        this.type = type;
+    public void setDataType(SpecificationType dataType) {
+        this.dataType = dataType;
     }
 
     public Boolean getFilterable() {

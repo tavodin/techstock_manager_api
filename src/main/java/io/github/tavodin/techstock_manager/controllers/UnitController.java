@@ -45,8 +45,8 @@ public class UnitController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UnitDTO> update(@PathVariable Long id, @RequestBody @Valid UnitRequestDTO responseDTO) {
-        return ResponseEntity.ok(unitService.update(id, responseDTO));
+    public UnitDTO update(@PathVariable Long id, @RequestBody @Valid UnitRequestDTO responseDTO) {
+        return unitService.update(id, responseDTO);
     }
 
     @DeleteMapping("/{id}")
