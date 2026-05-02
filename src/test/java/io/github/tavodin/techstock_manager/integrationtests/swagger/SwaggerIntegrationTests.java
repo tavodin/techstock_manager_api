@@ -1,6 +1,6 @@
 package io.github.tavodin.techstock_manager.integrationtests.swagger;
 
-import io.github.tavodin.techstock_manager.integrationtests.testcontainers.AbstractIntegrationTest;
+import io.github.tavodin.techstock_manager.configurations.AbstractIntegrationTest;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

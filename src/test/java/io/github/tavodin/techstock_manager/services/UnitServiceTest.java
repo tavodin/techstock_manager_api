@@ -4,6 +4,7 @@ import io.github.tavodin.techstock_manager.assemblers.UnitAssembler;
 import io.github.tavodin.techstock_manager.dto.UnitDTO;
 import io.github.tavodin.techstock_manager.dto.UnitRequestDTO;
 import io.github.tavodin.techstock_manager.entities.Unit;
+import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.UnitRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -107,9 +109,7 @@ class UnitServiceTest {
     @Test
     void shouldReturnPagedModelWhenFindAll() {
         Pageable pageable = PageRequest.of(0, 10);
-
         Page<Unit> page = new PageImpl<>(List.of(unit));
-
         PagedModel<UnitDTO> pagedModel = mock(PagedModel.class);
 
         when(repository.findAll(pageable)).thenReturn(page);
@@ -200,6 +200,17 @@ class UnitServiceTest {
 
     @Test
     void shouldThrowExceptionWhenDeletingWithDependencies() {
-        fail();
+        when(repository.findById(existId)).thenReturn(Optional.of(unit));
+        doNothing().when(repository).delete(unit);
+        doThrow(new DataIntegrityViolationException("FK constraint"))
+                .when(repository)
+                .flush();
+
+        EntityInUseException actual = assertThrows(EntityInUseException.class, () ->
+                service.delete(existId));
+
+        assertEquals("Unit is in use and cannot be deleted", actual.getMessage());
+
+        verify(repository).delete(unit);
     }
 }

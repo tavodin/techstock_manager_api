@@ -1,6 +1,10 @@
 server:
   port: 8888
 
+testcontainers:
+  reuse:
+    enable: true
+
 spring:
   application:
     name: techstock-manager

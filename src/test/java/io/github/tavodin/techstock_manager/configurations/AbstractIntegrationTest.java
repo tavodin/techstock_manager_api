@@ -1,4 +1,4 @@
-package io.github.tavodin.techstock_manager.integrationtests.testcontainers;
+package io.github.tavodin.techstock_manager.configurations;
 
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -13,7 +13,8 @@ public abstract class AbstractIntegrationTest {
 
     @Container
     static final MySQLContainer<?> mysql =
-            new MySQLContainer<>("mysql:8.0.28");
+            new MySQLContainer<>("mysql:8.0.28")
+                    .withReuse(true);
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {

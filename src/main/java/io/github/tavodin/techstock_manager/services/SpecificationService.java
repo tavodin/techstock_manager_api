@@ -23,9 +23,9 @@ public class SpecificationService {
     private final SpecificationRepository specificationRepository;
     private final UnitRepository unitRepository;
     private final SpecificationAssembler specificationAssembler;
-    private final PagedResourcesAssembler<Specification> pagedAssembler;
+    private final PagedResourcesAssembler<SpecificationDTO> pagedAssembler;
 
-    public SpecificationService(SpecificationRepository specificationRepository, UnitRepository unitRepository, SpecificationAssembler specificationAssembler, PagedResourcesAssembler<Specification> pagedAssembler) {
+    public SpecificationService(SpecificationRepository specificationRepository, UnitRepository unitRepository, SpecificationAssembler specificationAssembler, PagedResourcesAssembler<SpecificationDTO> pagedAssembler) {
         this.specificationRepository = specificationRepository;
         this.unitRepository = unitRepository;
         this.specificationAssembler = specificationAssembler;
@@ -34,13 +34,14 @@ public class SpecificationService {
 
     @Transactional(readOnly = true)
     public SpecificationDTO findById(Long id) {
-        Specification entity = getEntityOrThrownException(id);
+        SpecificationDTO entity = getDTOOrThrownException(id);
         return specificationAssembler.toModel(entity);
     }
 
     @Transactional(readOnly = true)
     public PagedModel<SpecificationDTO> findAll(Pageable pageable) {
-        Page<Specification> page = specificationRepository.findAll(pageable);
+        Page<SpecificationDTO> page = specificationRepository.findAllProjected(pageable);
+
         return pagedAssembler.toModel(page, specificationAssembler);
     }
 
@@ -54,7 +55,7 @@ public class SpecificationService {
 
         specificationEntity = specificationRepository.save(specificationEntity);
 
-        return specificationAssembler.toModel(specificationEntity);
+        return specificationAssembler.toModel(new SpecificationDTO(specificationEntity));
     }
 
     @Transactional
@@ -74,7 +75,7 @@ public class SpecificationService {
 
         entity = specificationRepository.save(entity);
 
-        return specificationAssembler.toModel(entity);
+        return specificationAssembler.toModel(new SpecificationDTO(entity));
     }
 
     @Transactional
@@ -86,6 +87,11 @@ public class SpecificationService {
         } catch (DataIntegrityViolationException e) {
             throw new EntityInUseException("Specification is in use and cannot be deleted");
         }
+    }
+
+    private SpecificationDTO getDTOOrThrownException(Long id) {
+        return specificationRepository.getSpecificationById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Specification not found!"));
     }
 
     private Specification getEntityOrThrownException(Long id) {

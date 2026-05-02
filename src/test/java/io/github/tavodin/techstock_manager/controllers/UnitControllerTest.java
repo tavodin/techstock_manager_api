@@ -89,10 +89,10 @@ class UnitControllerTest {
     }
 
     @Test
-    void shouldReturnUnitObjectWhenIdExist() throws Exception {
+    void shouldReturnUnitDTOWhenIdExist() throws Exception {
         when(service.findById(existId)).thenReturn(unitDTO);
 
-        mockMvc.perform(get("/unit/{id}", existId)
+        mockMvc.perform(get("/units/{id}", existId)
                 .contentType(MediaType.APPLICATION_JSON))
 
                 .andExpect(status().isOk())
@@ -110,20 +110,20 @@ class UnitControllerTest {
         when(service.findById(nonExistId))
                 .thenThrow(new ResourceNotFoundException(notFoundMessage));
 
-        mockMvc.perform(get("/unit/{id}", nonExistId))
+        mockMvc.perform(get("/units/{id}", nonExistId))
             .andExpect(status().isNotFound());
     }
 
     @Test
-    void shouldReturnErrorObjectWhenIdDoesNotExistIn() throws Exception {
+    void shouldReturnErrorObjectWhenIdDoesNotExist() throws Exception {
         when(service.findById(nonExistId)).thenThrow(new ResourceNotFoundException(notFoundMessage));
 
-        mockMvc.perform(get("/unit/{id}", nonExistId))
+        mockMvc.perform(get("/units/{id}", nonExistId))
 
                 .andExpect(jsonPath(".timestamp").exists())
                 .andExpect(jsonPath(".status").value(404))
                 .andExpect(jsonPath(".message").value(notFoundMessage))
-                .andExpect(jsonPath(".path").value("/unit/" + nonExistId));
+                .andExpect(jsonPath(".path").value("/units/" + nonExistId));
     }
 
     @Test
@@ -135,7 +135,7 @@ class UnitControllerTest {
 
         when(service.findAll(any(Pageable.class))).thenReturn(pagedModel);
 
-        MvcResult result = mockMvc.perform(get("/unit")
+        MvcResult result = mockMvc.perform(get("/units")
                 .param("page", "0")
                 .param("size", "10"))
 
@@ -163,7 +163,7 @@ class UnitControllerTest {
     void shouldCreateUnitAndReturnCreatedStatusWhenDataIsValid() throws Exception {
         when(service.save(request)).thenReturn(unitDTO);
 
-        mockMvc.perform(post("/unit")
+        mockMvc.perform(post("/units")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
 
@@ -176,7 +176,7 @@ class UnitControllerTest {
                 .andExpect(jsonPath("$.updatedAt").exists())
 
                 .andExpect(header().string("Location",
-                        containsString("http://localhost/unit/" + unitDTO.getId())))
+                        containsString("http://localhost/units/" + unitDTO.getId())))
 
                 .andExpect(jsonPath("$._links.self.href").exists());
     }
@@ -185,7 +185,7 @@ class UnitControllerTest {
     void shouldReturnBadRequestWhenInvalidData() throws Exception {
         UnitRequestDTO invalidRequest = new UnitRequestDTO(null, null);
 
-        mockMvc.perform(post("/unit")
+        mockMvc.perform(post("/units")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidRequest)))
 
@@ -195,14 +195,14 @@ class UnitControllerTest {
     @Test
     void shouldReturnValidationErrorWhenInvalidData() throws Exception {
         UnitRequestDTO invalidRequest = new UnitRequestDTO("a".repeat(46), null);
-        mockMvc.perform(post("/unit")
+        mockMvc.perform(post("/units")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidRequest)))
 
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value("Entity validation error"))
-                .andExpect(jsonPath("$.path").value("/unit"))
+                .andExpect(jsonPath("$.path").value("/units"))
 
                 .andExpect(jsonPath("$.errors[*].field").value(hasItem("name")))
                 .andExpect(jsonPath("$.errors[*].message")
@@ -218,7 +218,7 @@ class UnitControllerTest {
         unitDTO.setName(null);
         when(service.save(any(UnitRequestDTO.class))).thenReturn(unitDTO);
 
-        mockMvc.perform(post("/unit")
+        mockMvc.perform(post("/units")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
 
@@ -229,7 +229,7 @@ class UnitControllerTest {
     void shouldReturnBadRequestWhenNameIsTooLongInSave() throws Exception {
         UnitRequestDTO invalidRequest = new UnitRequestDTO("a".repeat(46), "Hz");
 
-        mockMvc.perform(post("/unit")
+        mockMvc.perform(post("/units")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidRequest)))
 
@@ -240,7 +240,7 @@ class UnitControllerTest {
     void shouldReturnBadRequestWhenSymbolIsNullInSave() throws Exception {
         UnitRequestDTO invalidRequest = new UnitRequestDTO("Hertz", null);
 
-        mockMvc.perform(post("/unit")
+        mockMvc.perform(post("/units")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidRequest)))
 
@@ -251,7 +251,7 @@ class UnitControllerTest {
     void shouldReturnBadRequestWhenSymbolIsTooLongInSave() throws Exception {
         UnitRequestDTO invalidRequest = new UnitRequestDTO("Hertz", "12345678901");
 
-        mockMvc.perform(post("/unit")
+        mockMvc.perform(post("/units")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidRequest)))
 
@@ -265,7 +265,7 @@ class UnitControllerTest {
 
         when(service.update(eq(existId), any(UnitRequestDTO.class))).thenReturn(unitDTO);
 
-        mockMvc.perform(put("/unit/{id}", existId)
+        mockMvc.perform(put("/units/{id}", existId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
 
@@ -285,7 +285,7 @@ class UnitControllerTest {
         when(service.update(eq(nonExistId), any(UnitRequestDTO.class)))
                 .thenThrow(new ResourceNotFoundException(notFoundMessage));
 
-        mockMvc.perform(put("/unit/{id}", nonExistId)
+        mockMvc.perform(put("/units/{id}", nonExistId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
 
@@ -299,7 +299,7 @@ class UnitControllerTest {
 
         when(service.update(eq(existId), any(UnitRequestDTO.class))).thenReturn(unitDTO);
 
-        mockMvc.perform(put("/unit/{id}", existId)
+        mockMvc.perform(put("/units/{id}", existId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
 
@@ -310,7 +310,7 @@ class UnitControllerTest {
     void shouldReturnBadRequestWhenNameIsTooLongInUpdate() throws Exception {
         UnitRequestDTO invalidRequest = new UnitRequestDTO("e".repeat(46), "GHz");
 
-        mockMvc.perform(put("/unit/{id}", existId)
+        mockMvc.perform(put("/units/{id}", existId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidRequest)))
 
@@ -321,7 +321,7 @@ class UnitControllerTest {
     void shouldReturnBadRequestWhenSymbolIsNullInUpdate() throws Exception {
         UnitRequestDTO invalidRequest = new UnitRequestDTO("Gigahertz", null);
 
-        mockMvc.perform(put("/unit/{id}", existId)
+        mockMvc.perform(put("/units/{id}", existId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidRequest)))
 
@@ -332,7 +332,7 @@ class UnitControllerTest {
     void shouldReturnBadRequestWhenSymbolIsTooLongInUpdate() throws Exception {
         UnitRequestDTO invalidRequest = new UnitRequestDTO("Gigahertz", "e".repeat(11));
 
-        mockMvc.perform(put("/unit/{id}", existId)
+        mockMvc.perform(put("/units/{id}", existId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidRequest)))
 
@@ -341,7 +341,7 @@ class UnitControllerTest {
 
     @Test
     void shouldDeleteUnitWhenIdExist() throws Exception {
-        mockMvc.perform(delete("/unit/{id}", existId))
+        mockMvc.perform(delete("/units/{id}", existId))
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
 
@@ -353,7 +353,7 @@ class UnitControllerTest {
         doThrow(new ResourceNotFoundException(notFoundMessage))
                 .when(service).delete(nonExistId);
 
-        mockMvc.perform(delete("/unit/{id}", nonExistId))
+        mockMvc.perform(delete("/units/{id}", nonExistId))
                 .andExpect(status().isNotFound());
     }
 
@@ -362,7 +362,7 @@ class UnitControllerTest {
         doThrow(new EntityInUseException("Unit is in use and cannot be deleted"))
                 .when(service).delete(3L);
 
-        mockMvc.perform(delete("/unit/{id}", 3L))
+        mockMvc.perform(delete("/units/{id}", 3L))
                 .andExpect(status().isConflict());
     }
 }

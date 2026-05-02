@@ -3,6 +3,8 @@ package io.github.tavodin.techstock_manager.entities;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 public class Specification extends BaseEntity {
 
@@ -24,6 +26,14 @@ public class Specification extends BaseEntity {
     }
 
     public Specification(String name, SpecificationType type, Boolean filterable, Unit unit) {
+        this.name = name;
+        this.dataType = type;
+        this.filterable = filterable;
+        this.unit = unit;
+    }
+
+    public Specification(Long id, String name, SpecificationType type, Boolean filterable, Unit unit, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        super(id, createdAt, updatedAt);
         this.name = name;
         this.dataType = type;
         this.filterable = filterable;

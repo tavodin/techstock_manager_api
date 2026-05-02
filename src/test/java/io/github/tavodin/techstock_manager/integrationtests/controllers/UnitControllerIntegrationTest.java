@@ -2,12 +2,12 @@ package io.github.tavodin.techstock_manager.integrationtests.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.tavodin.techstock_manager.configurations.AbstractIntegrationTest;
 import io.github.tavodin.techstock_manager.dto.UnitDTO;
 import io.github.tavodin.techstock_manager.dto.UnitRequestDTO;
 import io.github.tavodin.techstock_manager.dto.error.CustomError;
 import io.github.tavodin.techstock_manager.dto.error.FieldError;
 import io.github.tavodin.techstock_manager.dto.error.ValidationError;
-import io.github.tavodin.techstock_manager.integrationtests.testcontainers.AbstractIntegrationTest;
 import io.github.tavodin.techstock_manager.integrationtests.utils.AuthTestUtil;
 import io.github.tavodin.techstock_manager.repositories.UnitRepository;
 import io.restassured.RestAssured;
