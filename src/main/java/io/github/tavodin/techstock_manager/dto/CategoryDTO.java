@@ -1,11 +1,12 @@
 package io.github.tavodin.techstock_manager.dto;
 
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
 
 import java.time.LocalDateTime;
 
 @Relation(itemRelation = "category", collectionRelation = "categories")
-public class CategoryDTO {
+public class CategoryDTO extends RepresentationModel<SpecificationDTO> {
 
     private Long id;
     private String name;
