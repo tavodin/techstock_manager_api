@@ -21,7 +21,7 @@ public class CategoryDTO extends RepresentationModel<SpecificationDTO> {
         this.id = entity.getId();
         this.name = entity.getName();
         this.createdAt = entity.getCreatedAt();
-        this.updatedAt = entity.getCreatedAt();
+        this.updatedAt = entity.getUpdatedAt();
     }
 
     public Long getId() {

@@ -1,7 +1,7 @@
 package io.github.tavodin.techstock_manager.controllers;
 
 import io.github.tavodin.techstock_manager.dto.CategoryDTO;
-import io.github.tavodin.techstock_manager.dto.error.CategoryRequestDTO;
+import io.github.tavodin.techstock_manager.dto.CategoryRequestDTO;
 import io.github.tavodin.techstock_manager.services.CategoryService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
@@ -33,7 +33,7 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<CategoryDTO> save(@RequestBody CategoryRequestDTO request) {
+    public ResponseEntity<CategoryDTO> save(@RequestBody @Valid CategoryRequestDTO request) {
         CategoryDTO dto = service.save(request);
 
         URI uri = ServletUriComponentsBuilder
