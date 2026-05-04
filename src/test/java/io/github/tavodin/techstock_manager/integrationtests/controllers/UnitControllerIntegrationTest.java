@@ -2,13 +2,17 @@ package io.github.tavodin.techstock_manager.integrationtests.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.tavodin.techstock_manager.builder.SpecificationBuilder;
 import io.github.tavodin.techstock_manager.configurations.AbstractIntegrationTest;
 import io.github.tavodin.techstock_manager.dto.UnitDTO;
 import io.github.tavodin.techstock_manager.dto.UnitRequestDTO;
 import io.github.tavodin.techstock_manager.dto.error.CustomError;
 import io.github.tavodin.techstock_manager.dto.error.FieldError;
 import io.github.tavodin.techstock_manager.dto.error.ValidationError;
+import io.github.tavodin.techstock_manager.entities.Specification;
+import io.github.tavodin.techstock_manager.entities.Unit;
 import io.github.tavodin.techstock_manager.integrationtests.utils.AuthTestUtil;
+import io.github.tavodin.techstock_manager.repositories.SpecificationRepository;
 import io.github.tavodin.techstock_manager.repositories.UnitRepository;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
@@ -16,11 +20,11 @@ import io.restassured.filter.log.LogDetail;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.specification.RequestSpecification;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,35 +33,35 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class UnitControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    private static RequestSpecification specification;
-    private static UnitRequestDTO request;
-    private static Long invalidId;
-
     @Autowired
     private UnitRepository repository;
+
+    @Autowired
+    private SpecificationRepository specificationRepository;
 
     @LocalServerPort
     private int port;
 
-    @BeforeAll
-    static void beforeAll() {
-        request = new UnitRequestDTO("Gigahertz", "GHz");
-        invalidId = Long.MAX_VALUE;
-    }
+    private RequestSpecification specification;
+    private UnitRequestDTO request;
+    private String token;
+
+    private static final Long INVALID_ID = Long.MAX_VALUE;
+    private static final String PATH = "/units";
 
     @BeforeEach
     void setup() {
         RestAssured.port = port;
-
-        String token = AuthTestUtil.getToken(port);
-
+        token = AuthTestUtil.getToken(port);
+        request = new UnitRequestDTO("Gigahertz", "GHz");
         specification = new RequestSpecBuilder()
-                .setBasePath("/units")
+                .setBasePath(PATH)
                 .addFilter(new RequestLoggingFilter(LogDetail.ALL))
                 .addFilter(new ResponseLoggingFilter(LogDetail.ALL))
                 .addHeader("Authorization", "Bearer " + token)
@@ -92,7 +96,7 @@ class UnitControllerIntegrationTest extends AbstractIntegrationTest {
     @Test
     void shouldReturnNotFoundAndErrorObjectWhenIdDoesNotExistInFindById() {
         var error = given().spec(specification)
-                .pathParam("id", invalidId)
+                .pathParam("id", INVALID_ID)
                 .when()
                 .get("{id}")
                 .then()
@@ -102,9 +106,9 @@ class UnitControllerIntegrationTest extends AbstractIntegrationTest {
                 .as(CustomError.class);
 
         assertNotNull(error.getTimestamp());
-        assertEquals(error.getStatus(), 404);
-        assertEquals(error.getMessage(), "Unit not found!");
-        assertEquals(error.getPath(), "/units/" + invalidId);
+        assertEquals(404, error.getStatus());
+        assertEquals("Unit not found!", error.getMessage());
+        assertEquals(PATH + "/" + INVALID_ID, error.getPath());
     }
 
     @Test
@@ -117,6 +121,7 @@ class UnitControllerIntegrationTest extends AbstractIntegrationTest {
                 .then()
                 .statusCode(200)
                 .body("_embedded.units[0].id", notNullValue())
+                .body("_embedded.units[0].name", equalTo("Gigahertz"))
                 .body("_embedded.units[0].symbol", equalTo("GHz"))
                 .body("_embedded.units[0].createdAt", notNullValue())
                 .body("_embedded.units[0].updatedAt", notNullValue());
@@ -141,7 +146,7 @@ class UnitControllerIntegrationTest extends AbstractIntegrationTest {
                 .statusCode(200)
                 .body("_embedded.units.name", hasItems("Centímetro", "Gigahertz"))
                 .body("_links.self.href",
-                        containsString(String.format("/units?page=%s&size=%s&sort=%s", number, size, order)))
+                        containsString(String.format("%s?page=%s&size=%s&sort=%s", PATH, number, size, order)))
                 .body("page.size", equalTo(5))
                 .body("page.totalElements", equalTo(2))
                 .body("page.totalPages", equalTo(1))
@@ -180,7 +185,7 @@ class UnitControllerIntegrationTest extends AbstractIntegrationTest {
 
         assertNotNull(error.getTimestamp());
         assertEquals(400, error.getStatus());
-        assertEquals("/units", error.getPath());
+        assertEquals(PATH, error.getPath());
         assertEquals("Entity validation error", error.getMessage());
 
         assertEquals("Unit Symbol is required!", errors.get("symbol"));
@@ -273,7 +278,7 @@ class UnitControllerIntegrationTest extends AbstractIntegrationTest {
     @Test
     void shouldReturnNotFoundAndObjectErrorWhenIdDoesNotExistInUpdate() {
         var error = given().spec(specification)
-                .pathParam("id", invalidId)
+                .pathParam("id", INVALID_ID)
                 .contentType("application/json")
                 .body(request)
                 .when()
@@ -285,9 +290,9 @@ class UnitControllerIntegrationTest extends AbstractIntegrationTest {
                 .as(CustomError.class);
 
         assertNotNull(error.getTimestamp());
-        assertEquals(error.getStatus(), 404);
-        assertEquals(error.getMessage(), "Unit not found!");
-        assertEquals(error.getPath(), "/units/" + invalidId);
+        assertEquals(404, error.getStatus());
+        assertEquals("Unit not found!", error.getMessage());
+        assertEquals(PATH + "/" + INVALID_ID, error.getPath());
     }
 
     @Test
@@ -312,7 +317,7 @@ class UnitControllerIntegrationTest extends AbstractIntegrationTest {
         assertNotNull(error.getTimestamp());
         assertEquals(400, error.getStatus());
         assertEquals("Entity validation error", error.getMessage());
-        assertEquals("/units/" + savedUnit.getId(), error.getPath());
+        assertEquals(PATH + "/" + savedUnit.getId(), error.getPath());
 
         assertEquals("Unit Symbol is required!", errors.get("symbol"));
         assertEquals("The unit name must contain 45 characters.", errors.get("name"));
@@ -404,7 +409,7 @@ class UnitControllerIntegrationTest extends AbstractIntegrationTest {
     @Test
     void shouldReturnNotFoundWhenIdDoesNotExistInDelete() {
         var error = given().spec(specification)
-                .pathParam("id", invalidId)
+                .pathParam("id", INVALID_ID)
                 .when()
                 .delete("{id}")
                 .then()
@@ -414,14 +419,40 @@ class UnitControllerIntegrationTest extends AbstractIntegrationTest {
                 .as(CustomError.class);
 
         assertNotNull(error.getTimestamp());
-        assertEquals(error.getStatus(), 404);
-        assertEquals(error.getMessage(), "Unit not found!");
-        assertEquals(error.getPath(), "/units/" + invalidId);
+        assertEquals(404, error.getStatus());
+        assertEquals("Unit not found!", error.getMessage());
+        assertEquals(PATH + "/" + INVALID_ID, error.getPath());
     }
 
     @Test
     void shouldNotDeleteUnitWhenUnitIsInUse() {
-        fail();
+        Unit savedUnit = repository.save(new Unit(request.name(), request.symbol()));
+
+        Specification savedSpecification = SpecificationBuilder
+                .builder()
+                .withId(null)
+                .withUnit(savedUnit)
+                .build();
+
+        specificationRepository.save(savedSpecification);
+        specificationRepository.flush();
+
+        var error = given().spec(specification)
+                .pathParam("id", savedUnit.getId())
+                .when()
+                .delete("{id}")
+                .then()
+                .statusCode(409)
+                .extract()
+                .body()
+                .as(CustomError.class);
+
+        assertNotNull(error.getTimestamp());
+        assertEquals(409, error.getStatus());
+        assertEquals("Unit is in use and cannot be deleted", error.getMessage());
+        assertEquals(PATH + "/" + savedUnit.getId(), error.getPath());
+
+        specificationRepository.deleteAll();
     }
 
     private UnitDTO createUnit(UnitRequestDTO request) throws JsonProcessingException {

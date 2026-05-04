@@ -10,7 +10,7 @@ public class SpecificationBuilder {
 
     private Long id = 1L;
     private String name = "RAM";
-    private SpecificationType dataType;
+    private SpecificationType dataType = SpecificationType.NUMBER;
     private Boolean filterable = true;
     private LocalDateTime createdAt = LocalDateTime.of(2026, 3, 30, 10, 0);
     private LocalDateTime updatedAt = createdAt.plusHours(1L);
@@ -56,6 +56,6 @@ public class SpecificationBuilder {
     }
 
     public Specification build() {
-        return new Specification(id, name, dataType, filterable,unit, createdAt, updatedAt);
+        return new Specification(id, name, dataType, filterable, unit, createdAt, updatedAt);
     }
 }

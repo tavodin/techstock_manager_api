@@ -1,6 +1,5 @@
 package io.github.tavodin.techstock_manager.controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.tavodin.techstock_manager.config.security.filters.JwtAuthenticationFilter;
 import io.github.tavodin.techstock_manager.dto.UnitDTO;
@@ -21,14 +20,12 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -127,7 +124,7 @@ class UnitControllerTest {
     }
 
     @Test
-    void shouldReturnPagedUnits() throws Exception {
+    void shouldReturnPageUnits() throws Exception {
         List<UnitDTO> units = List.of(unitDTO);
 
         PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(1, 0, 1);
@@ -135,7 +132,7 @@ class UnitControllerTest {
 
         when(service.findAll(any(Pageable.class))).thenReturn(pagedModel);
 
-        MvcResult result = mockMvc.perform(get("/units")
+        mockMvc.perform(get("/units")
                 .param("page", "0")
                 .param("size", "10"))
 
@@ -144,19 +141,13 @@ class UnitControllerTest {
                 .andExpect(jsonPath("$._embedded").exists())
                 .andExpect(jsonPath("$.page").exists())
 
+                .andExpect(jsonPath("$._embedded.units[0].id").value(unitDTO.getId()))
                 .andExpect(jsonPath("$._embedded.units[0].name").value(unitDTO.getName()))
                 .andExpect(jsonPath("$._embedded.units[0].symbol").value(unitDTO.getSymbol()))
 
                 .andExpect(jsonPath("$._embedded.units[0].createdAt").exists())
                 .andExpect(jsonPath("$._embedded.units[0].updatedAt").exists())
                 .andReturn();
-
-        String json = result.getResponse().getContentAsString();
-
-        JsonNode root = objectMapper.readTree(json);
-        JsonNode unitNode = root.path("_embedded").path("units").get(0);
-
-        assertEquals(unitDTO.getId().longValue(), unitNode.get("id").asLong());
     }
 
     @Test

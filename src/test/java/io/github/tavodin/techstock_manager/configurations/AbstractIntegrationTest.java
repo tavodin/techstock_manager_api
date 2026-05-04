@@ -13,8 +13,7 @@ public abstract class AbstractIntegrationTest {
 
     @Container
     static final MySQLContainer<?> mysql =
-            new MySQLContainer<>("mysql:8.0.28")
-                    .withReuse(true);
+            new MySQLContainer<>("mysql:8.0.28");
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {

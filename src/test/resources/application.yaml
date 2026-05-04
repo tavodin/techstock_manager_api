@@ -5,6 +5,12 @@ testcontainers:
   reuse:
     enable: true
 
+junit:
+  jupiter:
+    execution:
+      parallel:
+        enabled: false
+
 spring:
   application:
     name: techstock-manager

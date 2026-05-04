@@ -3,13 +3,16 @@ package io.github.tavodin.techstock_manager.integrationtests.swagger;
 import io.github.tavodin.techstock_manager.configurations.AbstractIntegrationTest;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.annotation.DirtiesContext;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class SwaggerIntegrationTests extends AbstractIntegrationTest {
 
     @LocalServerPort
