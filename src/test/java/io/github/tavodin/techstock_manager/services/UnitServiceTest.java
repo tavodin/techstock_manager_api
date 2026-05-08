@@ -199,7 +199,7 @@ class UnitServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenDeletingWithDependencies() {
+    void shouldThrownEntityInUseWhenDeletingEntityWithRelationships() {
         when(repository.findById(existId)).thenReturn(Optional.of(unit));
         doNothing().when(repository).delete(unit);
         doThrow(new DataIntegrityViolationException("FK constraint"))

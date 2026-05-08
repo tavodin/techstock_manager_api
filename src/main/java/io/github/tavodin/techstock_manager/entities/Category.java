@@ -26,7 +26,6 @@ public class Category extends BaseEntity {
     public Category(String name, Set<Product> products, Set<CategorySpecification> categorySpecifications) {
         this.name = name;
         this.products = products;
-        this.categorySpecifications = categorySpecifications;
     }
 
     public String getName() {

@@ -262,7 +262,7 @@ public class SpecificationServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenDeletingWithDependencies() {
+    void shouldThrownEntityInUseWhenDeletingEntityWithRelationships() {
         when(repository.findById(validId)).thenReturn(Optional.of(specification));
         doNothing().when(repository).delete(specification);
         doThrow(new DataIntegrityViolationException("FK constraint"))

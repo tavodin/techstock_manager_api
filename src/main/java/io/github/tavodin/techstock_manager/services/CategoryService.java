@@ -44,7 +44,7 @@ public class CategoryService {
     public CategoryDTO save(CategoryRequestDTO request) {
         Category entity = new Category();
         entity.setName(request.name());
-        repository.save(entity);
+        entity = repository.save(entity);
         return assembler.toModel(entity);
     }
 
