@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 public record CategoryRequestDTO(
 
         @NotBlank(message = "Name is required!")
-        @Size(max = 100, message = "Name must contain 100 characters.")
+        @Size(max = 100, message = "The name must contain a maximum of 100 characters.")
         String name
 ) {
 }

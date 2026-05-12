@@ -643,6 +643,48 @@ class SpecificationControllerIntegrationTest extends AbstractIntegrationTest {
         assertEquals(unitNotFoundMsg, error.getMessage());
     }
 
+    @Test
+    void shouldDeleteWhenDeletingWithValidId() throws JsonProcessingException {
+        SpecificationDTO savedSpecification = createSpecification(request);
+
+        given()
+                .spec(specification)
+                .pathParam("id", savedSpecification.getId())
+                .delete("/{id}")
+                .then()
+                .statusCode(204);
+
+        given()
+                .spec(specification)
+                .pathParam("id", savedSpecification.getId())
+                .delete("/{id}")
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenIdDoesNotExistInDelete() {
+        var error = given().spec(specification)
+                .pathParam("id", invalidId)
+                .when()
+                .delete("{id}")
+                .then()
+                .statusCode(404)
+                .extract()
+                .body()
+                .as(CustomError.class);
+
+        assertNotNull(error.getTimestamp());
+        assertEquals(404, error.getStatus());
+        assertEquals(notFoundMsg, error.getMessage());
+        assertEquals(path + "/" + invalidId, error.getPath());
+    }
+
+    @Test
+    void shouldNotDeleteUnitWhenUnitIsInUse() {
+        fail();
+    }
+
     private SpecificationDTO createSpecification(SpecificationRequestDTO request) throws JsonProcessingException {
         Unit unit = unitRepository.save(new Unit("Gigabyte", "GB"));
         unitId = unit.getId();
