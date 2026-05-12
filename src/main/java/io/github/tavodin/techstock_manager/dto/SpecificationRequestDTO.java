@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 public record SpecificationRequestDTO(
 
         @NotBlank(message = "Name is required!")
-        @Size(max = 100, message = "Name must contain 100 characters.")
+        @Size(max = 100, message = "The name must contain a maximum of 100 characters.")
         String name,
 
         @NotNull(message = "Data Type is required!")
