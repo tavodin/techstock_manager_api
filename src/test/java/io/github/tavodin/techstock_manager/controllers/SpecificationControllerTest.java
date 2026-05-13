@@ -195,7 +195,7 @@ public class SpecificationControllerTest {
 
                 .andExpect(jsonPath("$.errors[*].field").value(hasItem("name")))
                 .andExpect(jsonPath("$.errors[*].message")
-                        .value(hasItem("Name must contain 100 characters.")));
+                        .value(hasItem("The name must contain a maximum of 100 characters.")));
     }
 
     @Test
@@ -379,7 +379,7 @@ public class SpecificationControllerTest {
 
                 .andExpect(jsonPath("$.errors[*].field").value(hasItem("name")))
                 .andExpect(jsonPath("$.errors[*].message")
-                        .value(hasItem("Name must contain 100 characters.")));
+                        .value(hasItem("The name must contain a maximum of 100 characters.")));
     }
 
     @Test

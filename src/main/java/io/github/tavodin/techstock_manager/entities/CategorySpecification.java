@@ -13,9 +13,6 @@ public class CategorySpecification {
     @Column(nullable = false)
     private Boolean required;
 
-    @Column(name = "display_order", nullable = false)
-    private Integer displayOrder;
-
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
@@ -27,10 +24,9 @@ public class CategorySpecification {
     public CategorySpecification() {
     }
 
-    public CategorySpecification(Long id, Boolean required, Integer displayOrder, Category category, Specification specification) {
+    public CategorySpecification(Long id, Boolean required, Category category, Specification specification) {
         this.id = id;
         this.required = required;
-        this.displayOrder = displayOrder;
         this.category = category;
         this.specification = specification;
     }
@@ -49,14 +45,6 @@ public class CategorySpecification {
 
     public void setRequired(Boolean required) {
         this.required = required;
-    }
-
-    public Integer getDisplayOrder() {
-        return displayOrder;
-    }
-
-    public void setDisplayOrder(Integer displayOrder) {
-        this.displayOrder = displayOrder;
     }
 
     public Category getCategory() {

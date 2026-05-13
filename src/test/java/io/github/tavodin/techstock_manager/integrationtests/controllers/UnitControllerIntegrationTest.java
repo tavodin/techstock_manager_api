@@ -189,7 +189,7 @@ class UnitControllerIntegrationTest extends AbstractIntegrationTest {
         assertEquals("Entity validation error", error.getMessage());
 
         assertEquals("Unit Symbol is required!", errors.get("symbol"));
-        assertEquals("The unit name must contain 45 characters.", errors.get("name"));
+        assertEquals("The name must contain a maximum of 45 characters.", errors.get("name"));
     }
 
     @Test
@@ -320,7 +320,7 @@ class UnitControllerIntegrationTest extends AbstractIntegrationTest {
         assertEquals(PATH + "/" + savedUnit.getId(), error.getPath());
 
         assertEquals("Unit Symbol is required!", errors.get("symbol"));
-        assertEquals("The unit name must contain 45 characters.", errors.get("name"));
+        assertEquals("The name must contain a maximum of 45 characters.", errors.get("name"));
     }
 
     @Test

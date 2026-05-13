@@ -227,7 +227,7 @@ class SpecificationControllerIntegrationTest extends AbstractIntegrationTest {
         assertEquals(path, error.getPath());
         assertEquals(validationErrorMsg, error.getMessage());
 
-        assertEquals("Name must contain 100 characters.", errors.get("name"));
+        assertEquals("The name must contain a maximum of 100 characters.", errors.get("name"));
     }
 
     @Test
@@ -481,7 +481,7 @@ class SpecificationControllerIntegrationTest extends AbstractIntegrationTest {
         assertEquals(pathError, error.getPath());
         assertEquals(validationErrorMsg, error.getMessage());
 
-        assertEquals("Name must contain 100 characters.", errors.get("name"));
+        assertEquals("The name must contain a maximum of 100 characters.", errors.get("name"));
     }
 
     @Test

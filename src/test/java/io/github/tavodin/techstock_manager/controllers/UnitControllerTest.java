@@ -197,7 +197,7 @@ class UnitControllerTest {
 
                 .andExpect(jsonPath("$.errors[*].field").value(hasItem("name")))
                 .andExpect(jsonPath("$.errors[*].message")
-                        .value(hasItem("The unit name must contain 45 characters.")))
+                        .value(hasItem("The name must contain a maximum of 45 characters.")))
 
                 .andExpect(jsonPath("$.errors[*].field").value(hasItem("symbol")))
                 .andExpect(jsonPath("$.errors[*].message")
