@@ -47,11 +47,17 @@ public class SpecificationService {
 
     @Transactional
     public SpecificationDTO save(SpecificationRequestDTO request) {
-        Unit unitEntity = unitRepository.findById(request.unitId())
-                .orElseThrow(() -> new ResourceNotFoundException("Unit not found!"));
+        Specification specificationEntity = new Specification();
 
-        Specification specificationEntity =
-                new Specification(request.name(), request.dataType(), request.filterable(), unitEntity);
+        if(request.unitId() != null) {
+            Unit unitEntity = unitRepository.findById(request.unitId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Unit not found!"));
+            specificationEntity.setUnit(unitEntity);
+        }
+
+        specificationEntity.setName(request.name());
+        specificationEntity.setDataType(request.dataType());
+        specificationEntity.setFilterable(request.filterable());
 
         specificationEntity = specificationRepository.save(specificationEntity);
 
@@ -62,7 +68,7 @@ public class SpecificationService {
     public SpecificationDTO update(Long id, SpecificationRequestDTO request) {
         Specification entity = getEntityOrThrownException(id);
 
-        if(!entity.getUnit().getId().equals(request.unitId())) {
+        if(!entity.getUnit().getId().equals(request.unitId()) && request.unitId() != null) {
             Unit unitEntity = unitRepository.findById(request.unitId())
                     .orElseThrow(() -> new ResourceNotFoundException("Unit not found!"));
 

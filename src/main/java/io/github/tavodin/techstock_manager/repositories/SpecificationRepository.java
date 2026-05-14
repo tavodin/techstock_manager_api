@@ -17,7 +17,7 @@ public interface SpecificationRepository extends JpaRepository<Specification, Lo
                 s.id, s.name, s.dataType, s.filterable, u.symbol, s.createdAt, s.updatedAt
             )
             FROM Specification s
-            INNER JOIN s.unit u
+            LEFT JOIN s.unit u
             WHERE s.id = :id
             """)
     Optional<SpecificationDTO> getSpecificationById(@Param("id") Long id);
@@ -27,7 +27,7 @@ public interface SpecificationRepository extends JpaRepository<Specification, Lo
                 s.id, s.name, s.dataType, s.filterable, u.symbol, s.createdAt, s.updatedAt
             )
             FROM Specification s
-            INNER JOIN s.unit u
+            LEFT JOIN s.unit u
             """)
     Page<SpecificationDTO> findAllProjected(Pageable pageable);
 }

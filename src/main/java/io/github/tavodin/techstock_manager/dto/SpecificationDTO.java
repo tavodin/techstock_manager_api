@@ -36,7 +36,11 @@ public class SpecificationDTO extends RepresentationModel<SpecificationDTO> {
         this.name = entity.getName();
         this.dataType = entity.getDataType();
         this.filterable = entity.getFilterable();
-        this.unitSymbol = entity.getUnit().getSymbol();
+
+        if(entity.getUnit() != null) {
+            this.unitSymbol = entity.getUnit().getSymbol();
+        }
+
         this.createdAt = entity.getCreatedAt();
         this.updatedAt = entity.getUpdatedAt();
     }

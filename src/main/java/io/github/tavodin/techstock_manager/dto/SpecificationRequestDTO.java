@@ -17,7 +17,6 @@ public record SpecificationRequestDTO(
         @NotNull(message = "Filterable is required!")
         Boolean filterable,
 
-        @NotNull(message = "Unit ID is required!")
         Long unitId
 ) {
 }

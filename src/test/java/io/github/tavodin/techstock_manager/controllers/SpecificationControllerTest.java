@@ -285,27 +285,6 @@ public class SpecificationControllerTest {
     }
 
     @Test
-    void shouldReturnCustomErrorObjectAndBadRequestWhenSavingWithNullUnitId() throws Exception {
-        SpecificationRequestDTO invalidRequest = new SpecificationRequestDTO(
-                specification.getName(), specification.getDataType(), specification.getFilterable(), null);
-
-        mockMvc.perform(post(path)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
-
-                .andExpect(status().isBadRequest())
-
-                .andExpect(jsonPath("$.timestamp").exists())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value(validationMsg))
-                .andExpect(jsonPath("$.path").value(path))
-
-                .andExpect(jsonPath("$.errors[*].field").value(hasItem("unitId")))
-                .andExpect(jsonPath("$.errors[*].message")
-                        .value(hasItem("Unit ID is required!")));
-    }
-
-    @Test
     void shouldReturnSpecificationDTOAndOkWhenUpdate() throws Exception {
         when(service.update(validId, request)).thenReturn(specificationDTO);
 
@@ -466,27 +445,6 @@ public class SpecificationControllerTest {
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message").value(unitNotFoundMsg))
                 .andExpect(jsonPath("$.path").value(path + "/" + validId));
-    }
-
-    @Test
-    void shouldReturnCustomErrorObjectAndBadRequestWhenUpdatingWithNullUnitId() throws Exception {
-        SpecificationRequestDTO invalidRequest = new SpecificationRequestDTO(
-                specification.getName(), specification.getDataType(), specification.getFilterable(), null);
-
-        mockMvc.perform(put(path + "/{id}", validId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
-
-                .andExpect(status().isBadRequest())
-
-                .andExpect(jsonPath("$.timestamp").exists())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value(validationMsg))
-                .andExpect(jsonPath("$.path").value(path + "/" + validId))
-
-                .andExpect(jsonPath("$.errors[*].field").value(hasItem("unitId")))
-                .andExpect(jsonPath("$.errors[*].message")
-                        .value(hasItem("Unit ID is required!")));
     }
 
     @Test

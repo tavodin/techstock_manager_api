@@ -321,34 +321,6 @@ class SpecificationControllerIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void shouldReturnValidationErrorAndBadRequestWhenSavingWithNullUnitId() throws JsonProcessingException {
-        SpecificationRequestDTO invalidRequest = new SpecificationRequestDTO(
-                request.name(), request.dataType(), request.filterable(), null);
-
-        var content = given().spec(specification)
-                .body(invalidRequest)
-                .contentType("application/json")
-                .post()
-                .then()
-                .statusCode(400)
-                .extract()
-                .body()
-                .asString();
-
-        ValidationError error = objectMapper.readValue(content, ValidationError.class);
-
-        Map<String, String> errors = error.getErrors().stream()
-                .collect(Collectors.toMap(FieldError::getField, FieldError::getMessage));
-
-        assertNotNull(error.getTimestamp());
-        assertEquals(400, error.getStatus());
-        assertEquals(path, error.getPath());
-        assertEquals(validationErrorMsg, error.getMessage());
-
-        assertEquals("Unit ID is required!", errors.get("unitId"));
-    }
-
-    @Test
     void shouldReturnValidationErrorAndNotFoundWhenSavingWithInvalidUnitId() {
         SpecificationRequestDTO invalidRequest = new SpecificationRequestDTO(
                 request.name(), request.dataType(), request.filterable(), Long.MAX_VALUE);
@@ -582,39 +554,6 @@ class SpecificationControllerIntegrationTest extends AbstractIntegrationTest {
         assertEquals(validationErrorMsg, error.getMessage());
 
         assertEquals("Filterable is required!", errors.get("filterable"));
-    }
-
-    @Test
-    void shouldReturnValidationErrorAndBadRequestWhenUpdatingWithNullUnitId() throws JsonProcessingException {
-        SpecificationDTO savedSpecification = createSpecification(request);
-        SpecificationRequestDTO invalidRequest = new SpecificationRequestDTO(
-                "VRAM", SpecificationType.NUMBER, true, null);
-
-        var content = given().spec(specification)
-                .pathParam("id", savedSpecification.getId())
-                .contentType("application/json")
-                .body(invalidRequest)
-                .when()
-                .put("{id}")
-                .then()
-                .statusCode(400)
-                .extract()
-                .body()
-                .asString();
-
-        ValidationError error = objectMapper.readValue(content, ValidationError.class);
-
-        Map<String, String> errors = error.getErrors().stream()
-                .collect(Collectors.toMap(FieldError::getField, FieldError::getMessage));
-
-        String pathError = path + "/" + savedSpecification.getId();
-
-        assertNotNull(error.getTimestamp());
-        assertEquals(400, error.getStatus());
-        assertEquals(pathError, error.getPath());
-        assertEquals(validationErrorMsg, error.getMessage());
-
-        assertEquals("Unit ID is required!", errors.get("unitId"));
     }
 
     @Test

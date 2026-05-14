@@ -130,7 +130,7 @@ public class SpecificationServiceTest {
     }
 
     @Test
-    void shouldSavedSpecificationWhenSave() {
+    void shouldSaveSpecificationWhenSave() {
         Specification saveSpecification = SpecificationBuilder.builder().withId(null).build();
 
         when(unitRepository.findById(validId)).thenReturn(Optional.of(unit));
@@ -146,6 +146,8 @@ public class SpecificationServiceTest {
         assertEquals(specification.getCreatedAt(), actual.getCreatedAt());
         assertEquals(specification.getUpdatedAt(), actual.getUpdatedAt());
         assertEquals(specification.getUnit().getSymbol(), actual.getUnitSymbol());
+
+        verify(unitRepository).findById(saveSpecification.getUnit().getId());
     }
 
     @Test
@@ -162,6 +164,22 @@ public class SpecificationServiceTest {
                 service.save(invalidRequest));
 
         assertEquals("Unit not found!", actual.getMessage());
+    }
+
+    @Test
+    void shouldNotCallUnitFindByIdWhenSavingWithNullUnitId() {
+        Specification saveSpec = SpecificationBuilder.builder()
+                .withId(null).withUnit(null).build();
+
+        SpecificationRequestDTO requestNullUnitId =
+                new SpecificationRequestDTO(saveSpec.getName(), saveSpec.getDataType(), saveSpec.getFilterable(), null);
+
+        when(repository.save(saveSpec)).thenReturn(specification);
+        when(assembler.toModel(specificationDTO)).thenReturn(specificationDTO);
+
+        service.save(requestNullUnitId);
+
+        verify(unitRepository, never()).findById(anyLong());
     }
 
     @Test
@@ -218,6 +236,30 @@ public class SpecificationServiceTest {
         SpecificationDTO actual = service.update(validId, updateRequest);
 
         verify(unitRepository).findById(anyLong());
+    }
+
+    @Test
+    void shouldNotCallUnitFindByIdWhenUpdatingWithNullId() {
+        Specification updateEntity = SpecificationBuilder.builder()
+                .withId(validId)
+                .withName("Terabyte")
+                .withSpecificationType(specification.getDataType())
+                .withFilterable(specification.getFilterable())
+                .build();
+
+        SpecificationRequestDTO requestNullUnitId = new SpecificationRequestDTO(
+                updateEntity.getName(),
+                updateEntity.getDataType(),
+                updateEntity.getFilterable(),
+                null);
+
+        when(repository.findById(anyLong())).thenReturn(Optional.of(specification));
+        when(repository.save(any(Specification.class))).thenReturn(updateEntity);
+        when(assembler.toModel(any(SpecificationDTO.class))).thenReturn(any(SpecificationDTO.class));
+
+        service.update(validId, requestNullUnitId);
+
+        verify(unitRepository, never()).findById(anyLong());
     }
 
     @Test
