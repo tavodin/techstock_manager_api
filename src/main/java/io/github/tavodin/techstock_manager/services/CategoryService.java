@@ -3,6 +3,7 @@ package io.github.tavodin.techstock_manager.services;
 import io.github.tavodin.techstock_manager.assemblers.CategoryAssembler;
 import io.github.tavodin.techstock_manager.dto.CategoryDTO;
 import io.github.tavodin.techstock_manager.dto.CategoryRequestDTO;
+import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
 import io.github.tavodin.techstock_manager.entities.Category;
 import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
@@ -14,6 +15,8 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class CategoryService {
@@ -38,6 +41,11 @@ public class CategoryService {
     public PagedModel<CategoryDTO> findAll(Pageable pageable) {
         Page<Category> page = repository.findAll(pageable);
         return pagedAssembler.toModel(page, assembler);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategorySpecificationsListDTO> findAllSpecificationByCategoryId(Long id) {
+        return repository.findAllSpecificationByCategoryId(id);
     }
 
     @Transactional
