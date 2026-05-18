@@ -3,6 +3,7 @@ package io.github.tavodin.techstock_manager.services;
 import io.github.tavodin.techstock_manager.assemblers.CategoryAssembler;
 import io.github.tavodin.techstock_manager.dto.CategoryDTO;
 import io.github.tavodin.techstock_manager.dto.CategoryRequestDTO;
+import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
 import io.github.tavodin.techstock_manager.entities.Category;
 import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
@@ -111,6 +112,34 @@ class CategoryServiceTest {
 
         verify(repository).findAll(pageable);
         verify(pagedAssembler).toModel(page, assembler);
+    }
+
+    @Test
+    void shouldReturnSpecificationListWhenFindingSpecificationsWithValidCategoryId() {
+        CategorySpecificationsListDTO specList =
+                new CategorySpecificationsListDTO(1L, "Frequência", true);
+
+        when(repository.findById(validId)).thenReturn(Optional.of(category));
+        when(repository.findAllSpecificationByCategoryId(validId)).thenReturn(List.of(specList));
+
+        List<CategorySpecificationsListDTO> actual = service.findAllSpecificationByCategoryId(validId);
+        CategorySpecificationsListDTO dto = actual.getFirst();
+
+        assertTrue(actual.size() > 0);
+
+        assertEquals(specList.getCategorySpecificationId(), dto.getCategorySpecificationId());
+        assertEquals(specList.getSpecificationName(), dto.getSpecificationName());
+        assertEquals(specList.getIsRequired(), dto.getIsRequired());
+    }
+
+    @Test
+    void shouldThrownResourceNotFoundExceptionWhenFindingSpecificationsWithInvalidId() {
+        when(repository.findById(invalidId)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class,
+                () -> service.findAllSpecificationByCategoryId(invalidId));
+
+        assertEquals(notFoundMsg, actual.getMessage());
     }
 
     @Test

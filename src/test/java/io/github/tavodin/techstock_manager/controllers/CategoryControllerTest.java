@@ -1,10 +1,10 @@
 package io.github.tavodin.techstock_manager.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.tavodin.techstock_manager.config.security.filters.JwtAuthenticationFilter;
 import io.github.tavodin.techstock_manager.dto.CategoryDTO;
 import io.github.tavodin.techstock_manager.dto.CategoryRequestDTO;
+import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
 import io.github.tavodin.techstock_manager.entities.Category;
 import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
@@ -26,7 +26,6 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -34,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(CategoryController.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class CategoryControllerTest {
+class CategoryControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -125,6 +124,34 @@ public class CategoryControllerTest {
                         .value(categoryDTO.getName()))
                 .andExpect(jsonPath("$._embedded.categories[0].createdAt").exists())
                 .andExpect(jsonPath("$._embedded.categories[0].updatedAt").exists());
+    }
+
+    @Test
+    void shouldReturnSpecificationsWhenFindingSpecificationsByValidCategoryId() throws Exception {
+        CategorySpecificationsListDTO dto = new CategorySpecificationsListDTO(1L, "Frequência", true);
+
+        when(service.findAllSpecificationByCategoryId(validId)).thenReturn(List.of(dto));
+
+        mockMvc.perform(get(PATH + "/{id}/specifications", validId))
+                .andExpect(status().isOk())
+
+                .andExpect(jsonPath("$.[0].id").value(dto.getCategorySpecificationId()))
+                .andExpect(jsonPath("$.[0].name").value(dto.getSpecificationName()))
+                .andExpect(jsonPath("$.[0].isRequired").value(dto.getIsRequired()));
+    }
+
+    @Test
+    void shouldReturnCustomErrorAndNotFoundWhenFindingSpecificationsWithInvalidCategoryId() throws Exception {
+        when(service.findAllSpecificationByCategoryId(invalidId)).thenThrow(new ResourceNotFoundException(notFoundMsg));
+
+        mockMvc.perform(get(PATH + "/{id}/specifications", invalidId))
+
+                .andExpect(status().isNotFound())
+
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value(notFoundMsg))
+                .andExpect(jsonPath("$.path").value(PATH + "/" + invalidId + "/specifications"));
     }
 
     @Test

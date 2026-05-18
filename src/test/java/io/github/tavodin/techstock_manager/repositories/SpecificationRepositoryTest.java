@@ -31,6 +31,7 @@ public class SpecificationRepositoryTest extends AbstractJpaTest {
     @BeforeEach
     void clean() {
         specificationRepository.deleteAll();
+        unitRepository.deleteAll();
     }
 
     @Test

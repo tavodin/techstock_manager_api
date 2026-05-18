@@ -45,6 +45,7 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public List<CategorySpecificationsListDTO> findAllSpecificationByCategoryId(Long id) {
+        getEntityOrThrowException(id);
         return repository.findAllSpecificationByCategoryId(id);
     }
 

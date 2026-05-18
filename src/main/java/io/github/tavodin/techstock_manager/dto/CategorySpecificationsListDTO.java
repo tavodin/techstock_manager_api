@@ -2,25 +2,25 @@ package io.github.tavodin.techstock_manager.dto;
 
 public class CategorySpecificationsListDTO {
 
-    private Long id;
+    private Long categorySpecificationId;
     private String specificationName;
     private Boolean isRequired;
 
     public CategorySpecificationsListDTO() {
     }
 
-    public CategorySpecificationsListDTO(Long id, String specificationName, Boolean isRequired) {
-        this.id = id;
+    public CategorySpecificationsListDTO(Long categorySpecificationId, String specificationName, Boolean isRequired) {
+        this.categorySpecificationId = categorySpecificationId;
         this.specificationName = specificationName;
         this.isRequired = isRequired;
     }
 
-    public Long getId() {
-        return id;
+    public Long getCategorySpecificationId() {
+        return categorySpecificationId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setCategorySpecificationId(Long categorySpecificationId) {
+        this.categorySpecificationId = categorySpecificationId;
     }
 
     public String getSpecificationName() {

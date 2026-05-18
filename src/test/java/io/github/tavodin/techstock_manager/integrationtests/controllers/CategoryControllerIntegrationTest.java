@@ -2,14 +2,20 @@ package io.github.tavodin.techstock_manager.integrationtests.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.tavodin.techstock_manager.builder.SpecificationBuilder;
 import io.github.tavodin.techstock_manager.configurations.AbstractIntegrationTest;
 import io.github.tavodin.techstock_manager.dto.CategoryDTO;
 import io.github.tavodin.techstock_manager.dto.CategoryRequestDTO;
 import io.github.tavodin.techstock_manager.dto.error.CustomError;
 import io.github.tavodin.techstock_manager.dto.error.FieldError;
 import io.github.tavodin.techstock_manager.dto.error.ValidationError;
+import io.github.tavodin.techstock_manager.entities.Category;
+import io.github.tavodin.techstock_manager.entities.CategorySpecification;
+import io.github.tavodin.techstock_manager.entities.Specification;
 import io.github.tavodin.techstock_manager.integrationtests.utils.AuthTestUtil;
 import io.github.tavodin.techstock_manager.repositories.CategoryRepository;
+import io.github.tavodin.techstock_manager.repositories.CategorySpecificationRepository;
+import io.github.tavodin.techstock_manager.repositories.SpecificationRepository;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
@@ -34,6 +40,12 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private CategoryRepository repository;
+
+    @Autowired
+    private SpecificationRepository specificationRepository;
+
+    @Autowired
+    private CategorySpecificationRepository catSpecRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -65,6 +77,8 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
                 .build();
 
         repository.deleteAll();
+        catSpecRepository.deleteAll();
+        specificationRepository.deleteAll();
     }
 
     @Test
@@ -143,6 +157,49 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
                 .body("page.totalElements", equalTo(2))
                 .body("page.totalPages", equalTo(1))
                 .body("page.number", equalTo(0));
+    }
+
+    @Test
+    void shouldReturnSpecificationsListWhenFindingSpecificationsWithValidCategoryId() throws JsonProcessingException {
+        Specification spec = SpecificationBuilder.builder().withId(null).withUnit(null).build();
+
+        Category category = new Category();
+        category.setName("Monitor");
+
+        category = repository.save(category);
+        spec = specificationRepository.save(spec);
+
+        CategorySpecification specCategory = new CategorySpecification();
+        specCategory.setCategory(category);
+        specCategory.setSpecification(spec);
+        specCategory.setRequired(true);
+
+        specCategory = catSpecRepository.save(specCategory);
+
+        given().spec(specification)
+                .pathParam("id", specCategory.getId())
+                .get("/{id}/specifications")
+                .then()
+                .statusCode(200)
+                .body("[0].categorySpecificationId", notNullValue())
+                .body("[0].specificationName", equalTo(spec.getName()))
+                .body("[0].isRequired", equalTo(specCategory.getRequired()));
+    }
+
+    @Test
+    void shouldReturnCustomErrorDTOAndNotFoundWhenFindingSpecificationWithInvalidCategoryId() {
+        CustomError error = given().spec(specification)
+                .pathParam("id", invalidId)
+                .get("/{id}/specifications")
+                .then()
+                .statusCode(404)
+                .extract()
+                .as(CustomError.class);
+
+        assertEquals(notFoundMsg, error.getMessage());
+        assertEquals(404, error.getStatus());
+        assertEquals(PATH + "/" + invalidId + "/specifications", error.getPath());
+        assertNotNull(error.getTimestamp());
     }
 
     @Test
