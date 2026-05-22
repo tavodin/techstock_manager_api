@@ -1,6 +1,6 @@
 package io.github.tavodin.techstock_manager.assemblers;
 
-import io.github.tavodin.techstock_manager.controllers.CategorySpecificationController;
+import io.github.tavodin.techstock_manager.controllers.CategoryController;
 import io.github.tavodin.techstock_manager.dto.CategorySpecificationDTO;
 import io.github.tavodin.techstock_manager.entities.CategorySpecification;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
@@ -16,17 +16,18 @@ public class CategorySpecificationAssembler implements RepresentationModelAssemb
     public CategorySpecificationDTO toModel(CategorySpecification entity) {
         CategorySpecificationDTO model = new CategorySpecificationDTO(entity);
 
-        model.add(linkTo(methodOn(CategorySpecificationController.class)
+        model.add(linkTo(methodOn(CategoryController.class)
                 .save(null))
                 .withRel("save")
                 .withType("POST"));
 
-        model.add(linkTo(methodOn(CategorySpecificationController.class)
-                .update(model.getId(), null))
+        model.add(linkTo(methodOn(CategoryController.class)
+                .updateCatSpec(model.getId(), null))
                 .withRel("update")
                 .withType("PUT"));
 
-        model.add(linkTo(methodOn(CategorySpecificationController.class))
+        model.add(linkTo(methodOn(CategoryController.class)
+                .deleteCatSpec(model.getId()))
                 .withRel("delete")
                 .withType("DELETE"));
 

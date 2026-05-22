@@ -67,6 +67,8 @@ public class CategorySpecificationService {
 
         entity.setRequired(request.required());
 
+        entity = repository.save(entity);
+
         return assembler.toModel(entity);
     }
 

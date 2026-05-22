@@ -6,6 +6,8 @@ import io.github.tavodin.techstock_manager.builder.SpecificationBuilder;
 import io.github.tavodin.techstock_manager.configurations.AbstractIntegrationTest;
 import io.github.tavodin.techstock_manager.dto.CategoryDTO;
 import io.github.tavodin.techstock_manager.dto.CategoryRequestDTO;
+import io.github.tavodin.techstock_manager.dto.CategorySpecificationDTO;
+import io.github.tavodin.techstock_manager.dto.CategorySpecificationRequestDTO;
 import io.github.tavodin.techstock_manager.dto.error.CustomError;
 import io.github.tavodin.techstock_manager.dto.error.FieldError;
 import io.github.tavodin.techstock_manager.dto.error.ValidationError;
@@ -57,7 +59,6 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
     private static final String CONTENT_TYPE = "application/json";
     private static RequestSpecification specification;
     private Long invalidId = Long.MAX_VALUE;
-    private Long unitId;
     private String notFoundMsg = "Category not found!";
     private String validationErrorMsg = "Entity validation error";
     private CategoryRequestDTO request = new CategoryRequestDTO("Monitor");
@@ -76,14 +77,14 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
                 .addHeader("Authorization", "Bearer " + token)
                 .build();
 
-        repository.deleteAll();
         catSpecRepository.deleteAll();
+        repository.deleteAll();
         specificationRepository.deleteAll();
     }
 
     @Test
     void shouldFindCategoryWhenFindingWithValidId() throws JsonProcessingException {
-        CategoryDTO savedCategory = createCategory(request);
+        CategoryDTO savedCategory = createCategoryDTO(request);
 
         var response = given().spec(specification)
                 .pathParam("id", savedCategory.getId())
@@ -119,7 +120,7 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnCategoriesWhenFindAll() throws JsonProcessingException {
-        createCategory(request);
+        createCategoryDTO(request);
 
         given()
                 .spec(specification)
@@ -134,8 +135,8 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnPageCategoriesWhenFindAll() throws JsonProcessingException {
-        createCategory(request);
-        createCategory(
+        createCategoryDTO(request);
+        createCategoryDTO(
                 new CategoryRequestDTO("Mouse"));
 
         int number = 0;
@@ -160,33 +161,6 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void shouldReturnSpecificationsListWhenFindingSpecificationsWithValidCategoryId() throws JsonProcessingException {
-        Specification spec = SpecificationBuilder.builder().withId(null).withUnit(null).build();
-
-        Category category = new Category();
-        category.setName("Monitor");
-
-        category = repository.save(category);
-        spec = specificationRepository.save(spec);
-
-        CategorySpecification specCategory = new CategorySpecification();
-        specCategory.setCategory(category);
-        specCategory.setSpecification(spec);
-        specCategory.setRequired(true);
-
-        specCategory = catSpecRepository.save(specCategory);
-
-        given().spec(specification)
-                .pathParam("id", specCategory.getId())
-                .get("/{id}/specifications")
-                .then()
-                .statusCode(200)
-                .body("[0].categorySpecificationId", notNullValue())
-                .body("[0].specificationName", equalTo(spec.getName()))
-                .body("[0].isRequired", equalTo(specCategory.getRequired()));
-    }
-
-    @Test
     void shouldReturnCustomErrorDTOAndNotFoundWhenFindingSpecificationWithInvalidCategoryId() {
         CustomError error = given().spec(specification)
                 .pathParam("id", invalidId)
@@ -204,7 +178,7 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldSaveCategoryWhenSavingWithValidData() throws JsonProcessingException {
-        CategoryDTO savedCategory = createCategory(request);
+        CategoryDTO savedCategory = createCategoryDTO(request);
 
         assertTrue(savedCategory.getId() > 0);
         assertEquals(request.name(), savedCategory.getName());
@@ -270,7 +244,7 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldUpdateCategoryWhenUpdatingWithValidData() throws JsonProcessingException {
-        CategoryDTO savedCategory = createCategory(request);
+        CategoryDTO savedCategory = createCategoryDTO(request);
         CategoryRequestDTO updateRequest = new CategoryRequestDTO("Webcam");
 
         var response = given()
@@ -294,7 +268,7 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void shouldReturnCustomErrorAndNotFoundWhenUpdatingWithInvalidId() throws JsonProcessingException {
+    void shouldReturnCustomErrorAndNotFoundWhenUpdatingWithInvalidId() {
         var error = given().spec(specification)
                 .pathParam("id", invalidId)
                 .contentType("application/json")
@@ -315,7 +289,7 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateCategoryWhenUpdatingWithNullName() throws JsonProcessingException {
-        CategoryDTO savedCategory = createCategory(request);
+        CategoryDTO savedCategory = createCategoryDTO(request);
         CategoryRequestDTO invalidRequest = new CategoryRequestDTO(null);
 
         var content = given()
@@ -345,7 +319,7 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateCategoryWhenUpdatingLongName() throws JsonProcessingException {
-        CategoryDTO savedCategory = createCategory(request);
+        CategoryDTO savedCategory = createCategoryDTO(request);
         CategoryRequestDTO invalidRequest = new CategoryRequestDTO("e".repeat(101));
 
         var content = given()
@@ -375,7 +349,7 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldDeleteWhenDeletingWithValidId() throws JsonProcessingException {
-        CategoryDTO savedCategory = createCategory(request);
+        CategoryDTO savedCategory = createCategoryDTO(request);
 
         given()
                 .spec(specification)
@@ -410,12 +384,527 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
         assertEquals(PATH + "/" + invalidId, error.getPath());
     }
 
+
     @Test
-    void shouldNotDeleteUnitWhenUnitIsInUse() {
-        fail();
+    void shouldNotDeleteCategoryWhenCategoryIsInUse() {
+        String errorMsg = "Category is in use and cannot be deleted";
+        Specification spec = createSpecification();
+        Category category = createCategory();
+
+        CategorySpecification specCategory = new CategorySpecification();
+        specCategory.setCategory(category);
+        specCategory.setSpecification(spec);
+        specCategory.setRequired(true);
+
+        catSpecRepository.save(specCategory);
+
+        CustomError error = given().spec(specification)
+                .pathParam("id", category.getId())
+                .when()
+                .delete("{id}")
+                .then()
+                .statusCode(409)
+                .extract()
+                .body()
+                .as(CustomError.class);
+
+        assertNotNull(error.getTimestamp());
+        assertEquals(409, error.getStatus());
+        assertEquals(errorMsg, error.getMessage());
+        assertEquals(PATH + "/" + category.getId(), error.getPath());
     }
 
-    private CategoryDTO createCategory(CategoryRequestDTO request) throws JsonProcessingException {
+    @Test
+    void shouldReturnSpecificationsListWhenFindingSpecificationsWithValidCategoryId() {
+        Specification spec = createSpecification();
+        Category category = createCategory();
+
+        CategorySpecification specCategory = new CategorySpecification();
+        specCategory.setCategory(category);
+        specCategory.setSpecification(spec);
+        specCategory.setRequired(true);
+
+        specCategory = catSpecRepository.save(specCategory);
+
+        given().spec(specification)
+                .pathParam("id", category.getId())
+                .get("/{id}/specifications")
+                .then()
+                .statusCode(200)
+                .body("[0].categorySpecificationId", notNullValue())
+                .body("[0].specificationName", equalTo(spec.getName()))
+                .body("[0].isRequired", equalTo(specCategory.getRequired()));
+    }
+
+    @Test
+    void shouldSaveCategorySpecificationWhenSavingWithValidData() throws JsonProcessingException {
+        Category category = createCategory();
+        Specification spec = createSpecification();
+
+        CategorySpecificationRequestDTO catSpecRequest =
+                new CategorySpecificationRequestDTO(category.getId(), spec.getId(), true);
+
+        var response = given().spec(specification)
+                .contentType("application/json")
+                .body(catSpecRequest)
+                .post("/specifications")
+                .then()
+                .statusCode(201)
+                .extract()
+                .body()
+                .asString();
+
+        CategorySpecificationDTO actual = objectMapper.readValue(response, CategorySpecificationDTO.class);
+
+        assertNotNull(actual.getId());
+        assertEquals(category.getId(), actual.getCategoryId());
+        assertEquals(spec.getId(), actual.getSpecificationId());
+        assertEquals(catSpecRequest.required(), actual.getRequired());
+    }
+
+    @Test
+    void shouldNotSaveWhenSavingCategorySpecificationWithInvalidCategoryId() {
+        Specification spec = createSpecification();
+
+        CategorySpecificationRequestDTO catSpecRequest =
+                new CategorySpecificationRequestDTO(invalidId, spec.getId(), true);
+
+        CustomError actual = given().spec(specification)
+                .contentType("application/json")
+                .body(catSpecRequest)
+                .post("/specifications")
+                .then()
+                .statusCode(404)
+                .extract()
+                .body()
+                .as(CustomError.class);
+
+        assertNotNull(actual.getTimestamp());
+        assertEquals(404, actual.getStatus());
+        assertEquals(PATH + "/specifications", actual.getPath());
+        assertEquals(notFoundMsg, actual.getMessage());
+    }
+
+    @Test
+    void shouldNotSaveWhenSavingCategorySpecificationWithInvalidSpecificationId() {
+        String errorMsg = "Specification not found!";
+        Category category = createCategory();
+
+        CategorySpecificationRequestDTO catSpecRequest =
+                new CategorySpecificationRequestDTO(category.getId(), invalidId, true);
+
+        CustomError actual = given().spec(specification)
+                .contentType("application/json")
+                .body(catSpecRequest)
+                .post("/specifications")
+                .then()
+                .statusCode(404)
+                .extract()
+                .body()
+                .as(CustomError.class);
+
+        assertNotNull(actual.getTimestamp());
+        assertEquals(404, actual.getStatus());
+        assertEquals(PATH + "/specifications", actual.getPath());
+        assertEquals(errorMsg, actual.getMessage());
+    }
+
+    @Test
+    void shouldNotSaveWhenSavingCategorySpecificationWithNullCategoryId() throws JsonProcessingException {
+        String errorMsg = "Category ID is required!";
+
+        CategorySpecificationRequestDTO catSpecRequest =
+                new CategorySpecificationRequestDTO(null, 1L, true);
+
+        var response = given().spec(specification)
+                .contentType("application/json")
+                .body(catSpecRequest)
+                .post("/specifications")
+                .then()
+                .statusCode(400)
+                .extract()
+                .body()
+                .asString();
+
+        ValidationError error = objectMapper.readValue(response, ValidationError.class);
+
+        Map<String, String> errors = error.getErrors().stream()
+                .collect(Collectors.toMap(FieldError::getField, FieldError::getMessage));
+
+        assertNotNull(error.getTimestamp());
+        assertEquals(400, error.getStatus());
+        assertEquals(PATH + "/specifications", error.getPath());
+        assertEquals(validationErrorMsg, error.getMessage());
+
+        assertEquals(errorMsg, errors.get("categoryId"));
+    }
+
+    @Test
+    void shouldNotSaveWhenSavingCategorySpecificationWithNullSpecificationId() throws JsonProcessingException {
+        String errorMsg = "Specification ID is required!";
+
+        CategorySpecificationRequestDTO catSpecRequest =
+                new CategorySpecificationRequestDTO(1L, null, true);
+
+        var response = given().spec(specification)
+                .contentType("application/json")
+                .body(catSpecRequest)
+                .post("/specifications")
+                .then()
+                .statusCode(400)
+                .extract()
+                .body()
+                .asString();
+
+        ValidationError error = objectMapper.readValue(response, ValidationError.class);
+
+        Map<String, String> errors = error.getErrors().stream()
+                .collect(Collectors.toMap(FieldError::getField, FieldError::getMessage));
+
+        assertNotNull(error.getTimestamp());
+        assertEquals(400, error.getStatus());
+        assertEquals(PATH + "/specifications", error.getPath());
+        assertEquals(validationErrorMsg, error.getMessage());
+
+        assertEquals(errorMsg, errors.get("specificationId"));
+    }
+
+    @Test
+    void shouldNotSaveWhenSavingCategorySpecificationWithNullRequiredId() throws JsonProcessingException {
+        String errorMsg = "Required field is required!";
+
+        CategorySpecificationRequestDTO catSpecRequest =
+                new CategorySpecificationRequestDTO(1L, 1L, null);
+
+        var response = given().spec(specification)
+                .contentType("application/json")
+                .body(catSpecRequest)
+                .post("/specifications")
+                .then()
+                .statusCode(400)
+                .extract()
+                .body()
+                .asString();
+
+        ValidationError error = objectMapper.readValue(response, ValidationError.class);
+
+        Map<String, String> errors = error.getErrors().stream()
+                .collect(Collectors.toMap(FieldError::getField, FieldError::getMessage));
+
+        assertNotNull(error.getTimestamp());
+        assertEquals(400, error.getStatus());
+        assertEquals(PATH + "/specifications", error.getPath());
+        assertEquals(validationErrorMsg, error.getMessage());
+
+        assertEquals(errorMsg, errors.get("required"));
+    }
+
+    @Test
+    void shouldUpdateWhenUpdatingCategorySpecificationWithValidData() throws JsonProcessingException {
+        Category category = createCategory();
+        Specification spec = createSpecification();
+
+        CategorySpecification catSpec = new CategorySpecification();
+        catSpec.setRequired(true);
+        catSpec.setSpecification(spec);
+        catSpec.setCategory(category);
+
+        catSpec = catSpecRepository.save(catSpec);
+
+        CategorySpecificationRequestDTO updateRequest =
+                new CategorySpecificationRequestDTO(category.getId(), spec.getId(), false);
+
+        var response = given()
+                .spec(specification)
+                .pathParam("id", catSpec.getId())
+                .contentType(CONTENT_TYPE)
+                .body(updateRequest)
+                .put("specifications/{id}")
+                .then()
+                .statusCode(200)
+                .extract()
+                .body()
+                .asString();
+
+        CategorySpecificationDTO actual = objectMapper.readValue(response, CategorySpecificationDTO.class);
+
+        assertNotNull(actual.getId());
+        assertEquals(category.getId(), actual.getCategoryId());
+        assertEquals(spec.getId(), actual.getSpecificationId());
+        assertEquals(updateRequest.required(), actual.getRequired());
+    }
+
+    @Test
+    void shouldNotUpdateWhenUpdatingCategorySpecificationWithInvalidCategorySpecificationId() {
+        String errorMsg = "Category Specification not found!";
+        CategorySpecificationRequestDTO updateRequest =
+                new CategorySpecificationRequestDTO(1L, 1L, true);
+
+        CustomError response = given()
+                .spec(specification)
+                .pathParam("id", invalidId)
+                .contentType(CONTENT_TYPE)
+                .body(updateRequest)
+                .put("specifications/{id}")
+                .then()
+                .statusCode(404)
+                .extract()
+                .body()
+                .as(CustomError.class);
+
+        assertNotNull(response.getTimestamp());
+        assertEquals(404, response.getStatus());
+        assertEquals(PATH + "/specifications/" + invalidId, response.getPath());
+        assertEquals(errorMsg, response.getMessage());
+    }
+
+    @Test
+    void shouldNotUpdateWhenUpdatingCategorySpecificationWithInvalidCategoryId() {
+        Category category = createCategory();
+        Specification spec = createSpecification();
+
+        CategorySpecification catSpec = new CategorySpecification();
+        catSpec.setRequired(true);
+        catSpec.setSpecification(spec);
+        catSpec.setCategory(category);
+
+        catSpec = catSpecRepository.save(catSpec);
+
+        CategorySpecificationRequestDTO updateRequest =
+                new CategorySpecificationRequestDTO(invalidId, 1L, true);
+
+        CustomError response = given()
+                .spec(specification)
+                .pathParam("id", catSpec.getId())
+                .contentType(CONTENT_TYPE)
+                .body(updateRequest)
+                .put("specifications/{id}")
+                .then()
+                .statusCode(404)
+                .extract()
+                .body()
+                .as(CustomError.class);
+
+        assertNotNull(response.getTimestamp());
+        assertEquals(404, response.getStatus());
+        assertEquals(PATH + "/specifications/" + catSpec.getId(), response.getPath());
+        assertEquals(notFoundMsg, response.getMessage());
+    }
+
+    @Test
+    void shouldUpdateWhenUpdatingCategorySpecificationWithInvalidSpecificationId() {
+        String errorMsg = "Specification not found!";
+
+        Category category = createCategory();
+        Specification spec = createSpecification();
+
+        CategorySpecification catSpec = new CategorySpecification();
+        catSpec.setRequired(true);
+        catSpec.setSpecification(spec);
+        catSpec.setCategory(category);
+
+        catSpec = catSpecRepository.save(catSpec);
+
+        CategorySpecificationRequestDTO updateRequest =
+                new CategorySpecificationRequestDTO(category.getId(), invalidId, true);
+
+        CustomError response = given()
+                .spec(specification)
+                .pathParam("id", catSpec.getId())
+                .contentType(CONTENT_TYPE)
+                .body(updateRequest)
+                .put("specifications/{id}")
+                .then()
+                .statusCode(404)
+                .extract()
+                .body()
+                .as(CustomError.class);
+
+        assertNotNull(response.getTimestamp());
+        assertEquals(404, response.getStatus());
+        assertEquals(PATH + "/specifications/" + catSpec.getId(), response.getPath());
+        assertEquals(errorMsg, response.getMessage());
+    }
+
+    @Test
+    void shouldUpdateWhenUpdatingCategorySpecificationWithNullCategoryId() throws JsonProcessingException {
+        String errorMsg = "Category ID is required!";
+
+        Category category = createCategory();
+        Specification spec = createSpecification();
+
+        CategorySpecification catSpec = new CategorySpecification();
+        catSpec.setRequired(true);
+        catSpec.setSpecification(spec);
+        catSpec.setCategory(category);
+
+        catSpec = catSpecRepository.save(catSpec);
+
+        CategorySpecificationRequestDTO updateRequest =
+                new CategorySpecificationRequestDTO(null, spec.getId(), true);
+
+        var response = given()
+                .spec(specification)
+                .pathParam("id", catSpec.getId())
+                .contentType(CONTENT_TYPE)
+                .body(updateRequest)
+                .put("specifications/{id}")
+                .then()
+                .statusCode(400)
+                .extract()
+                .body()
+                .asString();
+
+        ValidationError error = objectMapper.readValue(response, ValidationError.class);
+
+        Map<String, String> errors = error.getErrors().stream()
+                .collect(Collectors.toMap(FieldError::getField, FieldError::getMessage));
+
+        assertNotNull(error.getTimestamp());
+        assertEquals(400, error.getStatus());
+        assertEquals(PATH + "/specifications/" + catSpec.getId(), error.getPath());
+        assertEquals(validationErrorMsg, error.getMessage());
+
+        assertEquals(errorMsg, errors.get("categoryId"));
+    }
+
+    @Test
+    void shouldUpdateWhenUpdatingCategorySpecificationWithNullSpecificationId() throws JsonProcessingException {
+        String errorMsg = "Specification ID is required!";
+
+        Category category = createCategory();
+        Specification spec = createSpecification();
+
+        CategorySpecification catSpec = new CategorySpecification();
+        catSpec.setRequired(true);
+        catSpec.setSpecification(spec);
+        catSpec.setCategory(category);
+
+        catSpec = catSpecRepository.save(catSpec);
+
+        CategorySpecificationRequestDTO updateRequest =
+                new CategorySpecificationRequestDTO(category.getId(), null, true);
+
+        var response = given()
+                .spec(specification)
+                .pathParam("id", catSpec.getId())
+                .contentType(CONTENT_TYPE)
+                .body(updateRequest)
+                .put("specifications/{id}")
+                .then()
+                .statusCode(400)
+                .extract()
+                .body()
+                .asString();
+
+        ValidationError error = objectMapper.readValue(response, ValidationError.class);
+
+        Map<String, String> errors = error.getErrors().stream()
+                .collect(Collectors.toMap(FieldError::getField, FieldError::getMessage));
+
+        assertNotNull(error.getTimestamp());
+        assertEquals(400, error.getStatus());
+        assertEquals(PATH + "/specifications/" + catSpec.getId(), error.getPath());
+        assertEquals(validationErrorMsg, error.getMessage());
+
+        assertEquals(errorMsg, errors.get("specificationId"));
+    }
+
+    @Test
+    void shouldUpdateWhenUpdatingCategorySpecificationWithNullRequiredField() throws JsonProcessingException {
+        String errorMsg = "Required field is required!";
+
+        Category category = createCategory();
+        Specification spec = createSpecification();
+
+        CategorySpecification catSpec = new CategorySpecification();
+        catSpec.setRequired(true);
+        catSpec.setSpecification(spec);
+        catSpec.setCategory(category);
+
+        catSpec = catSpecRepository.save(catSpec);
+
+        CategorySpecificationRequestDTO updateRequest =
+                new CategorySpecificationRequestDTO(category.getId(), spec.getId(), null);
+
+        var response = given()
+                .spec(specification)
+                .pathParam("id", catSpec.getId())
+                .contentType(CONTENT_TYPE)
+                .body(updateRequest)
+                .put("specifications/{id}")
+                .then()
+                .statusCode(400)
+                .extract()
+                .body()
+                .asString();
+
+        ValidationError error = objectMapper.readValue(response, ValidationError.class);
+
+        Map<String, String> errors = error.getErrors().stream()
+                .collect(Collectors.toMap(FieldError::getField, FieldError::getMessage));
+
+        assertNotNull(error.getTimestamp());
+        assertEquals(400, error.getStatus());
+        assertEquals(PATH + "/specifications/" + catSpec.getId(), error.getPath());
+        assertEquals(validationErrorMsg, error.getMessage());
+
+        assertEquals(errorMsg, errors.get("required"));
+    }
+
+    @Test
+    void shouldDeleteCategorySpecificationWhenDeletingWithValidId() {
+        Category category = createCategory();
+        Specification spec = createSpecification();
+
+        CategorySpecification catSpec = new CategorySpecification();
+        catSpec.setRequired(true);
+        catSpec.setSpecification(spec);
+        catSpec.setCategory(category);
+
+        catSpec = catSpecRepository.save(catSpec);
+
+        given()
+                .spec(specification)
+                .pathParam("id", catSpec.getId())
+                .delete("specifications/{id}")
+                .then()
+                .statusCode(204);
+    }
+
+    @Test
+    void shouldNotDeleteCategorySpecificationWhenDeletingWithInvalidId() {
+        String errorMsg = "Category Specification not found!";
+
+        CustomError response = given()
+                .spec(specification)
+                .pathParam("id", invalidId)
+                .delete("specifications/{id}")
+                .then()
+                .statusCode(404)
+                .extract()
+                .body()
+                .as(CustomError.class);
+
+        assertNotNull(response.getTimestamp());
+        assertEquals(errorMsg, response.getMessage());
+        assertEquals(404, response.getStatus());
+        assertEquals(PATH + "/specifications/" + invalidId, response.getPath());
+    }
+
+    private Category createCategory() {
+        Category category = new Category();
+        category.setName("Monitor");
+
+        return repository.save(category);
+    }
+
+    private Specification createSpecification() {
+        Specification spec = SpecificationBuilder.builder().withId(null).withUnit(null).build();
+        return specificationRepository.save(spec);
+    }
+
+    private CategoryDTO createCategoryDTO(CategoryRequestDTO request) throws JsonProcessingException {
         var content = given()
                 .spec(specification)
                 .contentType("application/json")

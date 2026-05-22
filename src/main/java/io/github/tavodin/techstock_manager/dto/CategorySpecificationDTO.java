@@ -9,6 +9,9 @@ public class CategorySpecificationDTO extends RepresentationModel<CategorySpecif
     private Long specificationId;
     private Boolean required;
 
+    public CategorySpecificationDTO() {
+    }
+
     public CategorySpecificationDTO(Long id, Long categoryId, Long specificationId, Boolean required) {
         this.id = id;
         this.categoryId = categoryId;

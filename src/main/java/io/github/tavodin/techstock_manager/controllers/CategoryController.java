@@ -1,9 +1,8 @@
 package io.github.tavodin.techstock_manager.controllers;
 
-import io.github.tavodin.techstock_manager.dto.CategoryDTO;
-import io.github.tavodin.techstock_manager.dto.CategoryRequestDTO;
-import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
+import io.github.tavodin.techstock_manager.dto.*;
 import io.github.tavodin.techstock_manager.services.CategoryService;
+import io.github.tavodin.techstock_manager.services.CategorySpecificationService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedModel;
@@ -19,9 +18,11 @@ import java.util.List;
 public class CategoryController {
 
     private final CategoryService service;
+    private final CategorySpecificationService catSpecService;
 
-    public CategoryController(CategoryService service) {
+    public CategoryController(CategoryService service, CategorySpecificationService catSpecService) {
         this.service = service;
+        this.catSpecService = catSpecService;
     }
 
     @GetMapping("/{id}")
@@ -32,11 +33,6 @@ public class CategoryController {
     @GetMapping
     public PagedModel<CategoryDTO> findAll(Pageable pageable) {
         return service.findAll(pageable);
-    }
-
-    @GetMapping("/{id}/specifications")
-    public List<CategorySpecificationsListDTO> findAllSpecificationByCategoryId(@PathVariable Long id) {
-        return service.findAllSpecificationByCategoryId(id);
     }
 
     @PostMapping
@@ -60,6 +56,35 @@ public class CategoryController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/specifications")
+    public List<CategorySpecificationsListDTO> findAllSpecificationByCategoryId(@PathVariable Long id) {
+        return service.findAllSpecificationByCategoryId(id);
+    }
+
+    @PostMapping("/specifications")
+    public ResponseEntity<CategorySpecificationDTO> saveCat(@RequestBody @Valid CategorySpecificationRequestDTO request) {
+        CategorySpecificationDTO dto = catSpecService.save(request);
+
+        URI uri = ServletUriComponentsBuilder
+                .fromCurrentRequestUri()
+                .path("/{id}")
+                .buildAndExpand(dto.getId())
+                .toUri();
+
+        return ResponseEntity.created(uri).body(dto);
+    }
+
+    @PutMapping("/specifications/{id}")
+    public CategorySpecificationDTO updateCatSpec(@PathVariable Long id, @RequestBody @Valid CategorySpecificationRequestDTO request) {
+        return catSpecService.update(id, request);
+    }
+
+    @DeleteMapping("/specifications/{id}")
+    public ResponseEntity<Void> deleteCatSpec(@PathVariable Long id) {
+        catSpecService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }
