@@ -1,7 +1,6 @@
 package io.github.tavodin.techstock_manager.dto;
 
 public class CategorySpecificationsListDTO {
-
     private Long categorySpecificationId;
     private String specificationName;
     private Boolean isRequired;
