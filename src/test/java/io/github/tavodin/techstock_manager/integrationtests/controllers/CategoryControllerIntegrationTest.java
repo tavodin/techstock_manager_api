@@ -384,7 +384,6 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
         assertEquals(PATH + "/" + invalidId, error.getPath());
     }
 
-
     @Test
     void shouldNotDeleteCategoryWhenCategoryIsInUse() {
         String errorMsg = "Category is in use and cannot be deleted";

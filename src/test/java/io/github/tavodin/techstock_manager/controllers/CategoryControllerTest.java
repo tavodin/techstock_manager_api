@@ -1,6 +1,5 @@
 package io.github.tavodin.techstock_manager.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.tavodin.techstock_manager.config.security.filters.JwtAuthenticationFilter;
 import io.github.tavodin.techstock_manager.dto.*;
@@ -317,8 +316,8 @@ class CategoryControllerTest {
         mockMvc.perform(get(PATH + "/{id}/specifications", validId))
                 .andExpect(status().isOk())
 
-                .andExpect(jsonPath("$.[0].id").value(dto.getCategorySpecificationId()))
-                .andExpect(jsonPath("$.[0].name").value(dto.getSpecificationName()))
+                .andExpect(jsonPath("$.[0].categorySpecificationId").value(dto.getCategorySpecificationId()))
+                .andExpect(jsonPath("$.[0].specificationName").value(dto.getSpecificationName()))
                 .andExpect(jsonPath("$.[0].isRequired").value(dto.getIsRequired()));
     }
 
