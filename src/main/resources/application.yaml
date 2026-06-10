@@ -10,7 +10,7 @@ spring:
 
   jpa:
     open-in-view: false
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -21,3 +21,16 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        engine:
+          jdbc:
+            spi:
+              SqlExceptionHelper: TRACE
+        orm:
+          jdbc:
+            bind: TRACE

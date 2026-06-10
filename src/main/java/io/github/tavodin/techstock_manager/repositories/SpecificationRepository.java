@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface SpecificationRepository extends JpaRepository<Specification, Long> {
@@ -30,4 +31,11 @@ public interface SpecificationRepository extends JpaRepository<Specification, Lo
             LEFT JOIN s.unit u
             """)
     Page<SpecificationDTO> findAllProjected(Pageable pageable);
+
+    @Query("""
+            SELECT s
+            FROM Specification s
+            WHERE s.id IN :specificationsId
+            """)
+    List<Specification> getSpecificationsByIds(@Param("specificationsId") List<Long> specificationsId);
 }

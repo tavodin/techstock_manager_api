@@ -6,13 +6,13 @@ import jakarta.persistence.*;
 @Table(name = "product_specification")
 public class ProductSpecification extends BaseEntity {
 
-    @Column(name = "value_string",length = 45, nullable = false)
+    @Column(name = "value_string",length = 45)
     private String valueString;
 
-    @Column(name = "value_number", nullable = false)
+    @Column(name = "value_number")
     private Double valueNumber;
 
-    @Column(name = "value_boolean", nullable = false)
+    @Column(name = "value_boolean")
     private Boolean valueBoolean;
 
     @ManyToOne

@@ -7,7 +7,7 @@ import org.springframework.hateoas.server.core.Relation;
 import java.time.LocalDateTime;
 
 @Relation(itemRelation = "category", collectionRelation = "categories")
-public class CategoryDTO extends RepresentationModel<SpecificationDTO> {
+public class CategoryDTO extends RepresentationModel<CategoryDTO> {
 
     private Long id;
     private String name;

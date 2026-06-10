@@ -120,7 +120,7 @@ class CategoryServiceTest {
                 new CategorySpecificationsListDTO(1L, "Frequência", true);
 
         when(repository.findById(validId)).thenReturn(Optional.of(category));
-        when(repository.findAllSpecificationByCategoryId(validId)).thenReturn(List.of(specList));
+        when(repository.findAllSpecificationsByCategoryId(validId)).thenReturn(List.of(specList));
 
         List<CategorySpecificationsListDTO> actual = service.findAllSpecificationByCategoryId(validId);
         CategorySpecificationsListDTO dto = actual.getFirst();

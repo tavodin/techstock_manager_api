@@ -49,7 +49,7 @@ public class CategoryRepositoryTest extends AbstractJpaTest {
     }
 
     @Test
-    void shouldReturnSpecificationListWhenFindAllSpecificationByCategoryId() {
+    void shouldReturnSpecificationListWhenFindAllSpecificationsByCategoryId() {
         CategorySpecification categorySpecification = new CategorySpecification();
         Specification savedSpec = specificationRepository.save(specification);
         Category savedCategory = repository.save(category);
@@ -60,7 +60,7 @@ public class CategoryRepositoryTest extends AbstractJpaTest {
 
         CategorySpecification savedCatSpec = categorySpecRepository.save(categorySpecification);
 
-        List<CategorySpecificationsListDTO> list = repository.findAllSpecificationByCategoryId(savedCategory.getId());
+        List<CategorySpecificationsListDTO> list = repository.findAllSpecificationsByCategoryId(savedCategory.getId());
         CategorySpecificationsListDTO dto = list.getFirst();
 
         assertNotNull(list);

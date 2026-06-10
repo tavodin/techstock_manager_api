@@ -2,11 +2,13 @@ package io.github.tavodin.techstock_manager.repositories;
 
 import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
 import io.github.tavodin.techstock_manager.entities.Category;
+import io.github.tavodin.techstock_manager.entities.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
@@ -19,5 +21,13 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
             JOIN cs.specification s
             WHERE c.id = :categoryId
             """)
-    List<CategorySpecificationsListDTO> findAllSpecificationByCategoryId(@Param("categoryId") Long categoryId);
+    List<CategorySpecificationsListDTO> findAllSpecificationsByCategoryId(@Param("categoryId") Long categoryId);
+
+    @Query("""
+            SELECT DISTINCT cs.specification.id
+            FROM CategorySpecification cs
+            WHERE cs.category.id IN :categoryIds
+            AND cs.required = true
+            """)
+    List<Long> findRequiredSpecificationsIdsByCategoryIds(@Param("categoryIds") List<Long> categoryId);
 }

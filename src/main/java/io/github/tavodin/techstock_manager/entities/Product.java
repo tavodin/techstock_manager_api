@@ -21,7 +21,7 @@ public class Product extends AuditableEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 30, nullable = false, unique = true)
     private String sku;
 
     @Column(name = "quantity_in_stock", nullable = false)
@@ -33,7 +33,7 @@ public class Product extends AuditableEntity {
     @Column(nullable = false)
     private Boolean active;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "brand_id")
     private Brand brand;
 
