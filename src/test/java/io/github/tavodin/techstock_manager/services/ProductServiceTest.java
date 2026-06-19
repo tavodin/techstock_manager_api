@@ -99,7 +99,7 @@ class ProductServiceTest {
         request.setDescription(product.getDescription());
         request.setMinimumStock(product.getMinimumStock());
         request.setSku(product.getSku());
-        request.setCategoriesId(validCategoryIds);
+        request.setCategoryIds(validCategoryIds);
         request.setBrandId(validId);
         request.setSpecifications(List.of(
                 new ProductSpecificationRequestDTO(
@@ -235,7 +235,7 @@ class ProductServiceTest {
 
     @Test
     void shouldThrowResourceNotFoundExceptionWhenSavingWithInvalidCategoryId() {
-        request.setCategoriesId(Set.of(invalidId));
+        request.setCategoryIds(Set.of(invalidId));
 
         when(brandRepository.findById(validId)).thenReturn(Optional.of(brand));
         when(categoryRepository.findAllById(Set.of(invalidId))).thenReturn(List.of());

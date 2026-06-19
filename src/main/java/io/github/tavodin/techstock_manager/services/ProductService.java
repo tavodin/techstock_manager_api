@@ -6,6 +6,7 @@ import io.github.tavodin.techstock_manager.dto.ProductRequestDTO;
 import io.github.tavodin.techstock_manager.dto.ProductSpecificationRequestDTO;
 import io.github.tavodin.techstock_manager.entities.*;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
+import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.*;
@@ -50,10 +51,10 @@ public class ProductService {
 
         Brand brand = getBrandOrThrowException(request.getBrandId());
 
-        Set<Category> categories = new HashSet<>(getCategoriesOrThrowException(request.getCategoriesId()));
+        Set<Category> categories = new HashSet<>(getCategoriesOrThrowException(request.getCategoryIds()));
 
         if(productRepository.existsBySku(request.getSku())) {
-            throw new BusinessException("SKU already exists");
+            throw new AlreadyExistsException("SKU already exists");
         }
 
         product.setName(request.getName());
@@ -70,39 +71,10 @@ public class ProductService {
 
         product = productRepository.save(product);
 
-        List<ProductSpecification> specifications = createSpecifications(request, product, request.getCategoriesId());
+        List<ProductSpecification> specifications = createSpecifications(request, product, request.getCategoryIds());
         prodSpecRepository.saveAll(specifications);
 
         return assembler.toModel(product);
-    }
-
-    @Transactional
-    public ProductDTO update(Long id, ProductRequestDTO request) {
-        Product product = getProductOrThrowException(id);
-
-        Brand brand = getBrandOrThrowException(request.getBrandId());
-
-        Set<Category> categories = new HashSet<>(getCategoriesOrThrowException(request.getCategoriesId()));
-
-        if(productRepository.existsBySku(request.getSku())) {
-            throw new BusinessException("SKU already exists");
-        }
-
-        product.setName(request.getName());
-        product.setCostPrice(BigDecimal.valueOf(0));
-        product.setSalePrice(request.getSalePrice());
-        product.setDescription(request.getDescription());
-        product.setSku(request.getSku());
-        product.setQuantityInStock(0);
-        product.setMinimumStock(request.getMinimumStock());
-        product.setActive(true);
-
-        product.setBrand(brand);
-        product.setCategories(categories);
-
-        product = productRepository.save(product);
-
-        return null;
     }
 
     private List<ProductSpecification> createSpecifications(

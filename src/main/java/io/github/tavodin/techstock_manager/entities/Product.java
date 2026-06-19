@@ -44,7 +44,7 @@ public class Product extends AuditableEntity {
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     private Set<Category> categories = new HashSet<>();
 
-    @OneToMany(mappedBy = "product")
+    @OneToMany(mappedBy = "product", orphanRemoval = true)
     private Set<ProductSpecification> specifications = new HashSet<>();
 
     public Product() {

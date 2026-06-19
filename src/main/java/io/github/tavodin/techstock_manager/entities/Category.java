@@ -17,7 +17,7 @@ public class Category extends BaseEntity {
     @ManyToMany(mappedBy = "categories")
     private Set<Product> products = new HashSet<>();
 
-    @OneToMany(mappedBy = "category")
+    @OneToMany(mappedBy = "category", orphanRemoval = true)
     private Set<CategorySpecification> categorySpecifications = new HashSet<>();
 
     public Category() {

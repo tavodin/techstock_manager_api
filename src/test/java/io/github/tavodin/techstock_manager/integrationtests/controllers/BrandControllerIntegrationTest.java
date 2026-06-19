@@ -68,7 +68,7 @@ public class BrandControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldFindBrandWhenFindingWithValidId() throws JsonProcessingException {
-        BrandDTO savedBrand = createBrandDTO(request);
+        BrandDTO savedBrand = createBrand(request);
 
         var response = given().spec(specification)
                 .pathParam("id", savedBrand.getId())
@@ -104,7 +104,7 @@ public class BrandControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnBrandsWhenFindAll() throws JsonProcessingException {
-        createBrandDTO(request);
+        createBrand(request);
 
         given()
                 .spec(specification)
@@ -119,8 +119,8 @@ public class BrandControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldReturnPageBrandsWhenFindAll() throws JsonProcessingException {
-        createBrandDTO(request);
-        createBrandDTO(
+        createBrand(request);
+        createBrand(
                 new BrandRequestDTO("HP"));
 
         int number = 0;
@@ -146,7 +146,7 @@ public class BrandControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldSaveBrandWhenSavingWithValidData() throws JsonProcessingException {
-        BrandDTO savedBrand = createBrandDTO(request);
+        BrandDTO savedBrand = createBrand(request);
 
         assertTrue(savedBrand.getId() > 0);
         assertEquals(request.name(), savedBrand.getName());
@@ -212,7 +212,7 @@ public class BrandControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldUpdateBrandWhenUpdatingWithValidData() throws JsonProcessingException {
-        BrandDTO savedBrand = createBrandDTO(request);
+        BrandDTO savedBrand = createBrand(request);
         BrandRequestDTO updateRequest = new BrandRequestDTO("Webcam");
 
         var response = given()
@@ -257,7 +257,7 @@ public class BrandControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateBrandWhenUpdatingWithNullName() throws JsonProcessingException {
-        BrandDTO savedBrand = createBrandDTO(request);
+        BrandDTO savedBrand = createBrand(request);
         BrandRequestDTO invalidRequest = new BrandRequestDTO(null);
 
         var content = given()
@@ -287,7 +287,7 @@ public class BrandControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateBrandWhenUpdatingLongName() throws JsonProcessingException {
-        BrandDTO savedBrand = createBrandDTO(request);
+        BrandDTO savedBrand = createBrand(request);
         BrandRequestDTO invalidRequest = new BrandRequestDTO("e".repeat(101));
 
         var content = given()
@@ -317,7 +317,7 @@ public class BrandControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldDeleteWhenDeletingWithValidId() throws JsonProcessingException {
-        BrandDTO savedBrand = createBrandDTO(request);
+        BrandDTO savedBrand = createBrand(request);
 
         given()
                 .spec(specification)
@@ -357,7 +357,7 @@ public class BrandControllerIntegrationTest extends AbstractIntegrationTest {
         fail();
     }
 
-    private BrandDTO createBrandDTO(BrandRequestDTO request) throws JsonProcessingException {
+    private BrandDTO createBrand(BrandRequestDTO request) throws JsonProcessingException {
         var content = given()
                 .spec(specification)
                 .contentType("application/json")

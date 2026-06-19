@@ -3,6 +3,7 @@ package io.github.tavodin.techstock_manager.controllers.handlers;
 import io.github.tavodin.techstock_manager.dto.error.CustomError;
 import io.github.tavodin.techstock_manager.dto.error.FieldError;
 import io.github.tavodin.techstock_manager.dto.error.ValidationError;
+import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
@@ -36,8 +37,21 @@ public class ExceptionHandlerController {
         return ResponseEntity.status(status).body(error);
     }
 
+    @ExceptionHandler(AlreadyExistsException.class)
+    public ResponseEntity<CustomError> alreadyExistsHandler(AlreadyExistsException ex, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.CONFLICT;
+
+        CustomError error = new CustomError(
+                Instant.now(),
+                status.value(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(status).body(error);
+    }
+
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<CustomError> businessExceptionHandler(BusinessException ex, HttpServletRequest request) {
+    public ResponseEntity<CustomError> businessHandler(BusinessException ex, HttpServletRequest request) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
 
         CustomError error = new CustomError(

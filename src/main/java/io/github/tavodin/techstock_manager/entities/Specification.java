@@ -4,6 +4,8 @@ import io.github.tavodin.techstock_manager.enums.SpecificationType;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class Specification extends BaseEntity {
@@ -17,6 +19,9 @@ public class Specification extends BaseEntity {
 
     @Column(nullable = false)
     private Boolean filterable;
+
+    @OneToMany(mappedBy = "specification", orphanRemoval = true)
+    private Set<CategorySpecification> categorySpecifications = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "unit_id")
@@ -32,11 +37,12 @@ public class Specification extends BaseEntity {
         this.unit = unit;
     }
 
-    public Specification(Long id, String name, SpecificationType type, Boolean filterable, Unit unit, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Specification(Long id, String name, SpecificationType dataType, Boolean filterable, Set<CategorySpecification> categorySpecifications, Unit unit, LocalDateTime createdAt, LocalDateTime updatedAt) {
         super(id, createdAt, updatedAt);
         this.name = name;
-        this.dataType = type;
+        this.dataType = dataType;
         this.filterable = filterable;
+        this.categorySpecifications = categorySpecifications;
         this.unit = unit;
     }
 
@@ -70,5 +76,13 @@ public class Specification extends BaseEntity {
 
     public void setUnit(Unit unit) {
         this.unit = unit;
+    }
+
+    public Set<CategorySpecification> getCategorySpecifications() {
+        return categorySpecifications;
+    }
+
+    public void setCategorySpecifications(Set<CategorySpecification> categorySpecifications) {
+        this.categorySpecifications = categorySpecifications;
     }
 }

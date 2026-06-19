@@ -6,6 +6,9 @@ import io.github.tavodin.techstock_manager.services.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/products")
@@ -24,6 +27,14 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<ProductDTO> save(@RequestBody @Valid ProductRequestDTO request) {
-        return ResponseEntity.status(201).body(service.save(request));
+        ProductDTO dto = service.save(request);
+
+        URI uri = ServletUriComponentsBuilder
+                .fromCurrentRequestUri()
+                .path("/{id}")
+                .buildAndExpand(dto.getId())
+                .toUri();
+
+        return ResponseEntity.created(uri).body(dto);
     }
 }

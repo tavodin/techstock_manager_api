@@ -1,10 +1,12 @@
 package io.github.tavodin.techstock_manager.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.Length;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class ProductRequestDTO {
@@ -31,8 +33,9 @@ public class ProductRequestDTO {
     private Long brandId;
 
     @NotEmpty(message = "Category ID is required")
-    private Set<Long> categoriesId;
+    private Set<Long> categoryIds;
 
+    @Valid
     @NotEmpty(message = "Specifications are required")
     private List<ProductSpecificationRequestDTO> specifications;
 
@@ -46,7 +49,7 @@ public class ProductRequestDTO {
         this.sku = sku;
         this.minimumStock = minimumStock;
         this.brandId = brandId;
-        this.categoriesId = categoriesId;
+        this.categoryIds = categoriesId;
         this.specifications = specifications;
     }
 
@@ -98,12 +101,12 @@ public class ProductRequestDTO {
         this.brandId = brandId;
     }
 
-    public Set<Long> getCategoriesId() {
-        return categoriesId;
+    public Set<Long> getCategoryIds() {
+        return categoryIds;
     }
 
-    public void setCategoriesId(Set<Long> categoriesId) {
-        this.categoriesId = categoriesId;
+    public void setCategoryIds(Set<Long> categoryIds) {
+        this.categoryIds = categoryIds;
     }
 
     public List<ProductSpecificationRequestDTO> getSpecifications() {
@@ -112,6 +115,18 @@ public class ProductRequestDTO {
 
     public void setSpecifications(List<ProductSpecificationRequestDTO> specifications) {
         this.specifications = specifications;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        ProductRequestDTO that = (ProductRequestDTO) o;
+        return Objects.equals(name, that.name) && Objects.equals(salePrice, that.salePrice) && Objects.equals(description, that.description) && Objects.equals(sku, that.sku) && Objects.equals(minimumStock, that.minimumStock) && Objects.equals(brandId, that.brandId) && Objects.equals(categoryIds, that.categoryIds) && Objects.equals(specifications, that.specifications);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, salePrice, description, sku, minimumStock, brandId, categoryIds, specifications);
     }
 }
 
