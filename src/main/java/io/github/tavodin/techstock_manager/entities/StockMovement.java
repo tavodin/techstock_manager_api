@@ -8,7 +8,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "stock_movement")
-public class StockMovement {
+public class StockMovement extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
