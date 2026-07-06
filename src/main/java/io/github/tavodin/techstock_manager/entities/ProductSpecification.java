@@ -2,9 +2,25 @@ package io.github.tavodin.techstock_manager.entities;
 
 import jakarta.persistence.*;
 
+import java.util.Objects;
+
 @Entity
-@Table(name = "product_specification")
-public class ProductSpecification extends BaseEntity {
+@Table(
+        name = "product_specification",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        columnNames = {
+                                "product_id",
+                                "specification_id"
+                        }
+                )
+        }
+)
+public class ProductSpecification {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "value_string",length = 45)
     private String valueString;
@@ -15,11 +31,11 @@ public class ProductSpecification extends BaseEntity {
     @Column(name = "value_boolean")
     private Boolean valueBoolean;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "specification_id")
     private Specification specification;
 
@@ -32,6 +48,14 @@ public class ProductSpecification extends BaseEntity {
         this.valueBoolean = valueBoolean;
         this.product = product;
         this.specification = specification;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getValueString() {
@@ -72,5 +96,17 @@ public class ProductSpecification extends BaseEntity {
 
     public void setSpecification(Specification specification) {
         this.specification = specification;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        ProductSpecification that = (ProductSpecification) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

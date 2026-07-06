@@ -3,13 +3,16 @@ package io.github.tavodin.techstock_manager.services;
 import io.github.tavodin.techstock_manager.assemblers.ProductAssembler;
 import io.github.tavodin.techstock_manager.dto.ProductDTO;
 import io.github.tavodin.techstock_manager.dto.ProductRequestDTO;
-import io.github.tavodin.techstock_manager.dto.ProductSpecificationRequestDTO;
+import io.github.tavodin.techstock_manager.dto.ProductSpecificationListDTO;
+import io.github.tavodin.techstock_manager.dto.ProductSpecificationSaveDTO;
 import io.github.tavodin.techstock_manager.entities.*;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
 import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.*;
+import jakarta.persistence.EntityManager;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,14 +32,16 @@ public class ProductService {
     private final SpecificationRepository specRepository;
     private final ProductSpecificationRepository prodSpecRepository;
     private final ProductAssembler assembler;
+    private final EntityManager entityManager;
 
-    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, BrandRepository brandRepository, SpecificationRepository specRepository, ProductSpecificationRepository prodSpecRepository, ProductAssembler assembler) {
+    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, BrandRepository brandRepository, SpecificationRepository specRepository, ProductSpecificationRepository prodSpecRepository, ProductAssembler assembler, EntityManager entityManager) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.brandRepository = brandRepository;
         this.specRepository = specRepository;
         this.prodSpecRepository = prodSpecRepository;
         this.assembler = assembler;
+        this.entityManager = entityManager;
     }
 
     @Transactional(readOnly = true)
@@ -50,7 +55,6 @@ public class ProductService {
         Product product = new Product();
 
         Brand brand = getBrandOrThrowException(request.getBrandId());
-
         Set<Category> categories = new HashSet<>(getCategoriesOrThrowException(request.getCategoryIds()));
 
         if(productRepository.existsBySku(request.getSku())) {
@@ -71,25 +75,69 @@ public class ProductService {
 
         product = productRepository.save(product);
 
-        List<ProductSpecification> specifications = createSpecifications(request, product, request.getCategoryIds());
+        List<ProductSpecification> specifications = createSpecifications(request, product);
         prodSpecRepository.saveAll(specifications);
 
         return assembler.toModel(product);
     }
 
-    private List<ProductSpecification> createSpecifications(
-            ProductRequestDTO request,  Product product, Set<Long> categoriesId) {
+    @Transactional
+    public ProductDTO update(Long id, ProductRequestDTO request) {
+        Product findProduct = getProductOrThrowException(id);
 
-        List<ProductSpecificationRequestDTO> productSpecRequest = request.getSpecifications();
-        List<Long> specIds = productSpecRequest.stream().map(ProductSpecificationRequestDTO::specificationId).toList();
+        if(productRepository.existsBySkuAndIdNot(request.getSku(), id)) {
+            throw new AlreadyExistsException("SKU already exists");
+        }
+
+        if(findProduct.getBrand().getId() != request.getBrandId()) {
+            Brand findBrand = getBrandOrThrowException(request.getBrandId());
+            findProduct.setBrand(findBrand);
+        }
+
+        List<Long> findCategoryIds = findProduct.getCategories()
+                .stream()
+                .map(Category::getId)
+                .toList();
+
+        if(findCategoryIds.equals(request.getCategoryIds())) {
+            Set<Category> findCategories = new HashSet<>(getCategoriesOrThrowException(request.getCategoryIds()));
+            findProduct.setCategories(findCategories);
+        }
+
+        findProduct.setName(request.getName());
+        findProduct.setSalePrice(request.getSalePrice());
+        findProduct.setDescription(request.getDescription());
+        findProduct.setSku(request.getSku());
+        findProduct.setMinimumStock(request.getMinimumStock());
+
+        findProduct = productRepository.save(findProduct);
+
+        ProductDTO dto = new ProductDTO(findProduct);
+
+        return dto;
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        Product product = getProductOrThrowException(id);
+        product.setActive(false);
+        productRepository.save(product);
+    }
+
+    private List<ProductSpecification> createSpecifications(
+            ProductRequestDTO request, Product product) {
+
+        List<ProductSpecificationSaveDTO> productSpecRequest = request.getSpecifications();
+        List<Long> specIds = productSpecRequest.stream().map(ProductSpecificationSaveDTO::specificationId).toList();
+
         List<Specification> specifications = getSpecificationsOrThrowException(specIds);
 
-        requiredSpecificationsValidation(specifications, categoriesId);
+        requiredSpecificationsValidation(specifications, request.getCategoryIds());
 
         List<ProductSpecification> productSpecifications = new ArrayList<>();
 
         for(Specification specification : specifications) {
-            ProductSpecificationRequestDTO findProdSpec = productSpecRequest.stream()
+            ProductSpecificationSaveDTO findProdSpec = productSpecRequest.stream()
                     .filter(ps -> ps.specificationId().equals(specification.getId()))
                     .findFirst()
                     .orElseThrow(() -> new ResourceNotFoundException("Product Specification not found"));

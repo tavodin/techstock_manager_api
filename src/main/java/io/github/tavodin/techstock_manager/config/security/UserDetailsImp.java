@@ -10,12 +10,14 @@ import java.util.stream.Collectors;
 
 public class UserDetailsImp implements UserDetails {
 
+    private Long id;
     private String username;
     private String password;
     private Boolean enabled;
     private Set<String> roles;
 
-    public UserDetailsImp(String username, String password, Boolean enabled, Set<String> roles) {
+    public UserDetailsImp(Long id, String username, String password, Boolean enabled, Set<String> roles) {
+        this.id = id;
         this.username = username;
         this.password = password;
         this.enabled = enabled;
@@ -27,6 +29,10 @@ public class UserDetailsImp implements UserDetails {
         return roles.stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet());
+    }
+
+    public Long getId() {
+        return id;
     }
 
     @Override

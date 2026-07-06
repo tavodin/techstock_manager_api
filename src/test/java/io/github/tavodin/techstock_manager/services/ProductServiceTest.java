@@ -5,7 +5,7 @@ import io.github.tavodin.techstock_manager.builder.ProductBuilder;
 import io.github.tavodin.techstock_manager.builder.SpecificationBuilder;
 import io.github.tavodin.techstock_manager.dto.ProductDTO;
 import io.github.tavodin.techstock_manager.dto.ProductRequestDTO;
-import io.github.tavodin.techstock_manager.dto.ProductSpecificationRequestDTO;
+import io.github.tavodin.techstock_manager.dto.ProductSpecificationSaveDTO;
 import io.github.tavodin.techstock_manager.entities.*;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
@@ -102,7 +102,7 @@ class ProductServiceTest {
         request.setCategoryIds(validCategoryIds);
         request.setBrandId(validId);
         request.setSpecifications(List.of(
-                new ProductSpecificationRequestDTO(
+                new ProductSpecificationSaveDTO(
                         validId,
                         "1920x1080",
                         null,
@@ -309,7 +309,7 @@ class ProductServiceTest {
                 .withSpecificationType(SpecificationType.NUMBER)
                 .build();
 
-        ProductSpecificationRequestDTO prodSpec = new ProductSpecificationRequestDTO(
+        ProductSpecificationSaveDTO prodSpec = new ProductSpecificationSaveDTO(
                 spec.getId(),
                 null,
                 60.0,
@@ -351,7 +351,7 @@ class ProductServiceTest {
                 .withSpecificationType(SpecificationType.BOOLEAN)
                 .build();
 
-        ProductSpecificationRequestDTO prodSpec = new ProductSpecificationRequestDTO(
+        ProductSpecificationSaveDTO prodSpec = new ProductSpecificationSaveDTO(
                 spec.getId(),
                 null,
                 null,

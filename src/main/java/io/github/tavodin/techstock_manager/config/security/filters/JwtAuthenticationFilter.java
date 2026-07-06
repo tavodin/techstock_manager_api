@@ -1,5 +1,6 @@
 package io.github.tavodin.techstock_manager.config.security.filters;
 
+import io.github.tavodin.techstock_manager.config.security.UserDetailsImp;
 import io.github.tavodin.techstock_manager.utils.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
+import java.util.HashSet;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -40,12 +42,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             final String token = authHeader.substring(7);
             final String username = jwtUtil.extractUsername(token);
+            final Long userId = jwtUtil.extractUserId(token);
+
+            UserDetailsImp principal = new UserDetailsImp(
+                    userId,
+                    username,
+                    null,
+                    true,
+                    new HashSet<>(jwtUtil.extractRoles(token))
+            );
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
             if (username != null && authentication == null && jwtUtil.isTokenValid(token)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        username,
+                        principal,
                         null,
                         jwtUtil.extractRoles(token)
                                 .stream()
@@ -59,7 +70,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
         } catch (Exception e) {
-            handlerExceptionResolver.resolveException(request, response, null, e);
+            e.printStackTrace();
+            throw e;
         }
     }
 }

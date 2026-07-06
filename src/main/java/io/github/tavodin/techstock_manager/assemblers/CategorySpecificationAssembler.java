@@ -23,7 +23,7 @@ public class CategorySpecificationAssembler implements RepresentationModelAssemb
 
         model.add(linkTo(methodOn(CategoryController.class)
                 .updateCatSpec(model.getId(), null))
-                .withRel("update")
+                .withRel("updateProduct")
                 .withType("PUT"));
 
         model.add(linkTo(methodOn(CategoryController.class)

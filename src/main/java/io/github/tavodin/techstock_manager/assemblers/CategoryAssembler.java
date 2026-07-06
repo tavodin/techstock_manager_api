@@ -34,7 +34,7 @@ public class CategoryAssembler implements RepresentationModelAssembler<Category,
 
         model.add(linkTo(methodOn(CategoryController.class)
                 .update(model.getId(), null))
-                .withRel("update")
+                .withRel("updateProduct")
                 .withType("PUT"));
 
         model.add(linkTo(methodOn(CategoryController.class)

@@ -6,7 +6,7 @@ import io.github.tavodin.techstock_manager.builder.SpecificationBuilder;
 import io.github.tavodin.techstock_manager.configurations.AbstractIntegrationTest;
 import io.github.tavodin.techstock_manager.dto.ProductDTO;
 import io.github.tavodin.techstock_manager.dto.ProductRequestDTO;
-import io.github.tavodin.techstock_manager.dto.ProductSpecificationRequestDTO;
+import io.github.tavodin.techstock_manager.dto.ProductSpecificationSaveDTO;
 import io.github.tavodin.techstock_manager.dto.error.CustomError;
 import io.github.tavodin.techstock_manager.dto.error.FieldError;
 import io.github.tavodin.techstock_manager.dto.error.ValidationError;
@@ -145,7 +145,7 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
         request.setBrandId(savedBrand.getId());
 
         request.setSpecifications(List.of(
-                new ProductSpecificationRequestDTO(
+                new ProductSpecificationSaveDTO(
                         savedSpecification.getId(),
                         "1920x1080",
                         null,
@@ -169,7 +169,7 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
         request.setBrandId(savedBrand.getId());
 
         request.setSpecifications(List.of(
-                new ProductSpecificationRequestDTO(
+                new ProductSpecificationSaveDTO(
                         savedSpecification.getId(),
                     "1920x1080",
                     null,
@@ -215,7 +215,7 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
         request.setCategoryIds(Set.of(savedCategory.getId()));
         request.setBrandId(savedBrand.getId());
         request.setSpecifications(List.of(
-                new ProductSpecificationRequestDTO(
+                new ProductSpecificationSaveDTO(
                         savedSpecification.getId(),
                         "1920x1080",
                         null,
@@ -253,7 +253,7 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
         request.setCategoryIds(Set.of(savedCategory.getId()));
         request.setBrandId(invalidId);
         request.setSpecifications(List.of(
-                new ProductSpecificationRequestDTO(
+                new ProductSpecificationSaveDTO(
                         savedSpecification.getId(),
                         "1920x1080",
                         null,
@@ -286,7 +286,7 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
         request.setCategoryIds(Set.of(invalidId));
         request.setBrandId(savedBrand.getId());
         request.setSpecifications(List.of(
-                new ProductSpecificationRequestDTO(
+                new ProductSpecificationSaveDTO(
                         savedSpecification.getId(),
                         "1920x1080",
                         null,
@@ -327,7 +327,7 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
         request.setBrandId(savedBrand.getId());
 
         request.setSpecifications(List.of(
-                new ProductSpecificationRequestDTO(
+                new ProductSpecificationSaveDTO(
                         savedSpecification.getId(),
                         "1920x1080",
                         null,
@@ -370,7 +370,7 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
         request.setCategoryIds(Set.of(savedCategory.getId()));
         request.setBrandId(savedBrand.getId());
         request.setSpecifications(List.of(
-                new ProductSpecificationRequestDTO(
+                new ProductSpecificationSaveDTO(
                         invalidId,
                         "1920x1080",
                         null,
@@ -428,7 +428,7 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
         request.setBrandId(savedBrand.getId());
 
         request.setSpecifications(List.of(
-                new ProductSpecificationRequestDTO(
+                new ProductSpecificationSaveDTO(
                         savedSpecification.getId(),
                         "1920x1080",
                         null,

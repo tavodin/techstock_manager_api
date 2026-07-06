@@ -42,7 +42,7 @@ public class UnitAssembler implements RepresentationModelAssembler<Unit, UnitDTO
 
         model.add(linkTo(methodOn(UnitController.class)
                 .update(entity.getId(), new UnitRequestDTO(entity.getName(), entity.getSymbol())))
-                .withRel("update")
+                .withRel("updateProduct")
                 .withType("PUT"));
 
         model.add(linkTo(methodOn(UnitController.class)

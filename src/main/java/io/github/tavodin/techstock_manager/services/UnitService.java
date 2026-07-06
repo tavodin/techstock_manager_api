@@ -31,7 +31,6 @@ public class UnitService {
     @Transactional(readOnly = true)
     public UnitDTO findById(Long id) {
         Unit entity = getUnitOrElseThrow(id);
-
         return unitAssembler.toModel(entity);
     }
 

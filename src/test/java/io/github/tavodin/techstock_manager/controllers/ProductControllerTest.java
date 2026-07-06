@@ -1,13 +1,10 @@
 package io.github.tavodin.techstock_manager.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.tavodin.techstock_manager.config.security.filters.JwtAuthenticationFilter;
 import io.github.tavodin.techstock_manager.dto.ProductDTO;
 import io.github.tavodin.techstock_manager.dto.ProductRequestDTO;
-import io.github.tavodin.techstock_manager.dto.ProductSpecificationRequestDTO;
-import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
-import io.github.tavodin.techstock_manager.exceptions.BusinessException;
+import io.github.tavodin.techstock_manager.dto.ProductSpecificationSaveDTO;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.services.ProductService;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,7 +76,7 @@ class ProductControllerTest {
                 5,
                 validId,
                 Set.of(validId),
-                List.of(new ProductSpecificationRequestDTO(validId, "1920x1080", null, null))
+                List.of(new ProductSpecificationSaveDTO(validId, "1920x1080", null, null))
         );
 
         dto = new ProductDTO(
@@ -479,7 +476,7 @@ class ProductControllerTest {
     @Test
     void shouldReturnValidationErrorAndBadRequestWhenSavingWithNullSpecificationId() throws Exception {
         request.setSpecifications(List.of(
-                new ProductSpecificationRequestDTO(null, null ,null, null)));
+                new ProductSpecificationSaveDTO(null, null ,null, null)));
         when(service.save(request)).thenReturn(dto);
 
         mockMvc.perform(post(PATH)
@@ -496,7 +493,7 @@ class ProductControllerTest {
     @Test
     void shouldReturnValidationErrorAndBadRequestWhenSavingWithTooLongValueString() throws Exception {
         request.setSpecifications(List.of(
-                new ProductSpecificationRequestDTO(validId, "e".repeat(46) ,null, null)));
+                new ProductSpecificationSaveDTO(validId, "e".repeat(46) ,null, null)));
         when(service.save(request)).thenReturn(dto);
 
         mockMvc.perform(post(PATH)

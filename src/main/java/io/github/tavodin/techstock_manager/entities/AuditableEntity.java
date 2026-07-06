@@ -10,28 +10,26 @@ import org.springframework.data.annotation.LastModifiedBy;
 public abstract class AuditableEntity extends BaseEntity {
 
     @CreatedBy
-    @ManyToOne
     @JoinColumn(name = "created_by")
-    private User createdBy;
+    private Long createdBy;
 
     @LastModifiedBy
-    @ManyToOne
     @JoinColumn(name = "updated_by")
-    private User updatedBy;
+    private Long updatedBy;
 
-    public User getCreatedBy() {
+    public Long getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(User createdBy) {
+    public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
     }
 
-    public User getUpdatedBy() {
+    public Long getUpdatedBy() {
         return updatedBy;
     }
 
-    public void setUpdatedBy(User updatedBy) {
+    public void setUpdatedBy(Long updatedBy) {
         this.updatedBy = updatedBy;
     }
 }

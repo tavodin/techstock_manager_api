@@ -33,7 +33,7 @@ public class BrandAssembler implements RepresentationModelAssembler<Brand, Brand
 
         model.add(linkTo(methodOn(BrandController.class)
                 .update(model.getId(), null))
-                .withRel("update")
+                .withRel("updateProduct")
                 .withType("UPDATE"));
 
         model.add(linkTo(methodOn(BrandController.class)

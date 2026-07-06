@@ -31,6 +31,6 @@ public class UserDetailsServiceImp implements UserDetailsService {
                 .map(Role::getName)
                 .collect(Collectors.toSet());
 
-        return new UserDetailsImp(user.getUsername(), user.getPassword(), user.getEnabled(), roles);
+        return new UserDetailsImp(user.getId(), user.getUsername(), user.getPassword(), user.getEnabled(), roles);
     }
 }

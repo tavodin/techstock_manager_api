@@ -2,13 +2,11 @@ package io.github.tavodin.techstock_manager.repositories;
 
 import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
 import io.github.tavodin.techstock_manager.entities.Category;
-import io.github.tavodin.techstock_manager.entities.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Set;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 

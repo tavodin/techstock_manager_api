@@ -1,7 +1,6 @@
 package io.github.tavodin.techstock_manager.config;
 
-import io.github.tavodin.techstock_manager.entities.User;
-import io.github.tavodin.techstock_manager.repositories.UserRepository;
+import io.github.tavodin.techstock_manager.config.security.UserDetailsImp;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,16 +9,10 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
-public class AuditorAwareImpl implements AuditorAware<User> {
-
-    private final UserRepository userRepository;
-
-    public AuditorAwareImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+public class AuditorAwareImpl implements AuditorAware<Long> {
 
     @Override
-    public Optional<User> getCurrentAuditor() {
+    public Optional<Long> getCurrentAuditor() {
 
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
@@ -28,8 +21,9 @@ public class AuditorAwareImpl implements AuditorAware<User> {
             return Optional.empty();
         }
 
-        String username = authentication.getName();
+        UserDetailsImp user =
+                (UserDetailsImp) authentication.getPrincipal();
 
-        return userRepository.findByUsername(username);
+        return Optional.of(user.getId());
     }
 }

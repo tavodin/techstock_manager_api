@@ -31,7 +31,7 @@ public class SpecificationAssembler implements RepresentationModelAssembler<Spec
 
         dto.add(linkTo(methodOn(SpecificationController.class)
                 .update(dto.getId(), null))
-                .withRel("update")
+                .withRel("updateProduct")
                 .withType("PUT"));
 
         dto.add(linkTo(methodOn(SpecificationController.class)

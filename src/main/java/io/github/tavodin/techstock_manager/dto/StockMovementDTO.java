@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public class StockMovementDTO extends RepresentationModel<ProductDTO> {
 
     private Long id;
-    private MovementType movementType;
+    private MovementType type;
     private Integer quantity;
     private LocalDateTime movementDate;
     private String reason;
@@ -21,9 +21,9 @@ public class StockMovementDTO extends RepresentationModel<ProductDTO> {
     public StockMovementDTO() {
     }
 
-    public StockMovementDTO(Long id, String movementType, Integer quantity, LocalDateTime movementDate, String reason, String product, String createdBy, String updateBy) {
+    public StockMovementDTO(Long id, MovementType movementType, Integer quantity, LocalDateTime movementDate, String reason, String product, String createdBy, String updateBy) {
         this.id = id;
-        this.movementType = MovementType.valueOf(movementType);
+        this.type = movementType;
         this.quantity = quantity;
         this.movementDate = movementDate;
         this.reason = reason;
@@ -40,12 +40,12 @@ public class StockMovementDTO extends RepresentationModel<ProductDTO> {
         this.id = id;
     }
 
-    public MovementType getMovementType() {
-        return movementType;
+    public MovementType getType() {
+        return type;
     }
 
-    public void setMovementType(MovementType movementType) {
-        this.movementType = movementType;
+    public void setType(MovementType type) {
+        this.type = type;
     }
 
     public Integer getQuantity() {

@@ -37,12 +37,12 @@ public class ProductRequestDTO {
 
     @Valid
     @NotEmpty(message = "Specifications are required")
-    private List<ProductSpecificationRequestDTO> specifications;
+    private List<ProductSpecificationSaveDTO> specifications;
 
     public ProductRequestDTO() {
     }
 
-    public ProductRequestDTO(String name, BigDecimal salePrice, String description, String sku, Integer minimumStock, Long brandId, Set<Long> categoriesId, List<ProductSpecificationRequestDTO> specifications) {
+    public ProductRequestDTO(String name, BigDecimal salePrice, String description, String sku, Integer minimumStock, Long brandId, Set<Long> categoriesId, List<ProductSpecificationSaveDTO> specifications) {
         this.name = name;
         this.salePrice = salePrice;
         this.description = description;
@@ -109,11 +109,11 @@ public class ProductRequestDTO {
         this.categoryIds = categoryIds;
     }
 
-    public List<ProductSpecificationRequestDTO> getSpecifications() {
+    public List<ProductSpecificationSaveDTO> getSpecifications() {
         return specifications;
     }
 
-    public void setSpecifications(List<ProductSpecificationRequestDTO> specifications) {
+    public void setSpecifications(List<ProductSpecificationSaveDTO> specifications) {
         this.specifications = specifications;
     }
 
