@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,7 +17,13 @@ public class Brand extends BaseEntity {
     @OneToMany(mappedBy = "brand")
     private Set<Product> products = new HashSet<>();
 
+    public Brand(Long id, String name, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        super(id, createdAt, updatedAt);
+        this.name = name;
+    }
+
     public Brand() {
+
     }
 
     public Brand(String name, Set<Product> products) {

@@ -8,7 +8,7 @@ import io.github.tavodin.techstock_manager.dto.ProductRequestDTO;
 import io.github.tavodin.techstock_manager.dto.ProductSpecificationSaveDTO;
 import io.github.tavodin.techstock_manager.entities.*;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
-import io.github.tavodin.techstock_manager.exceptions.BusinessException;
+import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -79,6 +79,8 @@ class ProductServiceTest {
         LocalDateTime updatedAt = createdAt.plusHours(1L);
 
         product = ProductBuilder.builder().build();
+        product.setBrand(new Brand(validId + 1, brand.getName(), null, null));
+        product.setCategories(Set.of(new Category(validId + 1, category.getName(), null, null)));
 
         brand.setId(validId);
         brand.setName("DELL");
@@ -248,12 +250,12 @@ class ProductServiceTest {
     }
 
     @Test
-    void shouldThrowBusinessExceptionWhenSavingWithExistsSKU() {
+    void shouldThrowAlreadyExistsExceptionWhenSavingWithExistsSKU() {
         when(brandRepository.findById(validId)).thenReturn(Optional.of(brand));
         when(categoryRepository.findAllById(validCategoryIds)).thenReturn(List.of(category));
         when(productRepository.existsBySku(request.getSku())).thenReturn(true);
 
-        BusinessException actual = assertThrows(BusinessException.class, () ->
+        AlreadyExistsException actual = assertThrows(AlreadyExistsException.class, () ->
                 service.save(request)
         );
 
@@ -383,5 +385,115 @@ class ProductServiceTest {
         assertEquals(prodSpec.valueBoolean(), actual.getValueBoolean());
         assertNull(actual.getValueString());
         assertNull(actual.getValueNumber());
+    }
+
+    @Test
+    void shouldUpdateProductWhenUpdatingWithValidData() {
+        request.setName("Monitor Gamer Samsung 24 polegadas");
+        request.setSalePrice(BigDecimal.valueOf(2000.1));
+        request.setMinimumStock(2);
+
+        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
+        when(productRepository.existsBySkuAndIdNot(request.getSku(), validId)).thenReturn(false);
+        when(brandRepository.findById(request.getBrandId())).thenReturn(Optional.of(brand));
+        when(categoryRepository.findAllById(request.getCategoryIds())).thenReturn(List.of(category));
+        when(productRepository.save(any(Product.class))).thenReturn(product);
+        when(assembler.toModel(any(Product.class))).thenReturn(dto);
+
+        ProductDTO actual = service.update(validId, request);
+
+        assertNotNull(actual);
+
+        ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
+        verify(productRepository).save(captor.capture());
+        Product captured = captor.getValue();
+
+        assertEquals(captured.getName(), request.getName());
+    }
+
+    @Test
+    void shouldThrowResourceNotFoundExceptionWhenUpdatingWithInvalidId() {
+        when(productRepository.findById(invalidId)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
+                service.update(invalidId, request));
+
+        assertEquals(prodNotFoundMsg, actual.getMessage());
+    }
+
+    @Test
+    void shouldThrowAlreadyExistsExceptionWhenUpdatingWithExistsSku() {
+        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
+        when(productRepository.existsBySkuAndIdNot(request.getSku(), validId)).thenReturn(true);
+
+        AlreadyExistsException actual = assertThrows(AlreadyExistsException.class, () ->
+                service.update(validId, request));
+
+        assertEquals(existsSkuMsg, actual.getMessage());
+    }
+
+    @Test
+    void shouldCallBrandFindByIdWhenUpdatingWithValidBrandId() {
+        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
+        when(productRepository.existsBySkuAndIdNot(request.getSku(), validId)).thenReturn(false);
+        when(brandRepository.findById(request.getBrandId())).thenReturn(Optional.of(brand));
+        when(categoryRepository.findAllById(request.getCategoryIds())).thenReturn(List.of(category));
+        when(productRepository.save(any(Product.class))).thenReturn(product);
+        when(assembler.toModel(any(Product.class))).thenReturn(dto);
+
+        service.update(validId, request);
+
+        verify(brandRepository).findById(request.getBrandId());
+    }
+
+    @Test
+    void shouldThrowResourceNotFoundExceptionWhenUpdatingWithInvalidBrandId() {
+        request.setBrandId(3L);
+
+        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
+        when(productRepository.existsBySkuAndIdNot(request.getSku(), validId)).thenReturn(false);
+        when(brandRepository.findById(3L)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
+                service.update(validId, request));
+
+        assertEquals(brandNotFoundMsg, actual.getMessage());
+    }
+
+    @Test
+    void shouldThrowResourceNotFoundExceptionWhenUpdatingWithInvalidCategoryIds() {
+        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
+        when(productRepository.existsBySkuAndIdNot(request.getSku(), validId)).thenReturn(false);
+        when(brandRepository.findById(request.getBrandId())).thenReturn(Optional.of(brand));
+        when(categoryRepository.findAllById(request.getCategoryIds())).thenReturn(List.of());
+
+        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
+                service.update(validId, request));
+
+        assertEquals(categoryNotFoundMsg, actual.getMessage());
+    }
+
+    @Test
+    void shouldChangeActiveToFalseWhenDeletingWithValidId() {
+        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
+        when(productRepository.save(any(Product.class))).thenReturn(product);
+
+        service.delete(validId);
+
+        ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
+        verify(productRepository).save(captor.capture());
+        Product captured = captor.getValue();
+
+        assertEquals(false, captured.getActive());
+    }
+
+    @Test
+    void shouldThrowResourceNotFoundExceptionWhenDeletingWithInvalidId() {
+        when(productRepository.findById(invalidId)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
+                service.delete(invalidId));
+
+        assertEquals(prodNotFoundMsg, actual.getMessage());
     }
 }

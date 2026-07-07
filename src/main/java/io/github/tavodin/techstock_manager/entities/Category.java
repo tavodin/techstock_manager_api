@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,6 +22,11 @@ public class Category extends BaseEntity {
     private Set<CategorySpecification> categorySpecifications = new HashSet<>();
 
     public Category() {
+    }
+
+    public Category(Long id, String name, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        super(id, createdAt, updatedAt);
+        this.name = name;
     }
 
     public Category(String name, Set<Product> products, Set<CategorySpecification> categorySpecifications) {

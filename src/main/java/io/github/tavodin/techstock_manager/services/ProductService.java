@@ -99,7 +99,7 @@ public class ProductService {
                 .map(Category::getId)
                 .toList();
 
-        if(findCategoryIds.equals(request.getCategoryIds())) {
+        if(!findCategoryIds.equals(request.getCategoryIds())) {
             Set<Category> findCategories = new HashSet<>(getCategoriesOrThrowException(request.getCategoryIds()));
             findProduct.setCategories(findCategories);
         }
@@ -112,9 +112,7 @@ public class ProductService {
 
         findProduct = productRepository.save(findProduct);
 
-        ProductDTO dto = new ProductDTO(findProduct);
-
-        return dto;
+        return assembler.toModel(findProduct);
     }
 
     @Transactional
