@@ -42,7 +42,8 @@ public class ProductSpecification {
     public ProductSpecification() {
     }
 
-    public ProductSpecification(String valueString, Double valueNumber, Boolean valueBoolean, Product product, Specification specification) {
+    public ProductSpecification(Long id, String valueString, Double valueNumber, Boolean valueBoolean, Product product, Specification specification) {
+        this.id = id;
         this.valueString = valueString;
         this.valueNumber = valueNumber;
         this.valueBoolean = valueBoolean;

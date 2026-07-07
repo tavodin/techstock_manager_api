@@ -28,7 +28,7 @@ public interface ProductSpecificationRepository extends JpaRepository<ProductSpe
             LEFT JOIN s.unit u
             WHERE p.id = :prodId
             """)
-    List<ProductSpecificationListDTO> getAllByProductIdAndSpecificationId(Long prodId);
+    List<ProductSpecificationListDTO> getAllByProductId(Long prodId);
 
     boolean existsByProduct_IdAndSpecification_Id(Long productId, Long specificationId);
 }

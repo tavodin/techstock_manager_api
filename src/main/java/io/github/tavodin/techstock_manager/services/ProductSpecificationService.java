@@ -38,7 +38,7 @@ public class ProductSpecificationService {
 
     @Transactional(readOnly = true)
     public List<ProductSpecificationListDTO> findAll(Long prodId) {
-        return repository.getAllByProductIdAndSpecificationId(prodId);
+        return repository.getAllByProductId(prodId);
     }
 
     @Transactional

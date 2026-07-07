@@ -180,7 +180,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void shouldCreateSpecificationsWhenSavingWithValidData() {
+    void shouldCreateSpecificationWhenSavingWithValidData() {
         when(brandRepository.findById(validId)).thenReturn(Optional.of(brand));
         when(categoryRepository.findAllById(validCategoryIds)).thenReturn(List.of(category));
         when(productRepository.existsBySku(request.getSku())).thenReturn(false);
