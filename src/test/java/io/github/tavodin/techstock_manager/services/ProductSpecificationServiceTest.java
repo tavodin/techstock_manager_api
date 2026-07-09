@@ -8,6 +8,7 @@ import io.github.tavodin.techstock_manager.dto.ProductSpecificationSaveDTO;
 import io.github.tavodin.techstock_manager.dto.ProductSpecificationUpdateDTO;
 import io.github.tavodin.techstock_manager.entities.*;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
+import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
@@ -121,6 +122,7 @@ public class ProductSpecificationServiceTest {
 
     @Test
     void shouldReturnProductSpecificationListWhenFindAll() {
+        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
         when(repository.getAllByProductId(validId)).thenReturn(List.of(prodSpecListDTO));
 
         List<ProductSpecificationListDTO> list = service.findAll(validId);
@@ -136,6 +138,16 @@ public class ProductSpecificationServiceTest {
         assertEquals(prodSpecListDTO.getValueNumber(), actual.getValueNumber());
         assertNull(prodSpecListDTO.getValueBoolean());
         assertEquals(specification.getUnit().getSymbol(), actual.getUnitSymbol());
+    }
+
+    @Test
+    void shouldThrownResourceNotFoundExceptionWhenFindAllWithInvalidProductId() {
+        when(productRepository.findById(invalidId)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
+                service.findAll(invalidId));
+
+        assertEquals(productNotFoundMsg, actual.getMessage());
     }
 
     @Test
@@ -162,14 +174,14 @@ public class ProductSpecificationServiceTest {
     }
 
     @Test
-    void shouldThrowEntityInUseExceptionWhenSavingWithExistingSpecification() {
+    void shouldThrowAlreadyExistsExceptionWhenSavingWithExistingSpecification() {
         ProductSpecificationSaveDTO invalidRequest = new ProductSpecificationSaveDTO(
                 invalidId, null, null, null);
 
         when(repository.existsByProduct_IdAndSpecification_Id(invalidId, invalidRequest.specificationId()))
                 .thenReturn(true);
 
-        EntityInUseException actual = assertThrows(EntityInUseException.class, () ->
+        AlreadyExistsException actual = assertThrows(AlreadyExistsException.class, () ->
                 service.save(invalidId, invalidRequest));
 
         assertEquals(existsSpecMsg, actual.getMessage());

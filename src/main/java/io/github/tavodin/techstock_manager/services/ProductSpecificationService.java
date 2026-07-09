@@ -9,6 +9,7 @@ import io.github.tavodin.techstock_manager.entities.Product;
 import io.github.tavodin.techstock_manager.entities.ProductSpecification;
 import io.github.tavodin.techstock_manager.entities.Specification;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
+import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
@@ -38,6 +39,8 @@ public class ProductSpecificationService {
 
     @Transactional(readOnly = true)
     public List<ProductSpecificationListDTO> findAll(Long prodId) {
+        productRepository.findById(prodId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         return repository.getAllByProductId(prodId);
     }
 
@@ -46,7 +49,7 @@ public class ProductSpecificationService {
         ProductSpecification entity = new ProductSpecification();
 
         if(repository.existsByProduct_IdAndSpecification_Id(prodId, request.specificationId())) {
-            throw new EntityInUseException("The product cannot have the same specification");
+            throw new AlreadyExistsException("The product cannot have the same specification");
         }
 
         Product findProduct = productRepository.findById(prodId)

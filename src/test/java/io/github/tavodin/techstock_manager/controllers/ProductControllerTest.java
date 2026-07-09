@@ -2,9 +2,7 @@ package io.github.tavodin.techstock_manager.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.tavodin.techstock_manager.config.security.filters.JwtAuthenticationFilter;
-import io.github.tavodin.techstock_manager.dto.ProductDTO;
-import io.github.tavodin.techstock_manager.dto.ProductRequestDTO;
-import io.github.tavodin.techstock_manager.dto.ProductSpecificationSaveDTO;
+import io.github.tavodin.techstock_manager.dto.*;
 import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
@@ -58,15 +56,22 @@ class ProductControllerTest {
     private String brandNotFoundMsg = "Brand not found";
     private String categoryNotFoundMsg = "One or more categories were not found";
     private String specificationNotFoundMsg = "One or more specifications were not found";
+    private String prodSpecNotFoundMsg = "Product Specification not found";
     private String validationMsg = "Entity validation error";
-    private String entityInUseMsg = "Brand is in use and cannot be deleted";
     private String skuExistsMsg = "SKU already exists";
+    private String nullValueStringMsg = "Value String cannot be null";
+    private String nullValueNumberMsg = "Value Number cannot be null";
+    private String nullValueBooleanMsg = "Value Boolean cannot be null";
 
     private Long validId = 1L;
     private Long invalidId = 2L;
 
     private ProductDTO dto;
     private ProductRequestDTO request;
+    private ProductSpecificationListDTO listSpecDTO;
+    private ProductSpecificationSaveDTO saveSpecRequest;
+    private ProductSpecificationUpdateDTO updateSpecRequest;
+    private ProductSpecificationDTO specDTO;
 
     @BeforeEach
     void setUp() {
@@ -91,6 +96,37 @@ class ProductControllerTest {
                 0,
                 request.getMinimumStock(),
                 true
+        );
+
+        listSpecDTO = new ProductSpecificationListDTO(
+                validId,
+                validId,
+                validId,
+                "Frequência",
+                null,
+                60.0,
+                null,
+                "Hz"
+        );
+
+        saveSpecRequest = new ProductSpecificationSaveDTO(
+                validId,
+                "1920x1080",
+                null,
+                null
+        );
+
+        updateSpecRequest = new ProductSpecificationUpdateDTO(
+                "2560x1440",
+                null,
+                null
+        );
+
+        specDTO = new ProductSpecificationDTO(
+                validId,
+                "1920x1080",
+                null,
+                null
         );
     }
 
@@ -623,7 +659,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturnCustomErrorAndBadRequestWhenUpdatingWithNullName() throws Exception {
+    void shouldReturnValidationAndBadRequestWhenUpdatingWithNullName() throws Exception {
         request.setName(null);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
@@ -643,7 +679,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturnCustomErrorAndBadRequestWhenUpdatingWithTooShortName() throws Exception {
+    void shouldReturnValidationAndBadRequestWhenUpdatingWithTooShortName() throws Exception {
         request.setName("e");
 
         mockMvc.perform(put(PATH + "/{id}", validId)
@@ -658,7 +694,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturnCustomErrorAndBadRequestWhenUpdatingWithTooLongName() throws Exception {
+    void shouldReturnValidationAndBadRequestWhenUpdatingWithTooLongName() throws Exception {
         request.setName("e".repeat(201));
 
         mockMvc.perform(put(PATH + "/{id}", validId)
@@ -673,7 +709,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturnCustomErrorAndBadRequestWhenUpdatingWithNullSalePrice() throws Exception {
+    void shouldReturnValidationAndBadRequestWhenUpdatingWithNullSalePrice() throws Exception {
         request.setSalePrice(null);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
@@ -688,7 +724,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturnCustomErrorAndBadRequestWhenUpdatingWithNegativeSalePrice() throws Exception {
+    void shouldReturnValidationAndBadRequestWhenUpdatingWithNegativeSalePrice() throws Exception {
         request.setSalePrice(BigDecimal.valueOf(-2.0));
 
         mockMvc.perform(put(PATH + "/{id}", validId)
@@ -703,7 +739,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturnCustomErrorAndBadRequestWhenUpdatingWithZeroSalePrice() throws Exception {
+    void shouldReturnValidationAndBadRequestWhenUpdatingWithZeroSalePrice() throws Exception {
         request.setSalePrice(BigDecimal.ZERO);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
@@ -718,7 +754,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturnCustomErrorAndBadRequestWhenUpdatingWithNullSku() throws Exception {
+    void shouldReturnValidationAndBadRequestWhenUpdatingWithNullSku() throws Exception {
         request.setSku(null);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
@@ -733,7 +769,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturnCustomErrorAndBadRequestWhenUpdatingWithTooShortSku() throws Exception {
+    void shouldReturnValidationAndBadRequestWhenUpdatingWithTooShortSku() throws Exception {
         request.setSku("e");
 
         mockMvc.perform(put(PATH + "/{id}", validId)
@@ -748,7 +784,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturnCustomErrorAndBadRequestWhenUpdatingWithTooLongSku() throws Exception {
+    void shouldReturnValidationAndBadRequestWhenUpdatingWithTooLongSku() throws Exception {
         request.setSku("e".repeat(31));
 
         mockMvc.perform(put(PATH + "/{id}", validId)
@@ -763,7 +799,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturnCustomErrorAndBadRequestWhenUpdatingWithNullMinimumStock() throws Exception {
+    void shouldReturnValidationAndBadRequestWhenUpdatingWithNullMinimumStock() throws Exception {
         request.setMinimumStock(null);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
@@ -778,7 +814,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturnCustomErrorAndBadRequestWhenUpdatingWithNegativeMinimumStock() throws Exception {
+    void shouldReturnValidationAndBadRequestWhenUpdatingWithNegativeMinimumStock() throws Exception {
         request.setMinimumStock(-1);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
@@ -793,7 +829,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturnCustomErrorAndBadRequestWhenUpdatingWithZeroMinimumStock() throws Exception {
+    void shouldReturnValidationAndBadRequestWhenUpdatingWithZeroMinimumStock() throws Exception {
         request.setMinimumStock(0);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
@@ -808,7 +844,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturnCustomErrorAndBadRequestWhenUpdatingWithNullBrandId() throws Exception {
+    void shouldReturnValidationErrorAndBadRequestWhenUpdatingWithNullBrandId() throws Exception {
         request.setBrandId(null);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
@@ -823,7 +859,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturnCustomErrorAndBadRequestWhenUpdatingWithNullCategoryIds() throws Exception {
+    void shouldReturnValidationAndBadRequestWhenUpdatingWithNullCategoryIds() throws Exception {
         request.setCategoryIds(null);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
@@ -838,7 +874,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturnCustomErrorAndBadRequestWhenUpdatingWithEmptySpecificationList() throws Exception {
+    void shouldReturnValidationAndBadRequestWhenUpdatingWithEmptySpecificationList() throws Exception {
         request.setSpecifications(List.of());
 
         mockMvc.perform(put(PATH + "/{id}", validId)
@@ -875,5 +911,369 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message").value(productNotFoundMsg))
                 .andExpect(jsonPath("$.path").value(PATH + "/" + invalidId));
+    }
+
+    @Test
+    void shouldReturnProductSpecificationListAndOkWhenFindingAllSpecificationsByProductId() throws Exception{
+        when(prodSpecService.findAll(validId)).thenReturn(List.of(listSpecDTO));
+
+        mockMvc.perform(get(PATH + "/{id}" + "/specifications", validId))
+
+                .andExpect(status().isOk())
+
+                .andExpect(jsonPath("$.[0].id").value(listSpecDTO.getId()))
+                .andExpect(jsonPath("$.[0].specificationId").value(listSpecDTO.getSpecificationId()))
+                .andExpect(jsonPath("$.[0].productId").value(listSpecDTO.getProductId()))
+                .andExpect(jsonPath("$.[0].specificationName").value(listSpecDTO.getSpecificationName()))
+                .andExpect(jsonPath("$.[0].valueString").value(listSpecDTO.getValueString()))
+                .andExpect(jsonPath("$.[0].valueNumber").value(listSpecDTO.getValueNumber()))
+                .andExpect(jsonPath("$.[0].valueBoolean").value(listSpecDTO.getValueBoolean()))
+                .andExpect(jsonPath("$.[0].unitSymbol").value(listSpecDTO.getUnitSymbol()));
+    }
+
+    @Test
+    void shouldReturnCustomErrorAndNotFoundWhenFindingAllSpecificationsByProductIdWithInvalidId() throws Exception {
+        when(prodSpecService.findAll(invalidId)).thenThrow(new ResourceNotFoundException(productNotFoundMsg));
+
+        mockMvc.perform(get(PATH + "/{id}" + "/specifications", invalidId))
+
+                .andExpect(status().isNotFound())
+
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value(productNotFoundMsg))
+                .andExpect(jsonPath("$.path").value(PATH + "/" + invalidId + "/specifications"));
+    }
+
+    @Test
+    void shouldReturnProductDTOAndCreatedWhenSavingSpecificationWithValidData() throws Exception {
+        when(prodSpecService.save(validId, saveSpecRequest)).thenReturn(specDTO);
+
+        mockMvc.perform(post(PATH + "/{id}" + "/specifications", validId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(saveSpecRequest)))
+
+                .andExpect(status().isCreated())
+
+                .andExpect(jsonPath("$.id").value(specDTO.getId()))
+                .andExpect(jsonPath("$.valueNumber").doesNotExist())
+                .andExpect(jsonPath("$.valueString").value(specDTO.getValueString()))
+                .andExpect(jsonPath("$.valueBoolean").doesNotExist())
+
+                .andExpect(header().string("Location",
+                    containsString("http://localhost" + PATH+"/"+dto.getId()+"/specifications")));
+    }
+
+    @Test
+    void shouldReturnCustomErrorAndConflictWhenSavingSpecificationWithExistSpecification() throws Exception {
+        String message = "The product cannot have the same specification";
+        when(prodSpecService.save(anyLong(), any(ProductSpecificationSaveDTO.class)))
+                .thenThrow(new AlreadyExistsException(message));
+
+        mockMvc.perform(post(PATH + "/{id}" + "/specifications", invalidId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(saveSpecRequest)))
+
+                .andExpect(status().isConflict())
+
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.message").value(message))
+                .andExpect(jsonPath("$.path")
+                        .value(PATH + "/" + invalidId + "/specifications"));
+    }
+
+    @Test
+    void shouldReturnCustomErrorAndNotFoundWhenSavingSpecificationWithInvalidProductId() throws Exception {
+        when(prodSpecService.save(anyLong(), any(ProductSpecificationSaveDTO.class)))
+                .thenThrow(new ResourceNotFoundException(productNotFoundMsg));
+
+        mockMvc.perform(post(PATH + "/{id}" + "/specifications", invalidId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(saveSpecRequest)))
+
+                .andExpect(status().isNotFound())
+
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value(productNotFoundMsg))
+                .andExpect(jsonPath("$.path")
+                        .value(PATH + "/" + invalidId + "/specifications"));
+    }
+
+    @Test
+    void shouldReturnCustomErrorAndBadRequestWhenSavingSpecificationWithNullValueString() throws Exception {
+        when(prodSpecService.save(anyLong(), any(ProductSpecificationSaveDTO.class)))
+                .thenThrow(new BusinessException(nullValueStringMsg));
+
+        mockMvc.perform(post(PATH + "/{id}" + "/specifications", validId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(saveSpecRequest)))
+
+                .andExpect(status().isBadRequest())
+
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value(nullValueStringMsg))
+                .andExpect(jsonPath("$.path")
+                        .value(PATH + "/" + validId + "/specifications"));
+    }
+
+    @Test
+    void shouldReturnCustomErrorAndBadRequestWhenSavingSpecificationWithNullValueNumber() throws Exception {
+        when(prodSpecService.save(anyLong(), any(ProductSpecificationSaveDTO.class)))
+                .thenThrow(new BusinessException(nullValueNumberMsg));
+
+        mockMvc.perform(post(PATH + "/{id}" + "/specifications", validId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(saveSpecRequest)))
+
+                .andExpect(status().isBadRequest())
+
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value(nullValueNumberMsg))
+                .andExpect(jsonPath("$.path")
+                        .value(PATH + "/" + validId + "/specifications"));
+    }
+
+    @Test
+    void shouldReturnCustomErrorAndBadRequestWhenSavingSpecificationWithNullValueBoolean() throws Exception {
+        when(prodSpecService.save(anyLong(), any(ProductSpecificationSaveDTO.class)))
+                .thenThrow(new BusinessException(nullValueBooleanMsg));
+
+        mockMvc.perform(post(PATH + "/{id}" + "/specifications", validId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(saveSpecRequest)))
+
+                .andExpect(status().isBadRequest())
+
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value(nullValueBooleanMsg))
+                .andExpect(jsonPath("$.path")
+                        .value(PATH + "/" + validId + "/specifications"));
+    }
+
+    @Test
+    void shouldReturnValidationErrorAndBadRequestWhenSavingSpecificationWithNullSpecificationId() throws Exception {
+        ProductSpecificationSaveDTO invalidRequest = new ProductSpecificationSaveDTO(
+          null, null, null, null
+        );
+
+        mockMvc.perform(post(PATH + "/{id}" + "/specifications", validId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+
+                .andExpect(status().isBadRequest())
+
+                .andExpect(jsonPath("$.errors[*].field").value(hasItem("specificationId")))
+                .andExpect(jsonPath("$.errors[*].message")
+                        .value(hasItem("Specification ID is required")));
+    }
+
+    @Test
+    void shouldReturnValidationErrorAndBadRequestWhenSavingSpecificationWithTooLongValueString() throws Exception {
+        ProductSpecificationSaveDTO invalidRequest = new ProductSpecificationSaveDTO(
+                validId, "e".repeat(46), null, null
+        );
+
+        mockMvc.perform(post(PATH + "/{id}" + "/specifications", validId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+
+                .andExpect(status().isBadRequest())
+
+                .andExpect(jsonPath("$.errors[*].field").value(hasItem("valueString")))
+                .andExpect(jsonPath("$.errors[*].message")
+                        .value(hasItem("Value must contain a maximum of 45 characters")));
+    }
+
+    @Test
+    void shouldReturnProductDTOAndOkWhenUpdatingSpecificationWithValidData() throws Exception {
+        specDTO.setValueString(updateSpecRequest.valueString());
+        when(prodSpecService.update(anyLong(), anyLong(), any(ProductSpecificationUpdateDTO.class)))
+                .thenReturn(specDTO);
+
+        mockMvc.perform(put(PATH + "/{prodId}/specifications/{specId}", validId, validId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(updateSpecRequest)))
+
+                .andExpect(status().isOk())
+
+                .andExpect(jsonPath("$.id").value(specDTO.getId()))
+                .andExpect(jsonPath("$.valueString").value(updateSpecRequest.valueString()))
+                .andExpect(jsonPath("$.valueNumber").value(updateSpecRequest.valueNumber()))
+                .andExpect(jsonPath("$.valueBoolean").value(updateSpecRequest.valueBoolean()));
+    }
+
+    @Test
+    void shouldReturnCustomErrorAndNotFoundWhenUpdatingSpecificationWithInvalidProductOrSpecificationId() throws Exception {
+        String path = PATH + "/" + invalidId + "/specifications/" + invalidId;
+        when(prodSpecService.update(eq(invalidId), eq(invalidId), any(ProductSpecificationUpdateDTO.class)))
+                .thenThrow(new ResourceNotFoundException(prodSpecNotFoundMsg));
+
+        mockMvc.perform(put(PATH + "/{prodId}/specifications/{specId}", invalidId, invalidId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateSpecRequest)))
+
+                .andExpect(status().isNotFound())
+
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value(prodSpecNotFoundMsg))
+                .andExpect(jsonPath("$.path").value(path));
+    }
+
+    @Test
+    void shouldReturnCustomErrorAndNotFoundWhenUpdatingSpecificationWithInvalidSpecificationId() throws Exception {
+        String path = PATH + "/" + validId + "/specifications/" + invalidId;
+        when(prodSpecService.update(eq(validId), eq(invalidId), any(ProductSpecificationUpdateDTO.class)))
+                .thenThrow(new ResourceNotFoundException(specificationNotFoundMsg));
+
+        mockMvc.perform(put(PATH + "/{prodId}/specifications/{specId}", validId, invalidId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateSpecRequest)))
+
+                .andExpect(status().isNotFound())
+
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value(specificationNotFoundMsg))
+                .andExpect(jsonPath("$.path").value(path));
+    }
+
+    @Test
+    void shouldReturnCustomErrorAndBadRequestWhenUpdatingSpecificationWithNullValueString() throws Exception {
+        String path = PATH + "/" + validId + "/specifications/" + validId;
+        when(prodSpecService.update(eq(validId), eq(validId), any(ProductSpecificationUpdateDTO.class)))
+                .thenThrow(new BusinessException(nullValueStringMsg));
+
+        mockMvc.perform(put(PATH + "/{prodId}/specifications/{specId}", validId, validId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateSpecRequest)))
+
+                .andExpect(status().isBadRequest())
+
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value(nullValueStringMsg))
+                .andExpect(jsonPath("$.path").value(path));
+    }
+
+    @Test
+    void shouldReturnCustomErrorAndBadRequestWhenUpdatingSpecificationWithNullValueNumber() throws Exception {
+        String path = PATH + "/" + validId + "/specifications/" + validId;
+        when(prodSpecService.update(eq(validId), eq(validId), any(ProductSpecificationUpdateDTO.class)))
+                .thenThrow(new BusinessException(nullValueNumberMsg));
+
+        mockMvc.perform(put(PATH + "/{prodId}/specifications/{specId}", validId, validId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateSpecRequest)))
+
+                .andExpect(status().isBadRequest())
+
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value(nullValueNumberMsg))
+                .andExpect(jsonPath("$.path").value(path));
+    }
+
+    @Test
+    void shouldReturnCustomErrorAndBadRequestWhenUpdatingSpecificationWithNullValueBoolean() throws Exception {
+        String path = PATH + "/" + validId + "/specifications/" + validId;
+        when(prodSpecService.update(eq(validId), eq(validId), any(ProductSpecificationUpdateDTO.class)))
+                .thenThrow(new BusinessException(nullValueBooleanMsg));
+
+        mockMvc.perform(put(PATH + "/{prodId}/specifications/{specId}", validId, validId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateSpecRequest)))
+
+                .andExpect(status().isBadRequest())
+
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value(nullValueBooleanMsg))
+                .andExpect(jsonPath("$.path").value(path));
+    }
+
+    @Test
+    void shouldReturnValidationErrorAndBadRequestWhenUpdatingSpecificationWithTooLongValueString() throws Exception {
+        ProductSpecificationUpdateDTO invalidRequest = new ProductSpecificationUpdateDTO(
+                "e".repeat(46), null, null
+        );
+
+        mockMvc.perform(put(PATH + "/{prodId}/specifications/{specId}", validId, validId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+
+                .andExpect(status().isBadRequest())
+
+                .andExpect(jsonPath("$.errors[*].field").value(hasItem("valueString")))
+                .andExpect(jsonPath("$.errors[*].message")
+                        .value(hasItem("Value must contain a maximum of 45 characters")));
+    }
+
+    @Test
+    void shouldReturnNoContentWhenDeletingSpecificationWithValidId() throws Exception {
+        doNothing().when(prodSpecService).delete(validId, validId);
+
+        mockMvc.perform(delete(PATH + "/{prodId}/specifications/{specId}", validId, validId))
+
+                .andExpect(status().isNoContent());
+
+        verify(prodSpecService).delete(anyLong(), anyLong());
+    }
+
+    @Test
+    void shouldReturnCustomErrorAndNotFoundWhenDeletingSpecificationWithInvalidProductId() throws Exception {
+        String path = PATH + "/" + invalidId + "/specifications/" + validId;
+
+        doThrow(new ResourceNotFoundException(productNotFoundMsg))
+                .when(prodSpecService).delete(invalidId, validId);
+
+        mockMvc.perform(delete(PATH + "/{prodId}/specifications/{specId}", invalidId, validId))
+
+                .andExpect(status().isNotFound())
+
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value(productNotFoundMsg))
+                .andExpect(jsonPath("$.path").value(path));
+    }
+
+    @Test
+    void shouldReturnCustomErrorAndBadRequestWhenDeletingSpecificationWithRequiredSpecification() throws Exception {
+        String msg = "The specification is required and cannot be excluded";
+        String path = PATH + "/" + validId + "/specifications/" + invalidId;
+
+        doThrow(new BusinessException(msg))
+                .when(prodSpecService).delete(validId, invalidId);
+
+        mockMvc.perform(delete(PATH + "/{prodId}/specifications/{specId}", validId, invalidId))
+
+                .andExpect(status().isBadRequest())
+
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value(msg))
+                .andExpect(jsonPath("$.path").value(path));
+    }
+
+    @Test
+    void shouldReturnCustomErrorAndNotFoundWhenDeletingSpecificationWithInvalidProductOrSpecificationId() throws Exception {
+        String path = PATH + "/" + invalidId + "/specifications/" + invalidId;
+
+        doThrow(new ResourceNotFoundException(prodSpecNotFoundMsg))
+                .when(prodSpecService).delete(invalidId, invalidId);
+
+        mockMvc.perform(delete(PATH + "/{prodId}/specifications/{specId}", invalidId, invalidId))
+
+                .andExpect(status().isNotFound())
+
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value(prodSpecNotFoundMsg))
+                .andExpect(jsonPath("$.path").value(path));
     }
 }
