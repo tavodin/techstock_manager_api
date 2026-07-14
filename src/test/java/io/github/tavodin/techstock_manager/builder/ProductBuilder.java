@@ -30,13 +30,13 @@ public class ProductBuilder {
         return this;
     }
 
-    public ProductBuilder withCostPrice(Double costPrice) {
-        this.costPrice = BigDecimal.valueOf(costPrice);
+    public ProductBuilder withCostPrice(BigDecimal costPrice) {
+        this.costPrice = costPrice;
         return this;
     }
 
-    public ProductBuilder withSalePrice(Double salePrice) {
-        this.salePrice = BigDecimal.valueOf(salePrice);
+    public ProductBuilder withSalePrice(BigDecimal salePrice) {
+        this.salePrice = salePrice;
         return this;
     }
 

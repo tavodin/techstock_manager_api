@@ -23,7 +23,6 @@ public class Brand extends BaseEntity {
     }
 
     public Brand() {
-
     }
 
     public Brand(String name, Set<Product> products) {

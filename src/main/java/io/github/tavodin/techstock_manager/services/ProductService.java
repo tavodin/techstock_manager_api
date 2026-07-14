@@ -2,9 +2,9 @@ package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.ProductAssembler;
 import io.github.tavodin.techstock_manager.dto.ProductDTO;
-import io.github.tavodin.techstock_manager.dto.ProductRequestDTO;
-import io.github.tavodin.techstock_manager.dto.ProductSpecificationListDTO;
+import io.github.tavodin.techstock_manager.dto.ProductSaveDTO;
 import io.github.tavodin.techstock_manager.dto.ProductSpecificationSaveDTO;
+import io.github.tavodin.techstock_manager.dto.ProductUpdateDTO;
 import io.github.tavodin.techstock_manager.entities.*;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
 import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
@@ -12,7 +12,6 @@ import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.*;
 import jakarta.persistence.EntityManager;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,7 +50,7 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductDTO save(ProductRequestDTO request) {
+    public ProductDTO save(ProductSaveDTO request) {
         Product product = new Product();
 
         Brand brand = getBrandOrThrowException(request.getBrandId());
@@ -82,7 +81,7 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductDTO update(Long id, ProductRequestDTO request) {
+    public ProductDTO update(Long id, ProductUpdateDTO request) {
         Product findProduct = getProductOrThrowException(id);
 
         if(productRepository.existsBySkuAndIdNot(request.getSku(), id)) {
@@ -123,7 +122,7 @@ public class ProductService {
     }
 
     private List<ProductSpecification> createSpecifications(
-            ProductRequestDTO request, Product product) {
+            ProductSaveDTO request, Product product) {
 
         List<ProductSpecificationSaveDTO> productSpecRequest = request.getSpecifications();
         List<Long> specIds = productSpecRequest.stream().map(ProductSpecificationSaveDTO::specificationId).toList();

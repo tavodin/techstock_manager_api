@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public class ProductRequestDTO {
+public class ProductSaveDTO {
 
     @NotBlank(message = "Name is required")
     @Length(min = 2, max = 200, message = "Name must contain between {min} and {max} characters")
@@ -39,10 +39,10 @@ public class ProductRequestDTO {
     @NotEmpty(message = "Specifications are required")
     private List<ProductSpecificationSaveDTO> specifications;
 
-    public ProductRequestDTO() {
+    public ProductSaveDTO() {
     }
 
-    public ProductRequestDTO(String name, BigDecimal salePrice, String description, String sku, Integer minimumStock, Long brandId, Set<Long> categoriesId, List<ProductSpecificationSaveDTO> specifications) {
+    public ProductSaveDTO(String name, BigDecimal salePrice, String description, String sku, Integer minimumStock, Long brandId, Set<Long> categoriesId, List<ProductSpecificationSaveDTO> specifications) {
         this.name = name;
         this.salePrice = salePrice;
         this.description = description;
@@ -120,7 +120,7 @@ public class ProductRequestDTO {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        ProductRequestDTO that = (ProductRequestDTO) o;
+        ProductSaveDTO that = (ProductSaveDTO) o;
         return Objects.equals(name, that.name) && Objects.equals(salePrice, that.salePrice) && Objects.equals(description, that.description) && Objects.equals(sku, that.sku) && Objects.equals(minimumStock, that.minimumStock) && Objects.equals(brandId, that.brandId) && Objects.equals(categoryIds, that.categoryIds) && Objects.equals(specifications, that.specifications);
     }
 

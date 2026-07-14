@@ -29,7 +29,7 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<ProductDTO> save(@RequestBody @Valid ProductRequestDTO request) {
+    public ResponseEntity<ProductDTO> save(@RequestBody @Valid ProductSaveDTO request) {
         ProductDTO dto = service.save(request);
 
         URI uri = ServletUriComponentsBuilder
@@ -42,7 +42,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ProductDTO update(@PathVariable Long id, @RequestBody @Valid ProductRequestDTO request) {
+    public ProductDTO update(@PathVariable Long id, @RequestBody @Valid ProductUpdateDTO request) {
         return service.update(id, request);
     }
 
