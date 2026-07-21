@@ -14,6 +14,7 @@ public class SupplierRequestDTO {
     @Size(max = 14, message = "The document must contain a maximum of {max} characters")
     private String document;
 
+    @NotBlank(message = "Email is required")
     @Email(message = "Invalid Email")
     @Size(max = 200, message = "The email must contain a maximum of {max} characters")
     private String email;

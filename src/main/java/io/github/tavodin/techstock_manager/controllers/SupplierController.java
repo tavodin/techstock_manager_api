@@ -4,6 +4,8 @@ import io.github.tavodin.techstock_manager.dto.SupplierDTO;
 import io.github.tavodin.techstock_manager.dto.SupplierRequestDTO;
 import io.github.tavodin.techstock_manager.services.SupplierService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -25,6 +27,11 @@ public class SupplierController {
         return service.findById(id);
     }
 
+    @GetMapping
+    public PagedModel<SupplierDTO> findAll(Pageable pageable) {
+        return service.findAll(pageable);
+    }
+
     @PostMapping
     public ResponseEntity<SupplierDTO> save(@Valid @RequestBody SupplierRequestDTO request) {
         SupplierDTO dto = service.save(request);
@@ -40,7 +47,8 @@ public class SupplierController {
 
     @PutMapping("/{id}")
     public SupplierDTO update(@PathVariable Long id, @Valid @RequestBody SupplierRequestDTO requestDTO) {
-        return service.update(id, requestDTO);
+        SupplierDTO dto = service.update(id, requestDTO);
+        return dto;
     }
 
     @DeleteMapping("/{id}")
