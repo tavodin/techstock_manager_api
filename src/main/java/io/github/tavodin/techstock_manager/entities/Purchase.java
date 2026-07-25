@@ -4,7 +4,7 @@ import io.github.tavodin.techstock_manager.enums.PurchaseStatus;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,9 +12,10 @@ import java.util.Set;
 public class Purchase extends AuditableEntity {
 
     @Column(name = "purchase_date", nullable = false)
-    private LocalDateTime purchaseDate;
+    private LocalDate purchaseDate;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private PurchaseStatus status;
 
     @Column(name = "total_amount", nullable = false)
@@ -30,7 +31,7 @@ public class Purchase extends AuditableEntity {
     public Purchase() {
     }
 
-    public Purchase(LocalDateTime purchaseDate, PurchaseStatus status, BigDecimal totalAmount, Supplier supplier, Set<PurchaseItem> purchaseItems) {
+    public Purchase(LocalDate purchaseDate, PurchaseStatus status, BigDecimal totalAmount, Supplier supplier, Set<PurchaseItem> purchaseItems) {
         this.purchaseDate = purchaseDate;
         this.status = status;
         this.totalAmount = totalAmount;
@@ -38,11 +39,11 @@ public class Purchase extends AuditableEntity {
         this.purchaseItems = purchaseItems;
     }
 
-    public LocalDateTime getPurchaseDate() {
+    public LocalDate getPurchaseDate() {
         return purchaseDate;
     }
 
-    public void setPurchaseDate(LocalDateTime purchaseDate) {
+    public void setPurchaseDate(LocalDate purchaseDate) {
         this.purchaseDate = purchaseDate;
     }
 

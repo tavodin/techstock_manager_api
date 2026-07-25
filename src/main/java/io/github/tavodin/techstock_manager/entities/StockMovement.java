@@ -2,13 +2,17 @@ package io.github.tavodin.techstock_manager.entities;
 
 import io.github.tavodin.techstock_manager.enums.MovementType;
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
 @Table(name = "stock_movement")
-public class StockMovement extends AuditableEntity {
+@EntityListeners(AuditingEntityListener.class)
+public class StockMovement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,16 +35,26 @@ public class StockMovement extends AuditableEntity {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    @CreatedBy
+    @JoinColumn(name = "created_by")
+    private Long createdBy;
+
+    @LastModifiedBy
+    @JoinColumn(name = "updated_by")
+    private Long updatedBy;
+
     public StockMovement() {
     }
 
-    public StockMovement(Long id, MovementType type, Integer quantity, LocalDateTime movementDate, String reason, Product product) {
+    public StockMovement(Long id, MovementType type, Integer quantity, LocalDateTime movementDate, String reason, Product product, Long createdBy, Long updatedBy) {
         this.id = id;
         this.type = type;
         this.quantity = quantity;
         this.movementDate = movementDate;
         this.reason = reason;
         this.product = product;
+        this.createdBy = createdBy;
+        this.updatedBy = updatedBy;
     }
 
     public Long getId() {
@@ -89,6 +103,22 @@ public class StockMovement extends AuditableEntity {
 
     public void setProduct(Product product) {
         this.product = product;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Long getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(Long updatedBy) {
+        this.updatedBy = updatedBy;
     }
 
     @Override
