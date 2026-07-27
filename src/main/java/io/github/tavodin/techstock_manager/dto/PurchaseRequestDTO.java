@@ -1,6 +1,6 @@
 package io.github.tavodin.techstock_manager.dto;
 
-import io.github.tavodin.techstock_manager.enums.PurchaseStatus;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -10,12 +10,14 @@ import java.util.List;
 
 public class PurchaseRequestDTO {
 
+    @NotNull(message = "Purchase Date is required")
     private LocalDate purchaseDate;
 
     @NotNull(message = "Supplier is required")
     private Long supplierId;
 
     @NotEmpty(message = "Purchase Item is required")
+    @Valid
     private List<PurchaseItemRequestDTO> items = new ArrayList<>();
 
     public PurchaseRequestDTO() {

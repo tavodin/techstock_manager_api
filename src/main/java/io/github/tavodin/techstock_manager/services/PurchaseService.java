@@ -1,7 +1,6 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.PurchaseAssembler;
-import io.github.tavodin.techstock_manager.dto.ProductDTO;
 import io.github.tavodin.techstock_manager.dto.PurchaseDTO;
 import io.github.tavodin.techstock_manager.dto.PurchaseItemRequestDTO;
 import io.github.tavodin.techstock_manager.dto.PurchaseRequestDTO;
@@ -91,7 +90,7 @@ public class PurchaseService {
 
     @Transactional
     public PurchaseDTO completedPurchase(Long id) {
-        Purchase purchase = getPurchaseOrThrowException(id);
+        Purchase purchase = getPurchaseAndItemsOrThrowException(id);
 
         if(purchase.getStatus() != PurchaseStatus.OPEN) {
             throw new BusinessException("The purchase status must be 'OPEN'");
@@ -148,8 +147,13 @@ public class PurchaseService {
         return assembler.toModel(purchase);
     }
 
-    private Purchase getPurchaseOrThrowException(Long id) {
+    private Purchase getPurchaseAndItemsOrThrowException(Long id) {
         return purchaseRepository.getPurchaseAndItems(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Purchase not found"));
+    }
+
+    private Purchase getPurchaseOrThrowException(Long id) {
+        return purchaseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Purchase not found"));
     }
 

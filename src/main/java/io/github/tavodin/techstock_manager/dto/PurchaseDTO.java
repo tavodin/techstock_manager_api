@@ -6,22 +6,21 @@ import org.springframework.hateoas.server.core.Relation;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Relation(itemRelation = "purchase", collectionRelation = "purchases")
 public class PurchaseDTO extends RepresentationModel<PurchaseDTO> {
 
     private Long id;
-    private LocalDate purchaseData;
+    private LocalDate purchaseDate;
     private PurchaseStatus status;
     private BigDecimal totalAmount;
 
     public PurchaseDTO() {
     }
 
-    public PurchaseDTO(Long id, LocalDate purchaseData, PurchaseStatus status, BigDecimal totalAmount) {
+    public PurchaseDTO(Long id, LocalDate purchaseDate, PurchaseStatus status, BigDecimal totalAmount) {
         this.id = id;
-        this.purchaseData = purchaseData;
+        this.purchaseDate = purchaseDate;
         this.status = status;
         this.totalAmount = totalAmount;
     }
@@ -34,12 +33,12 @@ public class PurchaseDTO extends RepresentationModel<PurchaseDTO> {
         this.id = id;
     }
 
-    public LocalDate getPurchaseData() {
-        return purchaseData;
+    public LocalDate getPurchaseDate() {
+        return purchaseDate;
     }
 
-    public void setPurchaseData(LocalDate purchaseData) {
-        this.purchaseData = purchaseData;
+    public void setPurchaseDate(LocalDate purchaseDate) {
+        this.purchaseDate = purchaseDate;
     }
 
     public PurchaseStatus getStatus() {

@@ -13,7 +13,7 @@ public class PurchaseAssembler implements RepresentationModelAssembler<Purchase,
         PurchaseDTO model = new PurchaseDTO();
         model.setId(entity.getId());
         model.setStatus(entity.getStatus());
-        model.setPurchaseData(entity.getPurchaseDate());
+        model.setPurchaseDate(entity.getPurchaseDate());
         model.setTotalAmount(entity.getTotalAmount());
 
         return model;
