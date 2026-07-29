@@ -1781,20 +1781,6 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
         assertEquals("Value must contain a maximum of 45 characters", errors.get("valueString"));
     }
 
-    private Product createProduct() {
-        Brand savedBrand = saveBrand(brand); // DELL
-        Category savedCategory = saveCategory(category); // MONITOR
-        Product product = ProductBuilder
-                .builder()
-                .withId(null)
-                .build();
-
-        product.setBrand(savedBrand);
-        product.setCategories(Set.of(savedCategory));
-
-        return productRepository.save(product);
-    }
-
     @Test
     void shouldNotSaveSpecificationWhenSavingWithNullValueNumber() {
         Product savedProduct = createProduct();
@@ -2255,6 +2241,20 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
         assertEquals("The specification is required and cannot be excluded", error.getMessage());
         assertEquals(PATH + "/" + savedProduct.getId() + "/specifications/" + resolution.getId(),
                 error.getPath());
+    }
+
+    private Product createProduct() {
+        Brand savedBrand = saveBrand(brand); // DELL
+        Category savedCategory = saveCategory(category); // MONITOR
+        Product product = ProductBuilder
+                .builder()
+                .withId(null)
+                .build();
+
+        product.setBrand(savedBrand);
+        product.setCategories(Set.of(savedCategory));
+
+        return productRepository.save(product);
     }
 
     private Map<String, Specification> createSpecifications(Category category) {

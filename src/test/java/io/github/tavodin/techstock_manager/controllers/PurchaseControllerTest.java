@@ -379,7 +379,7 @@ public class PurchaseControllerTest {
 
                 .andExpect(jsonPath("$.errors[*].field").value(hasItem("items[0].unitCost")))
                 .andExpect(jsonPath("$.errors[*].message")
-                        .value(hasItem("Quantity must be unit cost")));
+                        .value(hasItem("Unit Cost must be unit cost")));
     }
 
     @Test
@@ -401,7 +401,7 @@ public class PurchaseControllerTest {
 
                 .andExpect(jsonPath("$.errors[*].field").value(hasItem("items[0].unitCost")))
                 .andExpect(jsonPath("$.errors[*].message")
-                        .value(hasItem("Quantity must be unit cost")));
+                        .value(hasItem("Unit Cost must be unit cost")));
     }
 
     @Test
@@ -624,7 +624,7 @@ public class PurchaseControllerTest {
 
                 .andExpect(jsonPath("$.errors[*].field").value(hasItem("items[0].unitCost")))
                 .andExpect(jsonPath("$.errors[*].message")
-                        .value(hasItem("Quantity must be unit cost")));
+                        .value(hasItem("Unit Cost must be unit cost")));
     }
 
     @Test
@@ -646,7 +646,7 @@ public class PurchaseControllerTest {
 
                 .andExpect(jsonPath("$.errors[*].field").value(hasItem("items[0].unitCost")))
                 .andExpect(jsonPath("$.errors[*].message")
-                        .value(hasItem("Quantity must be unit cost")));
+                        .value(hasItem("Unit Cost must be unit cost")));
     }
 
     @Test

@@ -15,7 +15,7 @@ public record PurchaseItemRequestDTO (
         Integer quantity,
 
         @NotNull(message = "Unit Cost is required")
-        @Positive(message = "Quantity must be unit cost")
+        @Positive(message = "Unit Cost must be unit cost")
         BigDecimal unitCost
 ) {
 }

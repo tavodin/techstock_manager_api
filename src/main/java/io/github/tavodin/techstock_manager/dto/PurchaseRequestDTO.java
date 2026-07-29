@@ -23,6 +23,12 @@ public class PurchaseRequestDTO {
     public PurchaseRequestDTO() {
     }
 
+    public PurchaseRequestDTO(LocalDate purchaseDate, Long supplierId, List<PurchaseItemRequestDTO> items) {
+        this.purchaseDate = purchaseDate;
+        this.supplierId = supplierId;
+        this.items = items;
+    }
+
     public LocalDate getPurchaseDate() {
         return purchaseDate;
     }
