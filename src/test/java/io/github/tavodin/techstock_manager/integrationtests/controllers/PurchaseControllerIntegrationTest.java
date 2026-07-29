@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.tavodin.techstock_manager.builder.ProductBuilder;
 import io.github.tavodin.techstock_manager.configurations.AbstractIntegrationTest;
+import io.github.tavodin.techstock_manager.dto.BrandRequestDTO;
 import io.github.tavodin.techstock_manager.dto.PurchaseDTO;
 import io.github.tavodin.techstock_manager.dto.PurchaseItemRequestDTO;
 import io.github.tavodin.techstock_manager.dto.PurchaseRequestDTO;
@@ -35,6 +36,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
@@ -98,6 +101,82 @@ class PurchaseControllerIntegrationTest extends AbstractIntegrationTest {
         productRepository.deleteAll();
         categoryRepository.deleteAll();
         brandRepository.deleteAll();
+    }
+
+    @Test
+    void shouldFindPurchaseWhenFindingWithValidId() throws JsonProcessingException {
+        PurchaseDTO purchase = createPurchase();
+
+        var response = given()
+                .spec(specification)
+                .pathParam("id", purchase.getId())
+                .get("/{id}")
+                .then()
+                .statusCode(200)
+                .extract()
+                .body()
+                .asString();
+
+        PurchaseDTO body = objectMapper.readValue(response, PurchaseDTO.class);
+
+        assertEquals(purchase.getId(), body.getId());
+        assertEquals(purchase.getStatus(), body.getStatus());
+        assertEquals(purchase.getPurchaseDate(), body.getPurchaseDate());
+        assertTrue(body.getTotalAmount().compareTo(purchase.getTotalAmount()) == 0);
+    }
+
+    @Test
+    void shouldNotFindPurchaseWhenFindingWithInvalidId() {
+        CustomError error = given()
+                .spec(specification)
+                .pathParam("id", INVALID_ID)
+                .get("/{id}")
+                .then()
+                .statusCode(404)
+                .extract()
+                .body()
+                .as(CustomError.class);
+
+        assertNotNull(error.getTimestamp());
+        assertEquals(404, error.getStatus());
+        assertEquals(PURCHASE_NOT_FOUND_MSG, error.getMessage());
+        assertEquals(PATH + "/" + INVALID_ID, error.getPath());
+    }
+
+    @Test
+    void shouldReturnPurchasesWhenFindAll() throws JsonProcessingException {
+        createPurchase();
+
+        given()
+                .spec(specification)
+                .get()
+                .then()
+                .statusCode(200)
+                .body("_embedded.purchases[0].id", notNullValue())
+                .body("_embedded.purchases[0].status", equalTo(PurchaseStatus.OPEN.toString()))
+                .body("_embedded.purchases[0].totalAmount", equalTo(764.97F));
+    }
+
+    @Test
+    void shouldReturnPurchasePagedWhenFindAll() throws JsonProcessingException {
+        createPurchase();
+
+        int number = 0;
+        int size = 5;
+
+        given().spec(specification)
+                .queryParam("page", number)
+                .queryParam("size", size)
+                .when()
+                .get()
+                .then()
+                .statusCode(200)
+                .body("_links.self.href",
+                        containsString(String.format("%s?page=%s&size=%s", PATH, number, size)))
+                .body("page.size", equalTo(5))
+                .body("page.totalElements", equalTo(1))
+                .body("page.totalPages", equalTo(1))
+                .body("page.number", equalTo(0));
     }
 
     @Test
