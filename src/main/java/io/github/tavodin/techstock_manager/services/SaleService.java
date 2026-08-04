@@ -134,6 +134,10 @@ public class SaleService {
         Sale sale = saleRepository.getSaleAndItemsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Sale not found"));
 
+        if(sale.getStatus() == SaleStatus.CANCELED) {
+            throw new BusinessException("Sale status must be 'COMPLETED'");
+        }
+
         sale.setStatus(SaleStatus.CANCELED);
         saleRepository.save(sale);
 

@@ -110,9 +110,9 @@ public class PurchaseControllerTest {
 
     @Test
     void shouldReturnPurchasePageAndOkWhenFindAll() throws Exception {
-        List<PurchaseDTO> brands = List.of(dto);
+        List<PurchaseDTO> purchases = List.of(dto);
         PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(1, 0, 1);
-        PagedModel<PurchaseDTO> pagedModel = PagedModel.of(brands, metadata);
+        PagedModel<PurchaseDTO> pagedModel = PagedModel.of(purchases, metadata);
 
         when(service.findAll(any(Pageable.class))).thenReturn(pagedModel);
 

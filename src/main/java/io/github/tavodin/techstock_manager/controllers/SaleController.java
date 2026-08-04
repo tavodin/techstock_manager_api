@@ -3,6 +3,7 @@ package io.github.tavodin.techstock_manager.controllers;
 import io.github.tavodin.techstock_manager.dto.SaleDTO;
 import io.github.tavodin.techstock_manager.dto.SaleRequestDTO;
 import io.github.tavodin.techstock_manager.services.SaleService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,7 @@ public class SaleController {
     }
 
     @PostMapping
-    public ResponseEntity<SaleDTO> save(@RequestBody SaleRequestDTO request) {
+    public ResponseEntity<SaleDTO> save(@Valid @RequestBody SaleRequestDTO request) {
         SaleDTO dto = service.save(request);
 
         URI uri = ServletUriComponentsBuilder
