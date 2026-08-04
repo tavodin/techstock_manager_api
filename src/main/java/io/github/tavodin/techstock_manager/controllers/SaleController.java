@@ -45,7 +45,7 @@ public class SaleController {
         return ResponseEntity.created(uri).body(dto);
     }
 
-    @PatchMapping("/{id}")
+    @PatchMapping("/{id}/canceled")
     public SaleDTO canceledPurchase(@PathVariable Long id) {
         return service.canceled(id);
     }

@@ -285,7 +285,6 @@ class PurchaseControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotSavePurchaseWhenSavingWithNullPurchaseDate() throws JsonProcessingException {
-
         PurchaseItemRequestDTO item = new PurchaseItemRequestDTO(
                 1L,
                 3,

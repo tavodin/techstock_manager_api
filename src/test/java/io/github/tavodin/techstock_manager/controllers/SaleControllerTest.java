@@ -60,8 +60,6 @@ public class SaleControllerTest {
     private static final String SALE_NOT_FOUND_MSG = "Sale not found";
     private static final String PRODUCTS_NOT_FOUND_MSG = "One or more products were not found";
     private static final String EXCEEDING_STOCK_MSG = "Insufficient stock quantity";
-    private static final String SALE_MSG = "Sale Product";
-    private static final String CANCELED_MSG = "Product return";
     private static final String VALIDATION_ERROR = "Entity validation error";
 
     private SaleDTO saleDTO;
