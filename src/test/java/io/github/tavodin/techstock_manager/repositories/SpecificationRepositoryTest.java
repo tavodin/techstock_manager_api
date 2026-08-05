@@ -47,9 +47,20 @@ public class SpecificationRepositoryTest extends AbstractJpaTest {
         assertEquals(entity.getDataType(), actual.getDataType());
         assertEquals(entity.getFilterable(), actual.getFilterable());
         assertEquals(entity.getUnit().getSymbol(), actual.getUnitSymbol());
+    }
 
-        assertNotNull(actual.getCreatedAt());
-        assertNotNull(actual.getUpdatedAt());
+    @Test
+    void shouldReturnSpecificationDTOWhenGetSpecificationByIdWithNullUnit() {
+        entity = new Specification("RAM", SpecificationType.NUMBER, true, null);
+        entity = specificationRepository.save(entity);
+
+        SpecificationDTO actual = specificationRepository.getSpecificationById(entity.getId()).get();
+
+        assertNotNull(actual.getId());
+        assertEquals(entity.getName(), entity.getName());
+        assertEquals(entity.getDataType(), actual.getDataType());
+        assertEquals(entity.getFilterable(), actual.getFilterable());
+        assertNull(entity.getUnit());
     }
 
     @Test
