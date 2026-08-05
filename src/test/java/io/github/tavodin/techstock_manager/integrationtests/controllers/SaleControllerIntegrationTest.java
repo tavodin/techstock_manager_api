@@ -4,16 +4,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.tavodin.techstock_manager.builder.ProductBuilder;
 import io.github.tavodin.techstock_manager.configurations.AbstractIntegrationTest;
-import io.github.tavodin.techstock_manager.dto.PurchaseRequestDTO;
 import io.github.tavodin.techstock_manager.dto.SaleDTO;
 import io.github.tavodin.techstock_manager.dto.SaleItemRequestDTO;
 import io.github.tavodin.techstock_manager.dto.SaleRequestDTO;
 import io.github.tavodin.techstock_manager.dto.error.CustomError;
 import io.github.tavodin.techstock_manager.dto.error.FieldError;
 import io.github.tavodin.techstock_manager.dto.error.ValidationError;
-import io.github.tavodin.techstock_manager.entities.*;
+import io.github.tavodin.techstock_manager.entities.Brand;
+import io.github.tavodin.techstock_manager.entities.Product;
+import io.github.tavodin.techstock_manager.entities.SaleItem;
+import io.github.tavodin.techstock_manager.entities.StockMovement;
 import io.github.tavodin.techstock_manager.enums.MovementType;
-import io.github.tavodin.techstock_manager.enums.PurchaseStatus;
 import io.github.tavodin.techstock_manager.enums.SaleStatus;
 import io.github.tavodin.techstock_manager.integrationtests.utils.AuthTestUtil;
 import io.github.tavodin.techstock_manager.repositories.*;
@@ -37,7 +38,6 @@ import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)

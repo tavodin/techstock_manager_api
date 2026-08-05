@@ -33,9 +33,6 @@ public class PurchaseRepositoryTest extends AbstractJpaTest {
     @Autowired
     private BrandRepository brandRepository;
 
-    @Autowired
-    private StockMovementRepository stockMovementRepository;
-
     @Test
     void shouldReturnPurchaseAndItemsWhenGetPurchaseAndItems() {
         Brand brand = new Brand();
