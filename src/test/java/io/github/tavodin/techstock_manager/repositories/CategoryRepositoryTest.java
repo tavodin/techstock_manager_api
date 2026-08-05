@@ -70,4 +70,35 @@ public class CategoryRepositoryTest extends AbstractJpaTest {
         assertEquals(savedSpec.getName(), dto.getSpecificationName());
         assertEquals(savedCatSpec.getRequired(), dto.getIsRequired());
     }
+
+    @Test
+    void shouldReturnRequiredSpecificationWhenFindRequiredSpecificationsIdsByCategoryIds() {
+        Specification newSpecification = SpecificationBuilder
+                .builder()
+                .withId(null)
+                .withName("Frequência")
+                .withUnit(null)
+                .build();
+
+        List<Specification> savedSpec = specificationRepository.saveAll(List.of(specification, newSpecification));
+        Category savedCategory = repository.save(category);
+
+        CategorySpecification ramSpec = new CategorySpecification();
+        ramSpec.setCategory(savedCategory);
+        ramSpec.setSpecification(savedSpec.get(0));
+        ramSpec.setRequired(false);
+
+        CategorySpecification frequencySpec = new CategorySpecification();
+        frequencySpec.setCategory(savedCategory);
+        frequencySpec.setSpecification(savedSpec.get(1));
+        frequencySpec.setRequired(true);
+
+        List<CategorySpecification> catSpecs = categorySpecRepository.saveAll(List.of(ramSpec, frequencySpec));
+
+        List<Long> requiredSpecs = repository
+                .findRequiredSpecificationsIdsByCategoryIds(List.of(savedCategory.getId()));
+
+        assertEquals(1, requiredSpecs.size());
+        assertEquals(catSpecs.get(1).getId(), requiredSpecs.getFirst());
+    }
 }

@@ -1,6 +1,5 @@
 package io.github.tavodin.techstock_manager.builder;
 
-import io.github.tavodin.techstock_manager.entities.CategorySpecification;
 import io.github.tavodin.techstock_manager.entities.Specification;
 import io.github.tavodin.techstock_manager.entities.Unit;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
