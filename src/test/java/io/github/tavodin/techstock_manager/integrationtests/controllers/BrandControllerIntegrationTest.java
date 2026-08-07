@@ -2,14 +2,18 @@ package io.github.tavodin.techstock_manager.integrationtests.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.tavodin.techstock_manager.builder.ProductBuilder;
 import io.github.tavodin.techstock_manager.configurations.AbstractIntegrationTest;
 import io.github.tavodin.techstock_manager.dto.BrandDTO;
 import io.github.tavodin.techstock_manager.dto.BrandRequestDTO;
 import io.github.tavodin.techstock_manager.dto.error.CustomError;
 import io.github.tavodin.techstock_manager.dto.error.FieldError;
 import io.github.tavodin.techstock_manager.dto.error.ValidationError;
+import io.github.tavodin.techstock_manager.entities.Brand;
+import io.github.tavodin.techstock_manager.entities.Product;
 import io.github.tavodin.techstock_manager.integrationtests.utils.AuthTestUtil;
 import io.github.tavodin.techstock_manager.repositories.BrandRepository;
+import io.github.tavodin.techstock_manager.repositories.ProductRepository;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
@@ -34,6 +38,9 @@ public class BrandControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private BrandRepository repository;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -63,6 +70,7 @@ public class BrandControllerIntegrationTest extends AbstractIntegrationTest {
                 .addHeader("Authorization", "Bearer " + token)
                 .build();
 
+        productRepository.deleteAll();
         repository.deleteAll();
     }
 
@@ -354,7 +362,33 @@ public class BrandControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotDeleteBrandWhenBrandIsInUse() {
-        fail();
+        Brand brand = new Brand();
+        brand.setName("DELL");
+
+        brand = repository.save(brand);
+
+        Product product = ProductBuilder
+                .builder()
+                .withId(null)
+                .build();
+        product.setBrand(brand);
+
+        productRepository.save(product);
+
+        CustomError error = given()
+                .spec(specification)
+                .pathParam("id", brand.getId())
+                .delete("/{id}")
+                .then()
+                .statusCode(409)
+                .extract()
+                .body()
+                .as(CustomError.class);
+
+        assertNotNull(error.getTimestamp());
+        assertEquals(409, error.getStatus());
+        assertEquals("Brand is in use and cannot be deleted", error.getMessage());
+        assertEquals(PATH + "/" + brand.getId(), error.getPath());
     }
 
     private BrandDTO createBrand(BrandRequestDTO request) throws JsonProcessingException {
