@@ -19,8 +19,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class ProductSpecificationRepositoryTest extends AbstractJpaTest {
 
     @Autowired

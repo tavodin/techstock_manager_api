@@ -2,6 +2,7 @@ package io.github.tavodin.techstock_manager.integrationtests.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.tavodin.techstock_manager.builder.ProductBuilder;
 import io.github.tavodin.techstock_manager.builder.SpecificationBuilder;
 import io.github.tavodin.techstock_manager.configurations.AbstractIntegrationTest;
 import io.github.tavodin.techstock_manager.dto.CategoryDTO;
@@ -11,13 +12,9 @@ import io.github.tavodin.techstock_manager.dto.CategorySpecificationRequestDTO;
 import io.github.tavodin.techstock_manager.dto.error.CustomError;
 import io.github.tavodin.techstock_manager.dto.error.FieldError;
 import io.github.tavodin.techstock_manager.dto.error.ValidationError;
-import io.github.tavodin.techstock_manager.entities.Category;
-import io.github.tavodin.techstock_manager.entities.CategorySpecification;
-import io.github.tavodin.techstock_manager.entities.Specification;
+import io.github.tavodin.techstock_manager.entities.*;
 import io.github.tavodin.techstock_manager.integrationtests.utils.AuthTestUtil;
-import io.github.tavodin.techstock_manager.repositories.CategoryRepository;
-import io.github.tavodin.techstock_manager.repositories.CategorySpecificationRepository;
-import io.github.tavodin.techstock_manager.repositories.SpecificationRepository;
+import io.github.tavodin.techstock_manager.repositories.*;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
@@ -31,6 +28,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
@@ -48,6 +46,12 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private CategorySpecificationRepository catSpecRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private BrandRepository brandRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -77,6 +81,8 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
                 .addHeader("Authorization", "Bearer " + token)
                 .build();
 
+        productRepository.deleteAll();
+        brandRepository.deleteAll();
         catSpecRepository.deleteAll();
         repository.deleteAll();
         specificationRepository.deleteAll();
@@ -387,15 +393,20 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
     @Test
     void shouldNotDeleteCategoryWhenCategoryIsInUse() {
         String errorMsg = "Category is in use and cannot be deleted";
-        Specification spec = createSpecification();
+        Brand brand = new Brand();
+        brand.setName("DELL");
+
+        brand = brandRepository.save(brand);
         Category category = createCategory();
 
-        CategorySpecification specCategory = new CategorySpecification();
-        specCategory.setCategory(category);
-        specCategory.setSpecification(spec);
-        specCategory.setRequired(true);
+        Product product = ProductBuilder
+                .builder()
+                .withId(null)
+                .build();
+        product.setBrand(brand);
+        product.setCategories(Set.of(category));
 
-        catSpecRepository.save(specCategory);
+        productRepository.save(product);
 
         CustomError error = given().spec(specification)
                 .pathParam("id", category.getId())

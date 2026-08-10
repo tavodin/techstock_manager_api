@@ -317,7 +317,7 @@ public class SaleControllerTest {
         saleDTO.setStatus(SaleStatus.CANCELED);
         when(service.canceled(VALID_ID)).thenReturn(saleDTO);
 
-        mockMvc.perform(patch(PATH + "/" + VALID_ID))
+        mockMvc.perform(patch(PATH + "/" + VALID_ID + "/canceled"))
 
                 .andExpect(status().isOk())
 
@@ -332,27 +332,27 @@ public class SaleControllerTest {
     void shouldReturnCustomErrorAndNotFoundWhenCancelingWithInvalidId() throws Exception {
         when(service.canceled(INVALID_ID)).thenThrow(new ResourceNotFoundException(SALE_NOT_FOUND_MSG));
 
-        mockMvc.perform(patch(PATH + "/" + INVALID_ID))
+        mockMvc.perform(patch(PATH + "/" + INVALID_ID + "/canceled"))
 
                 .andExpect(status().isNotFound())
 
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message").value(SALE_NOT_FOUND_MSG))
-                .andExpect(jsonPath("$.path").value(PATH + "/" + INVALID_ID));
+                .andExpect(jsonPath("$.path").value(PATH + "/" + INVALID_ID + "/canceled"));
     }
 
     @Test
     void shouldReturnCustomErrorAndBadRequestWhenCancelingWithCanceledStatus() throws Exception {
         when(service.canceled(VALID_ID)).thenThrow(new BusinessException("Sale status must be 'COMPLETED'"));
 
-        mockMvc.perform(patch(PATH + "/" + VALID_ID))
+        mockMvc.perform(patch(PATH + "/" + VALID_ID + "/canceled"))
 
                 .andExpect(status().isBadRequest())
 
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value("Sale status must be 'COMPLETED'"))
-                .andExpect(jsonPath("$.path").value(PATH + "/" + VALID_ID));
+                .andExpect(jsonPath("$.path").value(PATH + "/" + VALID_ID + "/canceled"));
     }
 }

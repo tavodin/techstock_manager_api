@@ -15,8 +15,6 @@ import org.springframework.data.domain.PageRequest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class SpecificationRepositoryTest extends AbstractJpaTest {
 
     @Autowired

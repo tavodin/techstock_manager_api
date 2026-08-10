@@ -68,14 +68,13 @@ public class SpecificationService {
     public SpecificationDTO update(Long id, SpecificationRequestDTO request) {
         Specification entity = getEntityOrThrownException(id);
 
-        if(entity.getUnit() != null) {
-            Unit findUnit = entity.getUnit();
-            if(findUnit.getId().equals(request.unitId()) && request.unitId() != null) {
-                Unit unitEntity = unitRepository.findById(request.unitId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Unit not found!"));
+        if(request.unitId() != null && entity.getUnit().getId() != request.unitId()) {
+            Unit unit = unitRepository.findById(request.unitId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Unit not found!"));
 
-                entity.setUnit(unitEntity);
-            }
+            entity.setUnit(unit);
+        } else if(request.unitId() == null) {
+            entity.setUnit(null);
         }
 
         entity.setName(request.name());

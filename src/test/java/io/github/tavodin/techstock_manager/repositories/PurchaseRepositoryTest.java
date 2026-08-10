@@ -4,6 +4,7 @@ import io.github.tavodin.techstock_manager.builder.ProductBuilder;
 import io.github.tavodin.techstock_manager.configurations.AbstractJpaTest;
 import io.github.tavodin.techstock_manager.entities.*;
 import io.github.tavodin.techstock_manager.enums.PurchaseStatus;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -14,8 +15,6 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class PurchaseRepositoryTest extends AbstractJpaTest {
 
     @Autowired
@@ -32,6 +31,19 @@ public class PurchaseRepositoryTest extends AbstractJpaTest {
 
     @Autowired
     private BrandRepository brandRepository;
+
+    @Autowired
+    private StockMovementRepository stockMovementRepository;
+
+    @BeforeEach
+    void setUp() {
+        stockMovementRepository.deleteAll();
+        purchaseItemRepository.deleteAll();
+        repository.deleteAll();
+        supplierRepository.deleteAll();
+        productRepository.deleteAll();
+        brandRepository.deleteAll();
+    }
 
     @Test
     void shouldReturnPurchaseAndItemsWhenGetPurchaseAndItems() {

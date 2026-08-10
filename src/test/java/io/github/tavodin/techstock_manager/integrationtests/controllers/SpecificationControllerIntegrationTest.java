@@ -2,12 +2,14 @@ package io.github.tavodin.techstock_manager.integrationtests.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.tavodin.techstock_manager.builder.SpecificationBuilder;
 import io.github.tavodin.techstock_manager.configurations.AbstractIntegrationTest;
 import io.github.tavodin.techstock_manager.dto.SpecificationDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationRequestDTO;
 import io.github.tavodin.techstock_manager.dto.error.CustomError;
 import io.github.tavodin.techstock_manager.dto.error.FieldError;
 import io.github.tavodin.techstock_manager.dto.error.ValidationError;
+import io.github.tavodin.techstock_manager.entities.Specification;
 import io.github.tavodin.techstock_manager.entities.Unit;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
 import io.github.tavodin.techstock_manager.integrationtests.utils.AuthTestUtil;
@@ -617,11 +619,6 @@ class SpecificationControllerIntegrationTest extends AbstractIntegrationTest {
         assertEquals(404, error.getStatus());
         assertEquals(notFoundMsg, error.getMessage());
         assertEquals(path + "/" + invalidId, error.getPath());
-    }
-
-    @Test
-    void shouldNotDeleteUnitWhenUnitIsInUse() {
-        fail();
     }
 
     private SpecificationDTO createSpecification(SpecificationRequestDTO request) throws JsonProcessingException {

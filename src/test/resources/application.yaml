@@ -1,10 +1,6 @@
 server:
   port: 8888
 
-testcontainers:
-  reuse:
-    enable: true
-
 junit:
   jupiter:
     execution:
@@ -21,7 +17,7 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
     show-sql: true
     properties:
       hibernate:

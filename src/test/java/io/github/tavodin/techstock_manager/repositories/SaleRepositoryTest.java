@@ -7,18 +7,16 @@ import io.github.tavodin.techstock_manager.entities.Product;
 import io.github.tavodin.techstock_manager.entities.Sale;
 import io.github.tavodin.techstock_manager.entities.SaleItem;
 import io.github.tavodin.techstock_manager.enums.SaleStatus;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class SaleRepositoryTest extends AbstractJpaTest {
 
     @Autowired
@@ -32,6 +30,14 @@ public class SaleRepositoryTest extends AbstractJpaTest {
 
     @Autowired
     private BrandRepository brandRepository;
+
+    @BeforeEach
+    void setUp() {
+        saleItemRepository.deleteAll();
+        repository.deleteAll();
+        productRepository.deleteAll();
+        brandRepository.deleteAll();
+    }
 
     @Test
     void shouldReturnSaleAndItemsWhenGetSaleAndItemsById() {

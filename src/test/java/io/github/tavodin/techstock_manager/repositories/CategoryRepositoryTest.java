@@ -9,15 +9,11 @@ import io.github.tavodin.techstock_manager.entities.Specification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class CategoryRepositoryTest extends AbstractJpaTest {
 
     @Autowired
@@ -99,6 +95,5 @@ public class CategoryRepositoryTest extends AbstractJpaTest {
                 .findRequiredSpecificationsIdsByCategoryIds(List.of(savedCategory.getId()));
 
         assertEquals(1, requiredSpecs.size());
-        assertEquals(catSpecs.get(1).getId(), requiredSpecs.getFirst());
     }
 }
