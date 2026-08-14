@@ -22,22 +22,19 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private Boolean enabled;
 
-    @ManyToMany
-    @JoinTable(
-            name = "users_role",
-            joinColumns = @JoinColumn(name = "users_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<>();
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
 
     public User() {
     }
 
-    public User(String name, String username, String password, Boolean enabled, Set<Role> roles) {
+    public User(String name, String username, String password, Boolean enabled, Role role) {
         this.name = name;
         this.username = username;
         this.password = password;
         this.enabled = enabled;
-        this.roles = roles;
+        this.role = role;
     }
 
     public String getName() {
@@ -72,11 +69,11 @@ public class User extends BaseEntity {
         this.enabled = enabled;
     }
 
-    public Set<Role> getRoles() {
-        return roles;
+    public Role getRole() {
+        return role;
     }
 
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+    public void setRole(Role role) {
+        this.role = role;
     }
 }
