@@ -2,12 +2,11 @@ package io.github.tavodin.techstock_manager.entities;
 
 import jakarta.persistence.*;
 
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
-public class Role {
+@Table(name = "menu_item")
+public class MenuItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,20 +15,21 @@ public class Role {
     @Column(length = 45, nullable = false)
     private String name;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "role_permission",
-            joinColumns = @JoinColumn(name = "role_id"),
-            inverseJoinColumns = @JoinColumn(name = "permission_id"))
-    private Set<Permission> permissions = new HashSet<>();
+    @Column(length = 50, nullable = false)
+    private String link;
 
-    public Role() {
+    @ManyToOne
+    @JoinColumn(name = "menu_id", nullable = false)
+    private Menu menu;
+
+    public MenuItem() {
     }
 
-    public Role(Long id, String name, Set<Permission> permissions) {
+    public MenuItem(Long id, String name, String link, Menu menu) {
         this.id = id;
         this.name = name;
-        this.permissions = permissions;
+        this.link = link;
+        this.menu = menu;
     }
 
     public Long getId() {
@@ -48,11 +48,27 @@ public class Role {
         this.name = name;
     }
 
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public Menu getMenu() {
+        return menu;
+    }
+
+    public void setMenu(Menu menu) {
+        this.menu = menu;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        Role role = (Role) o;
-        return Objects.equals(id, role.id);
+        MenuItem menuItem = (MenuItem) o;
+        return Objects.equals(id, menuItem.id);
     }
 
     @Override

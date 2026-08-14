@@ -2,12 +2,11 @@ package io.github.tavodin.techstock_manager.entities;
 
 import jakarta.persistence.*;
 
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
-public class Role {
+@Table(name = "permission")
+public class Permission {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,20 +15,17 @@ public class Role {
     @Column(length = 45, nullable = false)
     private String name;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "role_permission",
-            joinColumns = @JoinColumn(name = "role_id"),
-            inverseJoinColumns = @JoinColumn(name = "permission_id"))
-    private Set<Permission> permissions = new HashSet<>();
+    @ManyToOne
+    @JoinColumn(name = "menu_item_id")
+    private MenuItem menuItem;
 
-    public Role() {
+    public Permission() {
     }
 
-    public Role(Long id, String name, Set<Permission> permissions) {
+    public Permission(Long id, String name, MenuItem menuItem) {
         this.id = id;
         this.name = name;
-        this.permissions = permissions;
+        this.menuItem = menuItem;
     }
 
     public Long getId() {
@@ -48,11 +44,19 @@ public class Role {
         this.name = name;
     }
 
+    public MenuItem getMenuItem() {
+        return menuItem;
+    }
+
+    public void setMenuItem(MenuItem menuItem) {
+        this.menuItem = menuItem;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        Role role = (Role) o;
-        return Objects.equals(id, role.id);
+        Permission that = (Permission) o;
+        return Objects.equals(id, that.id);
     }
 
     @Override

@@ -2,12 +2,11 @@ package io.github.tavodin.techstock_manager.entities;
 
 import jakarta.persistence.*;
 
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
-public class Role {
+@Table(name = "menu")
+public class Menu {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,20 +15,12 @@ public class Role {
     @Column(length = 45, nullable = false)
     private String name;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "role_permission",
-            joinColumns = @JoinColumn(name = "role_id"),
-            inverseJoinColumns = @JoinColumn(name = "permission_id"))
-    private Set<Permission> permissions = new HashSet<>();
-
-    public Role() {
+    public Menu() {
     }
 
-    public Role(Long id, String name, Set<Permission> permissions) {
+    public Menu(Long id, String name) {
         this.id = id;
         this.name = name;
-        this.permissions = permissions;
     }
 
     public Long getId() {
@@ -51,8 +42,8 @@ public class Role {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        Role role = (Role) o;
-        return Objects.equals(id, role.id);
+        Menu menu = (Menu) o;
+        return Objects.equals(id, menu.id);
     }
 
     @Override
