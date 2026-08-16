@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -22,16 +23,19 @@ public class UnitController {
         this.unitService = unitService;
     }
 
+    @PreAuthorize("hasAuthority('READ_UNIT')")
     @GetMapping("/{id}")
     public UnitDTO findById(@PathVariable Long id) {
         return unitService.findById(id);
     }
 
+    @PreAuthorize("hasAuthority('READ_UNIT')")
     @GetMapping
     public PagedModel<UnitDTO> findAll(Pageable pageable) {
         return unitService.findAll(pageable);
     }
 
+    @PreAuthorize("hasAuthority('CREATE_UNIT')")
     @PostMapping
     public ResponseEntity<UnitDTO> save(@RequestBody @Valid UnitRequestDTO responseDTO) {
         UnitDTO dto = unitService.save(responseDTO);
@@ -44,11 +48,13 @@ public class UnitController {
         return ResponseEntity.created(uri).body(dto);
     }
 
+    @PreAuthorize("hasAuthority('UPDATE_UNIT')")
     @PutMapping("/{id}")
     public UnitDTO update(@PathVariable Long id, @RequestBody @Valid UnitRequestDTO responseDTO) {
         return unitService.update(id, responseDTO);
     }
 
+    @PreAuthorize("hasAuthority('DELETE_UNIT')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         unitService.delete(id);

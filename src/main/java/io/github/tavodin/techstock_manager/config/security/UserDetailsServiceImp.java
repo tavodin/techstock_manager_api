@@ -1,5 +1,6 @@
 package io.github.tavodin.techstock_manager.config.security;
 
+import io.github.tavodin.techstock_manager.entities.Permission;
 import io.github.tavodin.techstock_manager.entities.Role;
 import io.github.tavodin.techstock_manager.entities.User;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
@@ -23,14 +24,14 @@ public class UserDetailsServiceImp implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
 
-        Set<String> roles = user.getRoles().stream()
-                .map(Role::getName)
+        Set<String> authorities = user.getRole().getPermissions().stream()
+                .map(Permission::getName)
                 .collect(Collectors.toSet());
+        authorities.add(user.getRole().getName());
 
-        return new UserDetailsImp(user.getId(), user.getUsername(), user.getPassword(), user.getEnabled(), roles);
+        return new UserDetailsImp(user.getId(), user.getUsername(), user.getPassword(), user.getEnabled(), authorities);
     }
 }
