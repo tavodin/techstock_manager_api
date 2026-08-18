@@ -5,6 +5,7 @@ import io.github.tavodin.techstock_manager.dto.UnitRequestDTO;
 import io.github.tavodin.techstock_manager.services.UnitService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,8 +32,11 @@ public class UnitController {
 
     @PreAuthorize("hasAuthority('READ_UNIT')")
     @GetMapping
-    public PagedModel<UnitDTO> findAll(Pageable pageable) {
-        return unitService.findAll(pageable);
+    public PagedModel<UnitDTO> findAll(
+            @PageableDefault(size = 5) Pageable pageable,
+            @RequestParam(name = "name", required = false) String name
+    ) {
+        return unitService.findAll(name, pageable);
     }
 
     @PreAuthorize("hasAuthority('CREATE_UNIT')")

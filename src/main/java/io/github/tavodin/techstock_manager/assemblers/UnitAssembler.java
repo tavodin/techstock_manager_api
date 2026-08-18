@@ -31,7 +31,7 @@ public class UnitAssembler implements RepresentationModelAssembler<Unit, UnitDTO
                 .withType("GET"));
 
         model.add(linkTo(methodOn(UnitController.class)
-                .findAll(null))
+                .findAll(null, null))
                 .withRel("findAll")
                 .withType("GET"));
 
@@ -42,7 +42,7 @@ public class UnitAssembler implements RepresentationModelAssembler<Unit, UnitDTO
 
         model.add(linkTo(methodOn(UnitController.class)
                 .update(entity.getId(), new UnitRequestDTO(entity.getName(), entity.getSymbol())))
-                .withRel("updateProduct")
+                .withRel("update")
                 .withType("PUT"));
 
         model.add(linkTo(methodOn(UnitController.class)

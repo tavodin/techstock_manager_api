@@ -3,6 +3,7 @@ package io.github.tavodin.techstock_manager.config.security;
 import io.github.tavodin.techstock_manager.entities.Permission;
 import io.github.tavodin.techstock_manager.entities.Role;
 import io.github.tavodin.techstock_manager.entities.User;
+import io.github.tavodin.techstock_manager.exceptions.IncorrectLogin;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,7 +26,7 @@ public class UserDetailsServiceImp implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
+                .orElseThrow(() -> new IncorrectLogin("Incorrect username or password"));
 
         Set<String> authorities = user.getRole().getPermissions().stream()
                 .map(Permission::getName)

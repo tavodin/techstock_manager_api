@@ -2,6 +2,7 @@ package io.github.tavodin.techstock_manager.controllers;
 
 import io.github.tavodin.techstock_manager.dto.LoginDTO;
 import io.github.tavodin.techstock_manager.services.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,7 +21,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Map<String, String> login(@RequestBody LoginDTO loginDTO) {
+    public Map<String, String> login(@RequestBody @Valid LoginDTO loginDTO) {
         return authService.login(loginDTO);
     }
 }

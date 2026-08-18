@@ -3,10 +3,7 @@ package io.github.tavodin.techstock_manager.controllers.handlers;
 import io.github.tavodin.techstock_manager.dto.error.CustomError;
 import io.github.tavodin.techstock_manager.dto.error.FieldError;
 import io.github.tavodin.techstock_manager.dto.error.ValidationError;
-import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
-import io.github.tavodin.techstock_manager.exceptions.BusinessException;
-import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
-import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
+import io.github.tavodin.techstock_manager.exceptions.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +24,19 @@ public class ExceptionHandlerController {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<CustomError> resourceNotFoundHandler(ResourceNotFoundException ex, HttpServletRequest request) {
         HttpStatus status = HttpStatus.NOT_FOUND;
+
+        CustomError error = new CustomError(
+                Instant.now(),
+                status.value(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(IncorrectLogin.class)
+    public ResponseEntity<CustomError> incorrectLoginHandler(IncorrectLogin ex, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
 
         CustomError error = new CustomError(
                 Instant.now(),

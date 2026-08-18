@@ -35,8 +35,12 @@ public class UnitService {
     }
 
     @Transactional(readOnly = true)
-    public PagedModel<UnitDTO> findAll(Pageable pageable) {
-        Page<Unit> page = unitRepository.findAll(pageable);
+    public PagedModel<UnitDTO> findAll(String name, Pageable pageable) {
+        String nameFilter = name == null || name.isBlank()
+                ? null
+                : name.trim();
+
+        Page<Unit> page = unitRepository.findAllPaged(nameFilter, pageable);
 
         return pagedAssembler.toModel(page, unitAssembler);
     }
@@ -75,4 +79,6 @@ public class UnitService {
         return unitRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Unit not found!"));
     }
+
+
 }
