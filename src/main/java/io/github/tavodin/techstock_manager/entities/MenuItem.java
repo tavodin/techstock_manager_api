@@ -3,6 +3,7 @@ package io.github.tavodin.techstock_manager.entities;
 import jakarta.persistence.*;
 
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "menu_item")
@@ -22,14 +23,18 @@ public class MenuItem {
     @JoinColumn(name = "menu_id", nullable = false)
     private Menu menu;
 
+    @OneToMany(mappedBy = "menuItem")
+    private Set<Permission> permissions;
+
     public MenuItem() {
     }
 
-    public MenuItem(Long id, String name, String link, Menu menu) {
+    public MenuItem(Long id, String name, String link, Menu menu, Set<Permission> permissions) {
         this.id = id;
         this.name = name;
         this.link = link;
         this.menu = menu;
+        this.permissions = permissions;
     }
 
     public Long getId() {
@@ -62,6 +67,14 @@ public class MenuItem {
 
     public void setMenu(Menu menu) {
         this.menu = menu;
+    }
+
+    public Set<Permission> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(Set<Permission> permissions) {
+        this.permissions = permissions;
     }
 
     @Override
