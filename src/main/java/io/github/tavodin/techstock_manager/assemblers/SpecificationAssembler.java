@@ -20,7 +20,7 @@ public class SpecificationAssembler implements RepresentationModelAssembler<Spec
                 .withType("GET"));
 
         dto.add(linkTo(methodOn(SpecificationController.class)
-                .findAll(null))
+                .findAll(null, null))
                 .withRel("findAll")
                 .withType("GET"));
 
@@ -31,7 +31,7 @@ public class SpecificationAssembler implements RepresentationModelAssembler<Spec
 
         dto.add(linkTo(methodOn(SpecificationController.class)
                 .update(dto.getId(), null))
-                .withRel("updateProduct")
+                .withRel("update")
                 .withType("PUT"));
 
         dto.add(linkTo(methodOn(SpecificationController.class)

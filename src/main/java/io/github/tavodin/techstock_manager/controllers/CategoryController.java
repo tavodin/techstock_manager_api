@@ -4,6 +4,7 @@ import io.github.tavodin.techstock_manager.dto.*;
 import io.github.tavodin.techstock_manager.services.CategoryService;
 import io.github.tavodin.techstock_manager.services.CategorySpecificationService;
 import jakarta.validation.Valid;
+import jakarta.websocket.server.PathParam;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
@@ -34,8 +35,11 @@ public class CategoryController {
 
     @PreAuthorize("hasAuthority('READ_CATEGORY')")
     @GetMapping
-    public PagedModel<CategoryDTO> findAll(Pageable pageable) {
-        return service.findAll(pageable);
+    public PagedModel<CategoryDTO> findAll(
+            @RequestParam(name = "name", required = false) String name,
+            Pageable pageable)
+    {
+        return service.findAll(name, pageable);
     }
 
     @PreAuthorize("hasAuthority('CREATE_CATEGORY')")

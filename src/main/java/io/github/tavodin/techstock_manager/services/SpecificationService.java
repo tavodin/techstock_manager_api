@@ -1,6 +1,7 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.SpecificationAssembler;
+import io.github.tavodin.techstock_manager.dto.SpecificationAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationRequestDTO;
 import io.github.tavodin.techstock_manager.entities.Specification;
@@ -11,11 +12,14 @@ import io.github.tavodin.techstock_manager.repositories.SpecificationRepository;
 import io.github.tavodin.techstock_manager.repositories.UnitRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class SpecificationService {
@@ -39,10 +43,17 @@ public class SpecificationService {
     }
 
     @Transactional(readOnly = true)
-    public PagedModel<SpecificationDTO> findAll(Pageable pageable) {
-        Page<SpecificationDTO> page = specificationRepository.findAllProjected(pageable);
+    public PagedModel<SpecificationDTO> findAll(String name, Pageable pageable) {
+        Page<SpecificationDTO> page = specificationRepository.findAllProjected(name, pageable);
 
         return pagedAssembler.toModel(page, specificationAssembler);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SpecificationAutocompleteDTO> getSpecificationsByName(String name) {
+        Pageable pageable = PageRequest.of(0, 5);
+        Page<SpecificationAutocompleteDTO> page = specificationRepository.getSpecificationsByName(name, pageable);
+        return page.getContent();
     }
 
     @Transactional

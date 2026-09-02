@@ -68,7 +68,7 @@ public class SpecificationRepositoryTest extends AbstractJpaTest {
         entity = specificationRepository.save(entity);
 
         Page<SpecificationDTO> actual =
-                specificationRepository.findAllProjected(PageRequest.of(0, 10));
+                specificationRepository.findAllProjected(null, PageRequest.of(0, 10));
 
         assertNotNull(actual);
 

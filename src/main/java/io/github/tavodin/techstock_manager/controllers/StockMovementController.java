@@ -7,7 +7,10 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/stock-movement")
@@ -21,7 +24,13 @@ public class StockMovementController {
 
     @PreAuthorize("hasAuthority('READ_STOCK_MOVEMENT')")
     @GetMapping
-    public PagedModel<StockMovementDTO> findAll(Pageable pageable) {
-        return service.findAll(pageable);
+    public PagedModel<StockMovementDTO> findAll(
+            @RequestParam(name = "startDate", required = false)
+            LocalDate startDate,
+            @RequestParam(name = "endDate", required = false)
+            LocalDate endDate,
+            Pageable pageable
+    ) {
+        return service.findAll(startDate, endDate, pageable);
     }
 }

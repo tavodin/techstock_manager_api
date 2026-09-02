@@ -1,5 +1,6 @@
 package io.github.tavodin.techstock_manager.controllers;
 
+import io.github.tavodin.techstock_manager.dto.SpecificationAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationRequestDTO;
 import io.github.tavodin.techstock_manager.services.SpecificationService;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/specifications")
@@ -31,8 +33,18 @@ public class SpecificationController {
 
     @PreAuthorize("hasAuthority('READ_SPECIFICATION')")
     @GetMapping
-    public PagedModel<SpecificationDTO> findAll(Pageable pageable) {
-        return service.findAll(pageable);
+    public PagedModel<SpecificationDTO> findAll(
+            @RequestParam(value = "name", required = false)
+            String name,
+            Pageable pageable
+    ) {
+        return service.findAll(name, pageable);
+    }
+
+    @PreAuthorize("hasAuthority('READ_SPECIFICATION')")
+    @GetMapping("/autocomplete")
+    public List<SpecificationAutocompleteDTO> getAllSpecificationByName(@RequestParam("name") String name) {
+        return service.getSpecificationsByName(name);
     }
 
     @PreAuthorize("hasAuthority('CREATE_SPECIFICATION')")

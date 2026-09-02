@@ -35,8 +35,8 @@ public class BrandService {
     }
 
     @Transactional(readOnly = true)
-    public PagedModel<BrandDTO> findAll(Pageable pageable) {
-        Page<Brand> page = repository.findAll(pageable);
+    public PagedModel<BrandDTO> findAll(String name, Pageable pageable) {
+        Page<Brand> page = repository.getAll(name, pageable);
         return pagedAssembler.toModel(page, assembler);
     }
 

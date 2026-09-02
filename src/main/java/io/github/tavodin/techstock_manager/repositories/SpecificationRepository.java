@@ -1,5 +1,6 @@
 package io.github.tavodin.techstock_manager.repositories;
 
+import io.github.tavodin.techstock_manager.dto.SpecificationAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationDTO;
 import io.github.tavodin.techstock_manager.entities.Specification;
 import org.springframework.data.domain.Page;
@@ -29,8 +30,9 @@ public interface SpecificationRepository extends JpaRepository<Specification, Lo
             )
             FROM Specification s
             LEFT JOIN s.unit u
+            WHERE (:name IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :name, '%'))) 
             """)
-    Page<SpecificationDTO> findAllProjected(Pageable pageable);
+    Page<SpecificationDTO> findAllProjected(@Param("name") String name, Pageable pageable);
 
     @Query("""
             SELECT s
@@ -38,4 +40,11 @@ public interface SpecificationRepository extends JpaRepository<Specification, Lo
             WHERE s.id IN :specificationsId
             """)
     List<Specification> getSpecificationsByIds(@Param("specificationsId") List<Long> specificationsId);
+
+    @Query("""
+            SELECT new io.github.tavodin.techstock_manager.dto.SpecificationAutocompleteDTO(s.id, s.name)
+            FROM Specification s
+            WHERE (:name IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :name, '%')))
+            """)
+    Page<SpecificationAutocompleteDTO> getSpecificationsByName(@Param("name") String name, Pageable pageable);
 }

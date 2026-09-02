@@ -117,15 +117,15 @@ public class SpecificationServiceTest {
         Page<SpecificationDTO> page = new PageImpl<>(List.of(specificationDTO));
         PagedModel<SpecificationDTO> pagedModel = mock(PagedModel.class);
 
-        when(repository.findAllProjected(pageable)).thenReturn(page);
+        when(repository.findAllProjected(null, pageable)).thenReturn(page);
         when(pagedAssembler.toModel(page, assembler)).thenReturn(pagedModel);
 
-        PagedModel<SpecificationDTO> actual = service.findAll(pageable);
+        PagedModel<SpecificationDTO> actual = service.findAll(null, pageable);
 
         assertNotNull(actual);
         assertEquals(pagedModel, actual);
 
-        verify(repository).findAllProjected(pageable);
+        verify(repository).findAllProjected(null, pageable);
         verify(pagedAssembler).toModel(page, assembler);
     }
 

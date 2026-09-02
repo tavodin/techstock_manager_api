@@ -38,8 +38,8 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public PagedModel<CategoryDTO> findAll(Pageable pageable) {
-        Page<Category> page = repository.findAll(pageable);
+    public PagedModel<CategoryDTO> findAll(String name, Pageable pageable) {
+        Page<Category> page = repository.getAll(name, pageable);
         return pagedAssembler.toModel(page, assembler);
     }
 

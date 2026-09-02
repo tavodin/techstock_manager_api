@@ -23,7 +23,7 @@ public class CategoryAssembler implements RepresentationModelAssembler<Category,
                 .withType("GET"));
 
         model.add(linkTo(methodOn(CategoryController.class)
-                .findAll(PageRequest.of(0, 10)))
+                .findAll(null, PageRequest.of(0, 10)))
                 .withRel("findAll")
                 .withType("GET"));
 
@@ -34,13 +34,18 @@ public class CategoryAssembler implements RepresentationModelAssembler<Category,
 
         model.add(linkTo(methodOn(CategoryController.class)
                 .update(model.getId(), null))
-                .withRel("updateProduct")
+                .withRel("update")
                 .withType("PUT"));
 
         model.add(linkTo(methodOn(CategoryController.class)
                 .delete(model.getId()))
                 .withRel("delete")
                 .withType("DELETE"));
+
+        model.add(linkTo(methodOn(CategoryController.class)
+                .findAllSpecificationByCategoryId(model.getId()))
+                .withRel("findAllSpecifications")
+                .withType("GET"));
 
         return model;
     }

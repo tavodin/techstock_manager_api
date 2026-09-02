@@ -22,7 +22,7 @@ public class BrandAssembler implements RepresentationModelAssembler<Brand, Brand
                 .withType("GET"));
 
         model.add(linkTo(methodOn(BrandController.class)
-                .findAll(PageRequest.of(0, 10)))
+                .findAll(null, PageRequest.of(0, 10)))
                 .withRel("findAll")
                 .withType("GET"));
 

@@ -31,8 +31,11 @@ public class BrandController {
 
     @PreAuthorize("hasAuthority('READ_BRAND')")
     @GetMapping
-    public PagedModel<BrandDTO> findAll(Pageable pageable) {
-        return service.findAll(pageable);
+    public PagedModel<BrandDTO> findAll(
+            @RequestParam(name = "name", required = false) String name,
+            Pageable pageable
+    ) {
+        return service.findAll(name, pageable);
     }
 
     @PreAuthorize("hasAuthority('CREATE_BRAND')")

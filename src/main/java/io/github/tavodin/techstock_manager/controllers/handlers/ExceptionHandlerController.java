@@ -4,6 +4,7 @@ import io.github.tavodin.techstock_manager.dto.error.CustomError;
 import io.github.tavodin.techstock_manager.dto.error.FieldError;
 import io.github.tavodin.techstock_manager.dto.error.ValidationError;
 import io.github.tavodin.techstock_manager.exceptions.*;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -69,6 +70,20 @@ public class ExceptionHandlerController {
                 status.value(),
                 ex.getMessage(),
                 request.getRequestURI());
+
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<CustomError> jwtHandler(JwtException ex, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+
+        CustomError error = new CustomError(
+                Instant.now(),
+                status.value(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
 
         return ResponseEntity.status(status).body(error);
     }
