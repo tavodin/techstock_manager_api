@@ -1,6 +1,7 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.UnitAssembler;
+import io.github.tavodin.techstock_manager.dto.UnitAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.UnitDTO;
 import io.github.tavodin.techstock_manager.dto.UnitRequestDTO;
 import io.github.tavodin.techstock_manager.entities.Unit;
@@ -9,11 +10,14 @@ import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.UnitRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class UnitService {
@@ -43,6 +47,15 @@ public class UnitService {
         Page<Unit> page = unitRepository.findAllPaged(nameFilter, pageable);
 
         return pagedAssembler.toModel(page, unitAssembler);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UnitAutocompleteDTO> unitAutocomplete(String name) {
+        String nameFilter = name == null || name.isBlank()
+                ? null
+                : name.trim();
+
+        return unitRepository.getUnitsByName(nameFilter, PageRequest.of(0, 5));
     }
 
     @Transactional

@@ -1,5 +1,6 @@
 package io.github.tavodin.techstock_manager.controllers;
 
+import io.github.tavodin.techstock_manager.dto.UnitAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.UnitDTO;
 import io.github.tavodin.techstock_manager.dto.UnitRequestDTO;
 import io.github.tavodin.techstock_manager.services.UnitService;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/units")
@@ -37,6 +39,12 @@ public class UnitController {
             @RequestParam(name = "name", required = false) String name
     ) {
         return unitService.findAll(name, pageable);
+    }
+
+    @PreAuthorize("hasAuthority('READ_UNIT')")
+    @GetMapping("/autocomplete")
+    public List<UnitAutocompleteDTO> unitAutocomplete(@RequestParam("name") String name) {
+        return unitService.unitAutocomplete(name);
     }
 
     @PreAuthorize("hasAuthority('CREATE_UNIT')")

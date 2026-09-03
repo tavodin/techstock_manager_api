@@ -2,9 +2,11 @@ package io.github.tavodin.techstock_manager.repositories;
 
 import io.github.tavodin.techstock_manager.dto.SpecificationAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationDTO;
+import io.github.tavodin.techstock_manager.dto.SpecificationLoadUpdateDTO;
 import io.github.tavodin.techstock_manager.entities.Specification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +15,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SpecificationRepository extends JpaRepository<Specification, Long> {
+
+    @EntityGraph(attributePaths = "unit")
+    Optional<Specification> findById(@Param("id") Long id);
 
     @Query("""
             SELECT new io.github.tavodin.techstock_manager.dto.SpecificationDTO(

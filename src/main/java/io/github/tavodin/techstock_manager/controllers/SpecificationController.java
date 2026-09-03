@@ -2,6 +2,7 @@ package io.github.tavodin.techstock_manager.controllers;
 
 import io.github.tavodin.techstock_manager.dto.SpecificationAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationDTO;
+import io.github.tavodin.techstock_manager.dto.SpecificationLoadUpdateDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationRequestDTO;
 import io.github.tavodin.techstock_manager.services.SpecificationService;
 import jakarta.validation.Valid;
@@ -29,6 +30,12 @@ public class SpecificationController {
     @GetMapping("/{id}")
     public SpecificationDTO findById(@PathVariable Long id) {
         return service.findById(id);
+    }
+
+    @PreAuthorize("hasAuthority('READ_SPECIFICATION')")
+    @GetMapping("/load/{id}")
+    public SpecificationLoadUpdateDTO loadSpecificationToUpdate(@PathVariable Long id) {
+        return service.getSpecificationForUpdate(id);
     }
 
     @PreAuthorize("hasAuthority('READ_SPECIFICATION')")

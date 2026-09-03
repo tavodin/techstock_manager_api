@@ -3,6 +3,7 @@ package io.github.tavodin.techstock_manager.services;
 import io.github.tavodin.techstock_manager.assemblers.SpecificationAssembler;
 import io.github.tavodin.techstock_manager.dto.SpecificationAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationDTO;
+import io.github.tavodin.techstock_manager.dto.SpecificationLoadUpdateDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationRequestDTO;
 import io.github.tavodin.techstock_manager.entities.Specification;
 import io.github.tavodin.techstock_manager.entities.Unit;
@@ -40,6 +41,14 @@ public class SpecificationService {
     public SpecificationDTO findById(Long id) {
         SpecificationDTO entity = getDTOOrThrownException(id);
         return specificationAssembler.toModel(entity);
+    }
+
+    @Transactional(readOnly = true)
+    public SpecificationLoadUpdateDTO getSpecificationForUpdate(Long id) {
+        Specification entity = specificationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Specification not found"));
+
+        return new SpecificationLoadUpdateDTO(entity);
     }
 
     @Transactional(readOnly = true)
