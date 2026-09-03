@@ -34,8 +34,12 @@ public class SupplierService {
     }
 
     @Transactional(readOnly = true)
-    public PagedModel<SupplierDTO> findAll(Pageable pageable) {
-        Page<Supplier> page = repository.findAll(pageable);
+    public PagedModel<SupplierDTO> findAll(String name, Pageable pageable) {
+        String nameFilter = name == null || name.isBlank()
+                ? null
+                : name.trim();
+
+        Page<Supplier> page = repository.getAllByName(nameFilter, pageable);
         return pagedAssembler.toModel(page, assembler);
     }
 

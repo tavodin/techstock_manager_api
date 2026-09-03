@@ -31,8 +31,12 @@ public class SupplierController {
 
     @PreAuthorize("hasAuthority('READ_SUPPLIER')")
     @GetMapping
-    public PagedModel<SupplierDTO> findAll(Pageable pageable) {
-        return service.findAll(pageable);
+    public PagedModel<SupplierDTO> findAll(
+            @RequestParam(value = "name", required = false)
+            String name,
+            Pageable pageable
+    ) {
+        return service.findAll(name, pageable);
     }
 
     @PreAuthorize("hasAuthority('CREATE_SUPPLIER')")
