@@ -56,13 +56,12 @@ public class SupplierController {
     @PreAuthorize("hasAuthority('UPDATE_SUPPLIER')")
     @PutMapping("/{id}")
     public SupplierDTO update(@PathVariable Long id, @Valid @RequestBody SupplierRequestDTO requestDTO) {
-        SupplierDTO dto = service.update(id, requestDTO);
-        return dto;
+        return service.update(id, requestDTO);
     }
 
     @PreAuthorize("hasAuthority('DELETE_SUPPLIER')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> update(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
