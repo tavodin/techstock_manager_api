@@ -1,6 +1,7 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.BrandAssembler;
+import io.github.tavodin.techstock_manager.dto.BrandAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.BrandDTO;
 import io.github.tavodin.techstock_manager.dto.BrandRequestDTO;
 import io.github.tavodin.techstock_manager.entities.Brand;
@@ -9,11 +10,14 @@ import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.BrandRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class BrandService {
@@ -38,6 +42,11 @@ public class BrandService {
     public PagedModel<BrandDTO> findAll(String name, Pageable pageable) {
         Page<Brand> page = repository.getAll(name, pageable);
         return pagedAssembler.toModel(page, assembler);
+    }
+
+    @Transactional(readOnly = true)
+    public List<BrandAutocompleteDTO> getBrandsToAutocomplete(String name) {
+        return repository.getBrandsByName(name, PageRequest.of(0, 5));
     }
 
     @Transactional

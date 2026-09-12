@@ -1,5 +1,6 @@
 package io.github.tavodin.techstock_manager.repositories;
 
+import io.github.tavodin.techstock_manager.dto.CategorySpecificationsInputDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationLoadUpdateDTO;
@@ -52,4 +53,17 @@ public interface SpecificationRepository extends JpaRepository<Specification, Lo
             WHERE (:name IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :name, '%')))
             """)
     Page<SpecificationAutocompleteDTO> getSpecificationsByName(@Param("name") String name, Pageable pageable);
+
+    @Query("""
+            SELECT new io.github.tavodin.techstock_manager.dto.CategorySpecificationsInputDTO(
+                c.id, s.id, s.name, s.dataType, cs.required, u.symbol
+            )
+            FROM CategorySpecification cs
+            JOIN cs.category c
+            JOIN cs.specification s
+            LEFT JOIN s.unit u
+            WHERE c.id IN (:ids)
+            """)
+    List<CategorySpecificationsInputDTO> findAllSpecificationsByCategoryIds(
+            @Param("ids") List<Long> ids);
 }

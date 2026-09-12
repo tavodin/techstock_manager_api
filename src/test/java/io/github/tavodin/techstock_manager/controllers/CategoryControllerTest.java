@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.tavodin.techstock_manager.config.security.filters.JwtAuthenticationFilter;
 import io.github.tavodin.techstock_manager.dto.*;
 import io.github.tavodin.techstock_manager.entities.Category;
+import io.github.tavodin.techstock_manager.enums.SpecificationType;
 import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.services.CategoryService;
@@ -121,7 +122,7 @@ class CategoryControllerTest {
         PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(1, 0, 1);
         PagedModel<CategoryDTO> pagedModel = PagedModel.of(categories, metadata);
 
-        when(service.findAll(any(Pageable.class))).thenReturn(pagedModel);
+        when(service.findAll(null, any(Pageable.class))).thenReturn(pagedModel);
 
         mockMvc.perform(get(PATH)
                         .param("page", "0")
@@ -309,7 +310,8 @@ class CategoryControllerTest {
 
     @Test
     void shouldReturnSpecificationsWhenFindingSpecificationsByValidCategoryId() throws Exception {
-        CategorySpecificationsListDTO dto = new CategorySpecificationsListDTO(1L, "Frequência", true);
+        CategorySpecificationsListDTO dto =new CategorySpecificationsListDTO(
+                1L, "Frequência", SpecificationType.NUMBER, true);
 
         when(service.findAllSpecificationByCategoryId(validId)).thenReturn(List.of(dto));
 

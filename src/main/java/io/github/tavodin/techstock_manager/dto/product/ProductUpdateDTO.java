@@ -1,15 +1,16 @@
-package io.github.tavodin.techstock_manager.dto;
+package io.github.tavodin.techstock_manager.dto.product;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import org.hibernate.validator.constraints.Length;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public class ProductSaveDTO {
+public class ProductUpdateDTO {
 
     @NotBlank(message = "Name is required")
     @Length(min = 2, max = 200, message = "Name must contain between {min} and {max} characters")
@@ -35,14 +36,10 @@ public class ProductSaveDTO {
     @NotEmpty(message = "Category ID is required")
     private Set<Long> categoryIds;
 
-    @Valid
-    @NotEmpty(message = "Specifications are required")
-    private List<ProductSpecificationSaveDTO> specifications;
-
-    public ProductSaveDTO() {
+    public ProductUpdateDTO() {
     }
 
-    public ProductSaveDTO(String name, BigDecimal salePrice, String description, String sku, Integer minimumStock, Long brandId, Set<Long> categoriesId, List<ProductSpecificationSaveDTO> specifications) {
+    public ProductUpdateDTO(String name, BigDecimal salePrice, String description, String sku, Integer minimumStock, Long brandId, Set<Long> categoriesId) {
         this.name = name;
         this.salePrice = salePrice;
         this.description = description;
@@ -50,7 +47,6 @@ public class ProductSaveDTO {
         this.minimumStock = minimumStock;
         this.brandId = brandId;
         this.categoryIds = categoriesId;
-        this.specifications = specifications;
     }
 
     public String getName() {
@@ -109,24 +105,17 @@ public class ProductSaveDTO {
         this.categoryIds = categoryIds;
     }
 
-    public List<ProductSpecificationSaveDTO> getSpecifications() {
-        return specifications;
-    }
-
-    public void setSpecifications(List<ProductSpecificationSaveDTO> specifications) {
-        this.specifications = specifications;
-    }
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        ProductSaveDTO that = (ProductSaveDTO) o;
-        return Objects.equals(name, that.name) && Objects.equals(salePrice, that.salePrice) && Objects.equals(description, that.description) && Objects.equals(sku, that.sku) && Objects.equals(minimumStock, that.minimumStock) && Objects.equals(brandId, that.brandId) && Objects.equals(categoryIds, that.categoryIds) && Objects.equals(specifications, that.specifications);
+        ProductUpdateDTO that = (ProductUpdateDTO) o;
+        return Objects.equals(name, that.name) && Objects.equals(salePrice, that.salePrice) && Objects.equals(description, that.description) && Objects.equals(sku, that.sku) && Objects.equals(minimumStock, that.minimumStock) && Objects.equals(brandId, that.brandId) && Objects.equals(categoryIds, that.categoryIds);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, salePrice, description, sku, minimumStock, brandId, categoryIds, specifications);
+        return Objects.hash(name, salePrice, description, sku, minimumStock, brandId, categoryIds);
     }
 }
 

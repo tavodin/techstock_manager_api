@@ -1,5 +1,6 @@
 package io.github.tavodin.techstock_manager.controllers;
 
+import io.github.tavodin.techstock_manager.dto.BrandAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.BrandDTO;
 import io.github.tavodin.techstock_manager.dto.BrandRequestDTO;
 import io.github.tavodin.techstock_manager.services.BrandService;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/brands")
@@ -36,6 +38,14 @@ public class BrandController {
             Pageable pageable
     ) {
         return service.findAll(name, pageable);
+    }
+
+    @PreAuthorize("hasAuthority('READ_BRAND')")
+    @GetMapping("/autocomplete")
+    public List<BrandAutocompleteDTO> getBrandsToAutocomplete(
+            @RequestParam("name") String name
+    ) {
+        return service.getBrandsToAutocomplete(name);
     }
 
     @PreAuthorize("hasAuthority('CREATE_BRAND')")

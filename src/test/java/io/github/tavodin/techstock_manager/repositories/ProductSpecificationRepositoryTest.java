@@ -3,7 +3,7 @@ package io.github.tavodin.techstock_manager.repositories;
 import io.github.tavodin.techstock_manager.builder.ProductBuilder;
 import io.github.tavodin.techstock_manager.builder.SpecificationBuilder;
 import io.github.tavodin.techstock_manager.configurations.AbstractJpaTest;
-import io.github.tavodin.techstock_manager.dto.ProductSpecificationListDTO;
+import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationListDTO;
 import io.github.tavodin.techstock_manager.entities.Brand;
 import io.github.tavodin.techstock_manager.entities.Product;
 import io.github.tavodin.techstock_manager.entities.ProductSpecification;
@@ -12,8 +12,6 @@ import io.github.tavodin.techstock_manager.enums.SpecificationType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.util.List;
 

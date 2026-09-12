@@ -1,5 +1,6 @@
 package io.github.tavodin.techstock_manager.dto;
 
+import io.github.tavodin.techstock_manager.dto.product.ProductDTO;
 import io.github.tavodin.techstock_manager.enums.MovementType;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;

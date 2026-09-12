@@ -1,15 +1,14 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.CategoryAssembler;
-import io.github.tavodin.techstock_manager.dto.CategoryDTO;
-import io.github.tavodin.techstock_manager.dto.CategoryRequestDTO;
-import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
+import io.github.tavodin.techstock_manager.dto.*;
 import io.github.tavodin.techstock_manager.entities.Category;
 import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.CategoryRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
@@ -41,6 +40,11 @@ public class CategoryService {
     public PagedModel<CategoryDTO> findAll(String name, Pageable pageable) {
         Page<Category> page = repository.getAll(name, pageable);
         return pagedAssembler.toModel(page, assembler);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategoryAutocompleteDTO> getBrandsToAutocomplete(String name) {
+        return repository.getCategoriesByName(name, PageRequest.of(0, 5));
     }
 
     @Transactional(readOnly = true)
@@ -80,4 +84,6 @@ public class CategoryService {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
     }
+
+
 }

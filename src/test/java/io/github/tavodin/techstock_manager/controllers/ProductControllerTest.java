@@ -2,7 +2,7 @@ package io.github.tavodin.techstock_manager.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.tavodin.techstock_manager.config.security.filters.JwtAuthenticationFilter;
-import io.github.tavodin.techstock_manager.dto.*;
+import io.github.tavodin.techstock_manager.dto.product.*;
 import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
@@ -67,7 +67,7 @@ class ProductControllerTest {
     private Long invalidId = 2L;
 
     private ProductDTO dto;
-    private ProductSaveDTO request;
+    private ProductRequestDTO request;
     private ProductUpdateDTO updateDTO;
     private ProductSpecificationListDTO listSpecDTO;
     private ProductSpecificationSaveDTO saveSpecRequest;
@@ -76,7 +76,7 @@ class ProductControllerTest {
 
     @BeforeEach
     void setUp() {
-        request = new ProductSaveDTO(
+        request = new ProductRequestDTO(
                 "Monitor DELL",
                 BigDecimal.valueOf(1999.99),
                 "Monitor DELL 24 polegadas ideal para escritório",
@@ -211,7 +211,7 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnCustomErrorAndNotFoundWhenSavingWithInvalidBrandId() throws Exception {
-        when(service.save(any(ProductSaveDTO.class)))
+        when(service.save(any(ProductRequestDTO.class)))
                 .thenThrow(new ResourceNotFoundException(brandNotFoundMsg));
 
         mockMvc.perform(post(PATH)
@@ -228,7 +228,7 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnCustomErrorAndNotFoundWhenSavingWithInvalidCategoryIds() throws Exception {
-        when(service.save(any(ProductSaveDTO.class)))
+        when(service.save(any(ProductRequestDTO.class)))
                 .thenThrow(new ResourceNotFoundException(categoryNotFoundMsg));
 
         mockMvc.perform(post(PATH)
@@ -245,7 +245,7 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnCustomErrorAndConflictWhenSavingWithExistsSku() throws Exception {
-        when(service.save(any(ProductSaveDTO.class)))
+        when(service.save(any(ProductRequestDTO.class)))
                 .thenThrow(new AlreadyExistsException(skuExistsMsg));
 
         mockMvc.perform(post(PATH)
@@ -262,7 +262,7 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnCustomErrorAndNotFoundWhenSavingWithInvalidSpecificationIds() throws Exception {
-        when(service.save(any(ProductSaveDTO.class)))
+        when(service.save(any(ProductRequestDTO.class)))
                 .thenThrow(new ResourceNotFoundException(specificationNotFoundMsg));
 
         mockMvc.perform(post(PATH)
@@ -279,7 +279,7 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnCustomErrorAndBadRequestWhenSavingWithMissingSpecification() throws Exception {
-        when(service.save(any(ProductSaveDTO.class)))
+        when(service.save(any(ProductRequestDTO.class)))
                 .thenThrow(new BusinessException("Missing required specifications"));
 
         mockMvc.perform(post(PATH)

@@ -1,9 +1,11 @@
 package io.github.tavodin.techstock_manager.controllers;
 
-import io.github.tavodin.techstock_manager.dto.*;
+import io.github.tavodin.techstock_manager.dto.product.*;
 import io.github.tavodin.techstock_manager.services.ProductService;
 import io.github.tavodin.techstock_manager.services.ProductSpecificationService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -30,9 +32,25 @@ public class ProductController {
         return service.findById(id);
     }
 
+    @PreAuthorize("hasAuthority('READ_PRODUCT')")
+    @GetMapping("/{id}/load")
+    public ProductLoadDTO loadProductById(@PathVariable Long id) {
+        return service.loadProductById(id);
+    }
+
+    @PreAuthorize("hasAuthority('READ_PRODUCT')")
+    @GetMapping
+    public PagedModel<ProductDTO> getAll(
+            @RequestParam(value = "name", required = false)
+            String name,
+            Pageable pageable
+    ) {
+        return service.findAll(name, pageable);
+    }
+
     @PreAuthorize("hasAuthority('CREATE_PRODUCT')")
     @PostMapping
-    public ResponseEntity<ProductDTO> save(@RequestBody @Valid ProductSaveDTO request) {
+    public ResponseEntity<ProductDTO> save(@RequestBody @Valid ProductRequestDTO request) {
         ProductDTO dto = service.save(request);
 
         URI uri = ServletUriComponentsBuilder
@@ -46,7 +64,7 @@ public class ProductController {
 
     @PreAuthorize("hasAuthority('UPDATE_PRODUCT')")
     @PutMapping("/{id}")
-    public ProductDTO update(@PathVariable Long id, @RequestBody @Valid ProductUpdateDTO request) {
+    public ProductDTO update(@PathVariable Long id, @RequestBody @Valid ProductRequestDTO request) {
         return service.update(id, request);
     }
 
@@ -59,7 +77,7 @@ public class ProductController {
 
     @PreAuthorize("hasAuthority('READ_PRODUCT')")
     @GetMapping("/{id}/specifications")
-    public List<ProductSpecificationListDTO> findAll(@PathVariable Long id) {
+    public List<ProductSpecificationListDTO> findAllSpecifications(@PathVariable Long id) {
         return prodSpecService.findAll(id);
     }
 

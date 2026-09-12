@@ -6,10 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.tavodin.techstock_manager.builder.ProductBuilder;
 import io.github.tavodin.techstock_manager.builder.SpecificationBuilder;
 import io.github.tavodin.techstock_manager.configurations.AbstractIntegrationTest;
-import io.github.tavodin.techstock_manager.dto.*;
 import io.github.tavodin.techstock_manager.dto.error.CustomError;
 import io.github.tavodin.techstock_manager.dto.error.FieldError;
 import io.github.tavodin.techstock_manager.dto.error.ValidationError;
+import io.github.tavodin.techstock_manager.dto.product.*;
 import io.github.tavodin.techstock_manager.entities.*;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
 import io.github.tavodin.techstock_manager.integrationtests.utils.AuthTestUtil;
@@ -82,7 +82,7 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
     private String skuExistsMsg = "SKU already exists";
     private String missingSpecMsg = "Missing required specifications";
 
-    private ProductSaveDTO request;
+    private ProductRequestDTO request;
     private ProductUpdateDTO updateDTO;
     private Category category;
     private Brand brand;
@@ -108,7 +108,7 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
         brand = new Brand();
         brand.setName("DELL");
 
-        request = new ProductSaveDTO();
+        request = new ProductRequestDTO();
         request.setName("Monitor DELL");
         request.setSalePrice(BigDecimal.valueOf(1999.99));
         request.setSku("MON-001");

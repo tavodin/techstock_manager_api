@@ -1,4 +1,4 @@
-package io.github.tavodin.techstock_manager.dto;
+package io.github.tavodin.techstock_manager.dto.product;
 
 import org.hibernate.validator.constraints.Length;
 

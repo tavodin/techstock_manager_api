@@ -1,5 +1,7 @@
 package io.github.tavodin.techstock_manager.repositories;
 
+import io.github.tavodin.techstock_manager.dto.CategoryAutocompleteDTO;
+import io.github.tavodin.techstock_manager.dto.CategorySpecificationsInputDTO;
 import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
 import io.github.tavodin.techstock_manager.entities.Category;
 import org.springframework.data.domain.Page;
@@ -21,7 +23,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     @Query("""
             SELECT new io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO(
-                cs.id, s.name, cs.required
+                cs.id, s.name, s.dataType, cs.required
             )
             FROM CategorySpecification cs
             JOIN cs.category c
@@ -30,6 +32,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
             """)
     List<CategorySpecificationsListDTO> findAllSpecificationsByCategoryId(@Param("categoryId") Long categoryId);
 
+
+
     @Query("""
             SELECT DISTINCT cs.specification.id
             FROM CategorySpecification cs
@@ -37,4 +41,11 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
             AND cs.required = true
             """)
     List<Long> findRequiredSpecificationsIdsByCategoryIds(@Param("categoryIds") List<Long> categoryId);
+
+    @Query("""
+            SELECT new io.github.tavodin.techstock_manager.dto.CategoryAutocompleteDTO(c.id, c.name)
+            FROM Category c
+            WHERE (:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%')))
+            """)
+    List<CategoryAutocompleteDTO> getCategoriesByName(@Param("name") String name, Pageable pageable);
 }

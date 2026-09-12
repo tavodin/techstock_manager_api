@@ -5,6 +5,7 @@ import io.github.tavodin.techstock_manager.dto.CategoryDTO;
 import io.github.tavodin.techstock_manager.dto.CategoryRequestDTO;
 import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
 import io.github.tavodin.techstock_manager.entities.Category;
+import io.github.tavodin.techstock_manager.enums.SpecificationType;
 import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.CategoryRepository;
@@ -105,7 +106,7 @@ class CategoryServiceTest {
         when(repository.findAll(pageable)).thenReturn(page);
         when(pagedAssembler.toModel(page, assembler)).thenReturn(pagedModel);
 
-        PagedModel<CategoryDTO> actual = service.findAll(pageable);
+        PagedModel<CategoryDTO> actual = service.findAll(null, pageable);
 
         assertNotNull(actual);
         assertEquals(pagedModel, actual);
@@ -117,7 +118,7 @@ class CategoryServiceTest {
     @Test
     void shouldReturnSpecificationListWhenFindingSpecificationsWithValidCategoryId() {
         CategorySpecificationsListDTO specList =
-                new CategorySpecificationsListDTO(1L, "Frequência", true);
+                new CategorySpecificationsListDTO(1L, "Frequência", SpecificationType.NUMBER,  true);
 
         when(repository.findById(validId)).thenReturn(Optional.of(category));
         when(repository.findAllSpecificationsByCategoryId(validId)).thenReturn(List.of(specList));

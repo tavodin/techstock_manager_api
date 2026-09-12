@@ -1,10 +1,7 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.SpecificationAssembler;
-import io.github.tavodin.techstock_manager.dto.SpecificationAutocompleteDTO;
-import io.github.tavodin.techstock_manager.dto.SpecificationDTO;
-import io.github.tavodin.techstock_manager.dto.SpecificationLoadUpdateDTO;
-import io.github.tavodin.techstock_manager.dto.SpecificationRequestDTO;
+import io.github.tavodin.techstock_manager.dto.*;
 import io.github.tavodin.techstock_manager.entities.Specification;
 import io.github.tavodin.techstock_manager.entities.Unit;
 import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
@@ -49,6 +46,11 @@ public class SpecificationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Specification not found"));
 
         return new SpecificationLoadUpdateDTO(entity);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategorySpecificationsInputDTO> findAllSpecificationByCategoryIds(List<Long> ids) {
+        return specificationRepository.findAllSpecificationsByCategoryIds(ids);
     }
 
     @Transactional(readOnly = true)

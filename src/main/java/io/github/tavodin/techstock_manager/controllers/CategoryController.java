@@ -42,6 +42,15 @@ public class CategoryController {
         return service.findAll(name, pageable);
     }
 
+    @PreAuthorize("hasAuthority('READ_CATEGORY')")
+    @GetMapping("/autocomplete")
+    public List<CategoryAutocompleteDTO> getCategoriesToAutocomplete(
+            @RequestParam(name = "name", required = false)
+            String name)
+    {
+        return service.getBrandsToAutocomplete(name);
+    }
+
     @PreAuthorize("hasAuthority('CREATE_CATEGORY')")
     @PostMapping
     public ResponseEntity<CategoryDTO> save(@RequestBody @Valid CategoryRequestDTO request) {
@@ -74,6 +83,7 @@ public class CategoryController {
     public List<CategorySpecificationsListDTO> findAllSpecificationByCategoryId(@PathVariable Long id) {
         return service.findAllSpecificationByCategoryId(id);
     }
+
 
     @PreAuthorize("hasAuthority('CREATE_CATEGORY_SPECIFICATION')")
     @PostMapping("/specifications")

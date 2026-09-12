@@ -1,9 +1,6 @@
 package io.github.tavodin.techstock_manager.controllers;
 
-import io.github.tavodin.techstock_manager.dto.SpecificationAutocompleteDTO;
-import io.github.tavodin.techstock_manager.dto.SpecificationDTO;
-import io.github.tavodin.techstock_manager.dto.SpecificationLoadUpdateDTO;
-import io.github.tavodin.techstock_manager.dto.SpecificationRequestDTO;
+import io.github.tavodin.techstock_manager.dto.*;
 import io.github.tavodin.techstock_manager.services.SpecificationService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
@@ -46,6 +43,13 @@ public class SpecificationController {
             Pageable pageable
     ) {
         return service.findAll(name, pageable);
+    }
+
+    @PreAuthorize("hasAuthority('READ_CATEGORY_SPECIFICATION')")
+    @GetMapping("/categories")
+    public List<CategorySpecificationsInputDTO> findAllSpecificationByCategoryIdToProduct(
+            @RequestParam("ids") List<Long> ids) {
+        return service.findAllSpecificationByCategoryIds(ids);
     }
 
     @PreAuthorize("hasAuthority('READ_SPECIFICATION')")

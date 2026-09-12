@@ -1,9 +1,9 @@
 package io.github.tavodin.techstock_manager.services;
 
-import io.github.tavodin.techstock_manager.dto.ProductSpecificationDTO;
-import io.github.tavodin.techstock_manager.dto.ProductSpecificationListDTO;
-import io.github.tavodin.techstock_manager.dto.ProductSpecificationSaveDTO;
-import io.github.tavodin.techstock_manager.dto.ProductSpecificationUpdateDTO;
+import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationDTO;
+import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationListDTO;
+import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationSaveDTO;
+import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationUpdateDTO;
 import io.github.tavodin.techstock_manager.entities.Category;
 import io.github.tavodin.techstock_manager.entities.Product;
 import io.github.tavodin.techstock_manager.entities.ProductSpecification;
@@ -11,7 +11,6 @@ import io.github.tavodin.techstock_manager.entities.Specification;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
 import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
-import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.CategoryRepository;
 import io.github.tavodin.techstock_manager.repositories.ProductRepository;

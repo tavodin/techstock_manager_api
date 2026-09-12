@@ -1,10 +1,10 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.ProductAssembler;
-import io.github.tavodin.techstock_manager.dto.ProductDTO;
-import io.github.tavodin.techstock_manager.dto.ProductSaveDTO;
-import io.github.tavodin.techstock_manager.dto.ProductSpecificationSaveDTO;
-import io.github.tavodin.techstock_manager.dto.ProductUpdateDTO;
+import io.github.tavodin.techstock_manager.dto.product.ProductDTO;
+import io.github.tavodin.techstock_manager.dto.product.ProductLoadDTO;
+import io.github.tavodin.techstock_manager.dto.product.ProductRequestDTO;
+import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationSaveDTO;
 import io.github.tavodin.techstock_manager.entities.*;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
 import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
@@ -12,6 +12,10 @@ import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.*;
 import jakarta.persistence.EntityManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,15 +35,17 @@ public class ProductService {
     private final SpecificationRepository specRepository;
     private final ProductSpecificationRepository prodSpecRepository;
     private final ProductAssembler assembler;
+    private final PagedResourcesAssembler<Product> pagedAssembler;
     private final EntityManager entityManager;
 
-    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, BrandRepository brandRepository, SpecificationRepository specRepository, ProductSpecificationRepository prodSpecRepository, ProductAssembler assembler, EntityManager entityManager) {
+    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, BrandRepository brandRepository, SpecificationRepository specRepository, ProductSpecificationRepository prodSpecRepository, ProductAssembler assembler, PagedResourcesAssembler<Product> pagedAssembler, EntityManager entityManager) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.brandRepository = brandRepository;
         this.specRepository = specRepository;
         this.prodSpecRepository = prodSpecRepository;
         this.assembler = assembler;
+        this.pagedAssembler = pagedAssembler;
         this.entityManager = entityManager;
     }
 
@@ -49,14 +55,32 @@ public class ProductService {
         return assembler.toModel(entity);
     }
 
+    @Transactional(readOnly = true)
+    public ProductLoadDTO loadProductById(Long id) {
+        Product entity = productRepository.getProductToLoad(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product no found"));
+
+        return new ProductLoadDTO(entity);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedModel<ProductDTO> findAll(String name, Pageable pageable) {
+        String nameFilter = name == null || name.isBlank()
+                ? null
+                : name.trim();
+
+        Page<Product> page = productRepository.getAll(nameFilter, pageable);
+        return pagedAssembler.toModel(page, assembler);
+    }
+
     @Transactional
-    public ProductDTO save(ProductSaveDTO request) {
+    public ProductDTO save(ProductRequestDTO request) {
         Product product = new Product();
 
         Brand brand = getBrandOrThrowException(request.getBrandId());
         Set<Category> categories = new HashSet<>(getCategoriesOrThrowException(request.getCategoryIds()));
 
-        if(productRepository.existsBySku(request.getSku())) {
+        if (productRepository.existsBySku(request.getSku())) {
             throw new AlreadyExistsException("SKU already exists");
         }
 
@@ -74,21 +98,23 @@ public class ProductService {
 
         product = productRepository.save(product);
 
-        List<ProductSpecification> specifications = createSpecifications(request, product);
+        List<ProductSpecification> specifications = new ArrayList<>();
+        createSpecifications(request, product, specifications);
+
         prodSpecRepository.saveAll(specifications);
 
         return assembler.toModel(product);
     }
 
     @Transactional
-    public ProductDTO update(Long id, ProductUpdateDTO request) {
+    public ProductDTO update(Long id, ProductRequestDTO request) {
         Product findProduct = getProductOrThrowException(id);
 
-        if(productRepository.existsBySkuAndIdNot(request.getSku(), id)) {
+        if (productRepository.existsBySkuAndIdNot(request.getSku(), id)) {
             throw new AlreadyExistsException("SKU already exists");
         }
 
-        if(findProduct.getBrand().getId() != request.getBrandId()) {
+        if (findProduct.getBrand().getId() != request.getBrandId()) {
             Brand findBrand = getBrandOrThrowException(request.getBrandId());
             findProduct.setBrand(findBrand);
         }
@@ -98,7 +124,7 @@ public class ProductService {
                 .map(Category::getId)
                 .toList();
 
-        if(!findCategoryIds.equals(request.getCategoryIds())) {
+        if (!findCategoryIds.equals(request.getCategoryIds())) {
             Set<Category> findCategories = new HashSet<>(getCategoriesOrThrowException(request.getCategoryIds()));
             findProduct.setCategories(findCategories);
         }
@@ -109,7 +135,17 @@ public class ProductService {
         findProduct.setSku(request.getSku());
         findProduct.setMinimumStock(request.getMinimumStock());
 
-        findProduct = productRepository.save(findProduct);
+        findProduct.getSpecifications().clear();
+
+        findProduct = productRepository.saveAndFlush(findProduct);
+
+        List<ProductSpecification> specifications = new ArrayList<>();
+
+        Product finalFindProduct = findProduct;
+
+        createSpecifications(request, finalFindProduct, specifications);
+
+        prodSpecRepository.saveAll(specifications);
 
         return assembler.toModel(findProduct);
     }
@@ -121,8 +157,8 @@ public class ProductService {
         productRepository.save(product);
     }
 
-    private List<ProductSpecification> createSpecifications(
-            ProductSaveDTO request, Product product) {
+    private void createSpecifications(
+            ProductRequestDTO request, Product product, List<ProductSpecification> productSpecifications) {
 
         List<ProductSpecificationSaveDTO> productSpecRequest = request.getSpecifications();
         List<Long> specIds = productSpecRequest.stream().map(ProductSpecificationSaveDTO::specificationId).toList();
@@ -131,9 +167,7 @@ public class ProductService {
 
         requiredSpecificationsValidation(specifications, request.getCategoryIds());
 
-        List<ProductSpecification> productSpecifications = new ArrayList<>();
-
-        for(Specification specification : specifications) {
+        for (Specification specification : specifications) {
             ProductSpecificationSaveDTO findProdSpec = productSpecRequest.stream()
                     .filter(ps -> ps.specificationId().equals(specification.getId()))
                     .findFirst()
@@ -143,9 +177,9 @@ public class ProductService {
             productSpec.setProduct(product);
             productSpec.setSpecification(specification);
 
-            if(specification.getDataType() == SpecificationType.NUMBER) {
+            if (specification.getDataType() == SpecificationType.NUMBER) {
                 productSpec.setValueNumber(findProdSpec.valueNumber());
-            } else if(specification.getDataType() == SpecificationType.STRING) {
+            } else if (specification.getDataType() == SpecificationType.STRING) {
                 productSpec.setValueString(findProdSpec.valueString());
             } else {
                 productSpec.setValueBoolean(findProdSpec.valueBoolean());
@@ -153,8 +187,6 @@ public class ProductService {
 
             productSpecifications.add(productSpec);
         }
-
-        return productSpecifications;
     }
 
     private void requiredSpecificationsValidation(List<Specification> specifications, Set<Long> categoriesId) {
@@ -166,9 +198,14 @@ public class ProductService {
                 .map(Specification::getId)
                 .collect(Collectors.toSet());
 
-        if(!requestIds.containsAll(requiredIds)) {
+        if (!requestIds.containsAll(requiredIds)) {
             throw new BusinessException("Missing required specifications");
         }
+    }
+
+    private ProductSpecification getProdSpecOrThrowException(Long prodId, Long specId) {
+        return prodSpecRepository.getByProductIdAndSpecificationId(prodId, specId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product Specification not found"));
     }
 
     private Brand getBrandOrThrowException(Long brandId) {
@@ -179,7 +216,7 @@ public class ProductService {
     private List<Category> getCategoriesOrThrowException(Set<Long> categoriesId) {
         List<Category> categories = categoryRepository.findAllById(categoriesId);
 
-        if(categoriesId.size() != categories.size()) {
+        if (categoriesId.size() != categories.size()) {
             throw new ResourceNotFoundException("One or more categories were not found");
         }
 
@@ -189,7 +226,7 @@ public class ProductService {
     private List<Specification> getSpecificationsOrThrowException(List<Long> specificationsId) {
         List<Specification> specifications = specRepository.getSpecificationsByIds(specificationsId);
 
-        if(specificationsId.size() != specifications.size()) {
+        if (specificationsId.size() != specifications.size()) {
             throw new ResourceNotFoundException("One or more specifications were not found");
         }
 
@@ -202,4 +239,6 @@ public class ProductService {
 
         return product;
     }
+
+
 }
