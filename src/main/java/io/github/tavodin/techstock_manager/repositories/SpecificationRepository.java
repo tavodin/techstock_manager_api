@@ -14,6 +14,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface SpecificationRepository extends JpaRepository<Specification, Long> {
 
@@ -66,4 +67,11 @@ public interface SpecificationRepository extends JpaRepository<Specification, Lo
             """)
     List<CategorySpecificationsInputDTO> findAllSpecificationsByCategoryIds(
             @Param("ids") List<Long> ids);
+
+    @Query("""
+            SELECT s
+            FROM Specification s
+            WHERE s.id IN :ids
+            """)
+    Set<Specification> getSpecificationByIds(Set<Long> ids);
 }

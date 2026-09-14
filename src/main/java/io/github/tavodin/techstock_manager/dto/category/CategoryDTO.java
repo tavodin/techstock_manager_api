@@ -1,4 +1,4 @@
-package io.github.tavodin.techstock_manager.dto;
+package io.github.tavodin.techstock_manager.dto.category;
 
 import io.github.tavodin.techstock_manager.entities.Category;
 import org.springframework.hateoas.RepresentationModel;

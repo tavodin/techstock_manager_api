@@ -20,8 +20,8 @@ public class Specification extends BaseEntity {
     @Column(nullable = false)
     private Boolean filterable;
 
-    @OneToMany(mappedBy = "specification", orphanRemoval = true)
-    private Set<CategorySpecification> categorySpecifications = new HashSet<>();
+    @ManyToMany(mappedBy = "specifications")
+    private Set<Category> categories = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "unit_id")
@@ -37,12 +37,12 @@ public class Specification extends BaseEntity {
         this.unit = unit;
     }
 
-    public Specification(Long id, String name, SpecificationType dataType, Boolean filterable, Set<CategorySpecification> categorySpecifications, Unit unit, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Specification(Long id, LocalDateTime createdAt, LocalDateTime updatedAt, String name, SpecificationType dataType, Boolean filterable, Set<Category> categories, Unit unit) {
         super(id, createdAt, updatedAt);
         this.name = name;
         this.dataType = dataType;
         this.filterable = filterable;
-        this.categorySpecifications = categorySpecifications;
+        this.categories = categories;
         this.unit = unit;
     }
 
@@ -70,19 +70,19 @@ public class Specification extends BaseEntity {
         this.filterable = filterable;
     }
 
+    public Set<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(Set<Category> categories) {
+        this.categories = categories;
+    }
+
     public Unit getUnit() {
         return unit;
     }
 
     public void setUnit(Unit unit) {
         this.unit = unit;
-    }
-
-    public Set<CategorySpecification> getCategorySpecifications() {
-        return categorySpecifications;
-    }
-
-    public void setCategorySpecifications(Set<CategorySpecification> categorySpecifications) {
-        this.categorySpecifications = categorySpecifications;
     }
 }

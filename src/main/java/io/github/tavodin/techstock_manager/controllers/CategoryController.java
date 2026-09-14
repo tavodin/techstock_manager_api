@@ -1,10 +1,12 @@
 package io.github.tavodin.techstock_manager.controllers;
 
-import io.github.tavodin.techstock_manager.dto.*;
+import io.github.tavodin.techstock_manager.dto.category.CategoryAutocompleteDTO;
+import io.github.tavodin.techstock_manager.dto.category.CategoryDTO;
+import io.github.tavodin.techstock_manager.dto.category.CategoryLoadDTO;
+import io.github.tavodin.techstock_manager.dto.category.CategoryRequestDTO;
+import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
 import io.github.tavodin.techstock_manager.services.CategoryService;
-import io.github.tavodin.techstock_manager.services.CategorySpecificationService;
 import jakarta.validation.Valid;
-import jakarta.websocket.server.PathParam;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
@@ -20,17 +22,21 @@ import java.util.List;
 public class CategoryController {
 
     private final CategoryService service;
-    private final CategorySpecificationService catSpecService;
 
-    public CategoryController(CategoryService service, CategorySpecificationService catSpecService) {
+    public CategoryController(CategoryService service) {
         this.service = service;
-        this.catSpecService = catSpecService;
     }
 
     @PreAuthorize("hasAuthority('READ_CATEGORY')")
     @GetMapping("/{id}")
     public CategoryDTO findById(@PathVariable Long id) {
         return service.findById(id);
+    }
+
+    @PreAuthorize("hasAuthority('READ_CATEGORY')")
+    @GetMapping("/{id}/load")
+    public CategoryLoadDTO loadCategoryById(@PathVariable Long id) {
+        return service.loadCategoryById(id);
     }
 
     @PreAuthorize("hasAuthority('READ_CATEGORY')")
@@ -48,7 +54,7 @@ public class CategoryController {
             @RequestParam(name = "name", required = false)
             String name)
     {
-        return service.getBrandsToAutocomplete(name);
+        return service.getCategoriesToAutocomplete(name);
     }
 
     @PreAuthorize("hasAuthority('CREATE_CATEGORY')")
@@ -78,37 +84,9 @@ public class CategoryController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('READ_CATEGORY_SPECIFICATION')")
+    @PreAuthorize("hasAuthority('READ_CATEGORY')")
     @GetMapping("/{id}/specifications")
     public List<CategorySpecificationsListDTO> findAllSpecificationByCategoryId(@PathVariable Long id) {
         return service.findAllSpecificationByCategoryId(id);
-    }
-
-
-    @PreAuthorize("hasAuthority('CREATE_CATEGORY_SPECIFICATION')")
-    @PostMapping("/specifications")
-    public ResponseEntity<CategorySpecificationDTO> saveCat(@RequestBody @Valid CategorySpecificationRequestDTO request) {
-        CategorySpecificationDTO dto = catSpecService.save(request);
-
-        URI uri = ServletUriComponentsBuilder
-                .fromCurrentRequestUri()
-                .path("/{id}")
-                .buildAndExpand(dto.getId())
-                .toUri();
-
-        return ResponseEntity.created(uri).body(dto);
-    }
-
-    @PreAuthorize("hasAuthority('UPDATE_CATEGORY_SPECIFICATION')")
-    @PutMapping("/specifications/{id}")
-    public CategorySpecificationDTO updateCatSpec(@PathVariable Long id, @RequestBody @Valid CategorySpecificationRequestDTO request) {
-        return catSpecService.update(id, request);
-    }
-
-    @PreAuthorize("hasAuthority('DELETE_CATEGORY_SPECIFICATION')")
-    @DeleteMapping("/specifications/{id}")
-    public ResponseEntity<Void> deleteCatSpec(@PathVariable Long id) {
-        catSpecService.delete(id);
-        return ResponseEntity.noContent().build();
     }
 }

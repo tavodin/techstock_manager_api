@@ -17,7 +17,7 @@ public class ProductLoadDTO {
     private Integer minimumStock;
     private BrandLoadDTO brand;
     private Set<CategoryLoadDTO> categories = new HashSet<>();
-    private Set<SpecificationLoadDTO> specifications = new HashSet<>();
+    private Set<SpecificationProductLoadDTO> specifications = new HashSet<>();
 
     public ProductLoadDTO() {
     }
@@ -39,10 +39,7 @@ public class ProductLoadDTO {
                 .collect(Collectors.toSet());
 
         this.specifications = entity.getSpecifications().stream()
-                .map(specification -> new SpecificationLoadDTO(
-                        specification,
-                        entity.getCategories()
-                ))
+                .map(SpecificationProductLoadDTO::new)
                 .collect(Collectors.toSet());
     }
 
@@ -78,7 +75,7 @@ public class ProductLoadDTO {
         return categories;
     }
 
-    public Set<SpecificationLoadDTO> getSpecifications() {
+    public Set<SpecificationProductLoadDTO> getSpecifications() {
         return specifications;
     }
 }

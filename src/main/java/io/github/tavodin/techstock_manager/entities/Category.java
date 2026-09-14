@@ -1,9 +1,6 @@
 package io.github.tavodin.techstock_manager.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -18,8 +15,12 @@ public class Category extends BaseEntity {
     @ManyToMany(mappedBy = "categories")
     private Set<Product> products = new HashSet<>();
 
-    @OneToMany(mappedBy = "category", orphanRemoval = true)
-    private Set<CategorySpecification> categorySpecifications = new HashSet<>();
+    @ManyToMany
+    @JoinTable(
+            name = "category_specification",
+            joinColumns = @JoinColumn(name = "category_id"),
+            inverseJoinColumns = @JoinColumn(name = "specification_id"))
+    private Set<Specification> specifications = new HashSet<>();
 
     public Category() {
     }
@@ -27,11 +28,6 @@ public class Category extends BaseEntity {
     public Category(Long id, String name, LocalDateTime createdAt, LocalDateTime updatedAt) {
         super(id, createdAt, updatedAt);
         this.name = name;
-    }
-
-    public Category(String name, Set<Product> products, Set<CategorySpecification> categorySpecifications) {
-        this.name = name;
-        this.products = products;
     }
 
     public String getName() {
@@ -50,11 +46,11 @@ public class Category extends BaseEntity {
         this.products = products;
     }
 
-    public Set<CategorySpecification> getCategorySpecifications() {
-        return categorySpecifications;
+    public Set<Specification> getSpecifications() {
+        return specifications;
     }
 
-    public void setCategorySpecifications(Set<CategorySpecification> categorySpecifications) {
-        this.categorySpecifications = categorySpecifications;
+    public void setSpecifications(Set<Specification> specifications) {
+        this.specifications = specifications;
     }
 }

@@ -1,13 +1,9 @@
 package io.github.tavodin.techstock_manager.dto.product;
 
-import io.github.tavodin.techstock_manager.entities.Category;
-import io.github.tavodin.techstock_manager.entities.CategorySpecification;
 import io.github.tavodin.techstock_manager.entities.ProductSpecification;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
 
-import java.util.Set;
-
-public class SpecificationLoadDTO {
+public class SpecificationProductLoadDTO {
 
     private Long specificationId;
     private String specificationName;
@@ -15,15 +11,12 @@ public class SpecificationLoadDTO {
     private String valueString;
     private Double valueNumber;
     private Boolean valueBoolean;
-    private Boolean required;
     private String unitSymbol;
 
-    public SpecificationLoadDTO() {
+    public SpecificationProductLoadDTO() {
     }
 
-    public SpecificationLoadDTO(
-            ProductSpecification entity,
-            Set<Category> categories) {
+    public SpecificationProductLoadDTO(ProductSpecification entity) {
 
         Long specificationId = entity.getSpecification().getId();
 
@@ -33,12 +26,6 @@ public class SpecificationLoadDTO {
         this.valueString = entity.getValueString();
         this.valueNumber = entity.getValueNumber();
         this.valueBoolean = entity.getValueBoolean();
-
-        this.required = categories.stream()
-                .flatMap(category -> category.getCategorySpecifications().stream())
-                .filter(categorySpecification ->
-                        categorySpecification.getSpecification().getId().equals(specificationId))
-                .anyMatch(CategorySpecification::getRequired);
 
         if (entity.getSpecification().getUnit() != null) {
             this.unitSymbol = entity.getSpecification().getUnit().getSymbol();
@@ -67,10 +54,6 @@ public class SpecificationLoadDTO {
 
     public Boolean getValueBoolean() {
         return valueBoolean;
-    }
-
-    public Boolean getRequired() {
-        return required;
     }
 
     public String getUnitSymbol() {

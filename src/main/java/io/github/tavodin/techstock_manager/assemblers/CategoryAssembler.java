@@ -1,7 +1,7 @@
 package io.github.tavodin.techstock_manager.assemblers;
 
 import io.github.tavodin.techstock_manager.controllers.CategoryController;
-import io.github.tavodin.techstock_manager.dto.CategoryDTO;
+import io.github.tavodin.techstock_manager.dto.category.CategoryDTO;
 import io.github.tavodin.techstock_manager.entities.Category;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
