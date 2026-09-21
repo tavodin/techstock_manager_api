@@ -1,6 +1,7 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.ProductAssembler;
+import io.github.tavodin.techstock_manager.dto.product.ProductAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.product.ProductDTO;
 import io.github.tavodin.techstock_manager.dto.product.ProductLoadDTO;
 import io.github.tavodin.techstock_manager.dto.product.ProductRequestDTO;
@@ -8,11 +9,11 @@ import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationSaveD
 import io.github.tavodin.techstock_manager.entities.*;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
 import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
-import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.*;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
@@ -24,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -91,7 +91,7 @@ public class ProductService {
         product.setSku(request.getSku());
         product.setQuantityInStock(0);
         product.setMinimumStock(request.getMinimumStock());
-        product.setActive(true);
+        product.setActive(request.getActive());
 
         product.setBrand(brand);
         product.setCategories(categories);
@@ -134,9 +134,9 @@ public class ProductService {
         findProduct.setDescription(request.getDescription());
         findProduct.setSku(request.getSku());
         findProduct.setMinimumStock(request.getMinimumStock());
+        findProduct.setActive(request.getActive());
 
         findProduct.getSpecifications().clear();
-
         findProduct = productRepository.saveAndFlush(findProduct);
 
         List<ProductSpecification> specifications = new ArrayList<>();
@@ -146,7 +146,6 @@ public class ProductService {
         createSpecifications(request, finalFindProduct, specifications);
 
         prodSpecRepository.saveAll(specifications);
-
         return assembler.toModel(findProduct);
     }
 
@@ -164,8 +163,6 @@ public class ProductService {
         List<Long> specIds = productSpecRequest.stream().map(ProductSpecificationSaveDTO::specificationId).toList();
 
         List<Specification> specifications = getSpecificationsOrThrowException(specIds);
-
-        requiredSpecificationsValidation(specifications, request.getCategoryIds());
 
         for (Specification specification : specifications) {
             ProductSpecificationSaveDTO findProdSpec = productSpecRequest.stream()
@@ -186,20 +183,6 @@ public class ProductService {
             }
 
             productSpecifications.add(productSpec);
-        }
-    }
-
-    private void requiredSpecificationsValidation(List<Specification> specifications, Set<Long> categoriesId) {
-        Set<Long> requiredIds = new HashSet<>(categoryRepository
-                .findRequiredSpecificationsIdsByCategoryIds(new ArrayList<>(categoriesId)));
-
-        Set<Long> requestIds = specifications
-                .stream()
-                .map(Specification::getId)
-                .collect(Collectors.toSet());
-
-        if (!requestIds.containsAll(requiredIds)) {
-            throw new BusinessException("Missing required specifications");
         }
     }
 
@@ -241,4 +224,8 @@ public class ProductService {
     }
 
 
+    public List<ProductAutocompleteDTO> getAllAutocomplete(String name) {
+        Pageable pageable = PageRequest.of(0, 5);
+        return productRepository.getAllAutocomplete(name, pageable);
+    }
 }

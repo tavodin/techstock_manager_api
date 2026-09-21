@@ -15,6 +15,7 @@ public class ProductLoadDTO {
     private String description;
     private String sku;
     private Integer minimumStock;
+    private Boolean active;
     private BrandLoadDTO brand;
     private Set<CategoryLoadDTO> categories = new HashSet<>();
     private Set<SpecificationProductLoadDTO> specifications = new HashSet<>();
@@ -29,6 +30,7 @@ public class ProductLoadDTO {
         this.description = entity.getDescription();
         this.sku = entity.getSku();
         this.minimumStock = entity.getMinimumStock();
+        this.active = entity.getActive();
 
         if(entity.getBrand() != null) {
             this.brand = new BrandLoadDTO(entity.getBrand());
@@ -65,6 +67,10 @@ public class ProductLoadDTO {
 
     public Integer getMinimumStock() {
         return minimumStock;
+    }
+
+    public Boolean getActive() {
+        return active;
     }
 
     public BrandLoadDTO getBrand() {

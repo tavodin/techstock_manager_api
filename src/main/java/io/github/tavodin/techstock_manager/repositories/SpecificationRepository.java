@@ -55,18 +55,7 @@ public interface SpecificationRepository extends JpaRepository<Specification, Lo
             """)
     Page<SpecificationAutocompleteDTO> getSpecificationsByName(@Param("name") String name, Pageable pageable);
 
-    @Query("""
-            SELECT new io.github.tavodin.techstock_manager.dto.CategorySpecificationsInputDTO(
-                c.id, s.id, s.name, s.dataType, cs.required, u.symbol
-            )
-            FROM CategorySpecification cs
-            JOIN cs.category c
-            JOIN cs.specification s
-            LEFT JOIN s.unit u
-            WHERE c.id IN (:ids)
-            """)
-    List<CategorySpecificationsInputDTO> findAllSpecificationsByCategoryIds(
-            @Param("ids") List<Long> ids);
+
 
     @Query("""
             SELECT s

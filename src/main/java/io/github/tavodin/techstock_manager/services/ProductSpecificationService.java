@@ -114,11 +114,6 @@ public class ProductSpecificationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         List<Long> catIds = findProduct.getCategories().stream().map(Category::getId).toList();
-        List<Long> requiredSpecIds = categoryRepository.findRequiredSpecificationsIdsByCategoryIds(catIds);
-
-        if(requiredSpecIds.contains(specId)) {
-            throw new BusinessException("The specification is required and cannot be excluded");
-        }
 
         ProductSpecification findProdSpec = getProdSpecOrThrowException(prodId, specId);
 

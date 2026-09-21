@@ -1,9 +1,11 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.PurchaseAssembler;
-import io.github.tavodin.techstock_manager.dto.PurchaseDTO;
-import io.github.tavodin.techstock_manager.dto.PurchaseItemRequestDTO;
-import io.github.tavodin.techstock_manager.dto.PurchaseRequestDTO;
+import io.github.tavodin.techstock_manager.dto.PurchaseItemDTO;
+import io.github.tavodin.techstock_manager.dto.purchase.PurchaseDTO;
+import io.github.tavodin.techstock_manager.dto.purchase.PurchaseItemRequestDTO;
+import io.github.tavodin.techstock_manager.dto.purchase.PurchaseListDTO;
+import io.github.tavodin.techstock_manager.dto.purchase.PurchaseRequestDTO;
 import io.github.tavodin.techstock_manager.entities.*;
 import io.github.tavodin.techstock_manager.enums.MovementType;
 import io.github.tavodin.techstock_manager.enums.PurchaseStatus;
@@ -12,12 +14,13 @@ import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -49,9 +52,41 @@ public class PurchaseService {
     }
 
     @Transactional(readOnly = true)
-    public PagedModel<PurchaseDTO> findAll(Pageable pageable) {
-        Page<Purchase> page = purchaseRepository.findAll(pageable);
-        return pagedAssembler.toModel(page, assembler);
+    public PagedModel<PurchaseListDTO> findAll(
+            LocalDate start, LocalDate end,
+            BigDecimal min, BigDecimal max,
+            Long supplierId,
+            Pageable pageable) {
+
+        if(start == null && end != null) {
+            throw new BusinessException("Start Date is required when the End Date is set");
+        }
+
+        LocalDate now = LocalDate.now();
+
+        if(start != null && end == null && start.isAfter(now)) {
+            end = now.plusDays(1L);
+        }
+
+        if(start != null && end == null) {
+            end = now;
+        }
+
+        if(min == null && max != null) {
+            min = new BigDecimal(max.toString());
+        }
+
+        if(min != null && max == null) {
+            max = new BigDecimal(min.toString());;
+        }
+
+        Page<PurchaseListDTO> page = purchaseRepository.getAll(start, end, min, max, supplierId, pageable);
+        return new PagedModel<>(page);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PurchaseItemDTO> findAllItemsByPurchaseId(Long id) {
+        return purchaseRepository.getAllItemByPurchaseId(id);
     }
 
     @Transactional

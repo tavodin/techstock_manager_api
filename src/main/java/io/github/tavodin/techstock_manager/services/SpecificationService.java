@@ -48,10 +48,7 @@ public class SpecificationService {
         return new SpecificationLoadUpdateDTO(entity);
     }
 
-    @Transactional(readOnly = true)
-    public List<CategorySpecificationsInputDTO> findAllSpecificationByCategoryIds(List<Long> ids) {
-        return specificationRepository.findAllSpecificationsByCategoryIds(ids);
-    }
+
 
     @Transactional(readOnly = true)
     public PagedModel<SpecificationDTO> findAll(String name, Pageable pageable) {

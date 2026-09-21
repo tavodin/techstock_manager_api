@@ -1,12 +1,10 @@
 package io.github.tavodin.techstock_manager.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.tavodin.techstock_manager.config.security.filters.JwtAuthenticationFilter;
-import io.github.tavodin.techstock_manager.dto.BrandDTO;
-import io.github.tavodin.techstock_manager.dto.PurchaseDTO;
-import io.github.tavodin.techstock_manager.dto.PurchaseItemRequestDTO;
-import io.github.tavodin.techstock_manager.dto.PurchaseRequestDTO;
+import io.github.tavodin.techstock_manager.dto.purchase.PurchaseDTO;
+import io.github.tavodin.techstock_manager.dto.purchase.PurchaseItemRequestDTO;
+import io.github.tavodin.techstock_manager.dto.purchase.PurchaseRequestDTO;
 import io.github.tavodin.techstock_manager.enums.PurchaseStatus;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;

@@ -1,8 +1,8 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.CategoryAssembler;
-import io.github.tavodin.techstock_manager.dto.CategoryDTO;
-import io.github.tavodin.techstock_manager.dto.CategoryRequestDTO;
+import io.github.tavodin.techstock_manager.dto.category.CategoryDTO;
+import io.github.tavodin.techstock_manager.dto.category.CategoryRequestDTO;
 import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
 import io.github.tavodin.techstock_manager.entities.Category;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;

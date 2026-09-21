@@ -82,6 +82,7 @@ class ProductControllerTest {
                 "Monitor DELL 24 polegadas ideal para escritório",
                 "MON-001",
                 5,
+                true,
                 validId,
                 Set.of(validId),
                 List.of(new ProductSpecificationSaveDTO(validId, "1920x1080", null, null))

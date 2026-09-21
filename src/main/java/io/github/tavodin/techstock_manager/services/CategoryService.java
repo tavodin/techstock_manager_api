@@ -1,6 +1,7 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.CategoryAssembler;
+import io.github.tavodin.techstock_manager.dto.CategorySpecificationsInputDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryLoadDTO;
@@ -108,6 +109,11 @@ public class CategoryService {
         } catch (DataIntegrityViolationException e) {
             throw new EntityInUseException("Category is in use and cannot be deleted");
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategorySpecificationsInputDTO> findAllSpecificationByCategoryIds(List<Long> ids) {
+        return repository.findAllSpecificationsByCategoryIds(ids);
     }
 
     private Category getEntityOrThrowException(Long id) {

@@ -2,9 +2,9 @@ package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.PurchaseAssembler;
 import io.github.tavodin.techstock_manager.builder.ProductBuilder;
-import io.github.tavodin.techstock_manager.dto.PurchaseDTO;
-import io.github.tavodin.techstock_manager.dto.PurchaseItemRequestDTO;
-import io.github.tavodin.techstock_manager.dto.PurchaseRequestDTO;
+import io.github.tavodin.techstock_manager.dto.purchase.PurchaseDTO;
+import io.github.tavodin.techstock_manager.dto.purchase.PurchaseItemRequestDTO;
+import io.github.tavodin.techstock_manager.dto.purchase.PurchaseRequestDTO;
 import io.github.tavodin.techstock_manager.entities.*;
 import io.github.tavodin.techstock_manager.enums.MovementType;
 import io.github.tavodin.techstock_manager.enums.PurchaseStatus;

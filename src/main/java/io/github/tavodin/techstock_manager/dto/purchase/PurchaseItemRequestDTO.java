@@ -1,4 +1,4 @@
-package io.github.tavodin.techstock_manager.dto;
+package io.github.tavodin.techstock_manager.dto.purchase;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

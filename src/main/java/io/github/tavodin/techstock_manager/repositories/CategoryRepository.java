@@ -1,5 +1,6 @@
 package io.github.tavodin.techstock_manager.repositories;
 
+import io.github.tavodin.techstock_manager.dto.CategorySpecificationsInputDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryLoadDTO;
 import io.github.tavodin.techstock_manager.entities.Category;
@@ -31,14 +32,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     List<Specification> findAllSpecificationsByCategoryId(@Param("categoryId") Long categoryId);
 
     @Query("""
-            SELECT DISTINCT cs.specification.id
-            FROM CategorySpecification cs
-            WHERE cs.category.id IN :categoryIds
-            AND cs.required = true
-            """)
-    List<Long> findRequiredSpecificationsIdsByCategoryIds(@Param("categoryIds") List<Long> categoryId);
-
-    @Query("""
             SELECT new io.github.tavodin.techstock_manager.dto.category.CategoryAutocompleteDTO(c.id, c.name)
             FROM Category c
             WHERE (:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%')))
@@ -52,4 +45,16 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
             WHERE c.id = :id
             """)
     Category loadCategoryById(@Param("id") Long id);
+
+    @Query("""
+            SELECT new io.github.tavodin.techstock_manager.dto.CategorySpecificationsInputDTO(
+                s.id, s.name, s.dataType, u.symbol
+            )
+            FROM Category c
+            JOIN c.specifications s
+            LEFT JOIN s.unit u
+            WHERE c.id IN (:ids)
+            """)
+    List<CategorySpecificationsInputDTO> findAllSpecificationsByCategoryIds(
+            @Param("ids") List<Long> ids);
 }

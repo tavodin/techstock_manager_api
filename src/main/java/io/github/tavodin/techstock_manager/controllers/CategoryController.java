@@ -1,5 +1,6 @@
 package io.github.tavodin.techstock_manager.controllers;
 
+import io.github.tavodin.techstock_manager.dto.CategorySpecificationsInputDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryLoadDTO;
@@ -88,5 +89,12 @@ public class CategoryController {
     @GetMapping("/{id}/specifications")
     public List<CategorySpecificationsListDTO> findAllSpecificationByCategoryId(@PathVariable Long id) {
         return service.findAllSpecificationByCategoryId(id);
+    }
+
+    @PreAuthorize("hasAuthority('READ_CATEGORY_SPECIFICATION')")
+    @GetMapping("/specifications")
+    public List<CategorySpecificationsInputDTO> findAllSpecificationByCategoryIdToProduct(
+            @RequestParam("ids") List<Long> ids) {
+        return service.findAllSpecificationByCategoryIds(ids);
     }
 }

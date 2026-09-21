@@ -1,5 +1,6 @@
 package io.github.tavodin.techstock_manager.controllers;
 
+import io.github.tavodin.techstock_manager.dto.product.ProductAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.product.*;
 import io.github.tavodin.techstock_manager.services.ProductService;
 import io.github.tavodin.techstock_manager.services.ProductSpecificationService;
@@ -46,6 +47,12 @@ public class ProductController {
             Pageable pageable
     ) {
         return service.findAll(name, pageable);
+    }
+
+    @PreAuthorize("hasAuthority('READ_PRODUCT')")
+    @GetMapping("/autocomplete")
+    public List<ProductAutocompleteDTO> getAllAutocomplete(@RequestParam("name") String name) {
+        return service.getAllAutocomplete(name);
     }
 
     @PreAuthorize("hasAuthority('CREATE_PRODUCT')")

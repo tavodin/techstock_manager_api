@@ -1,6 +1,5 @@
 package io.github.tavodin.techstock_manager.services;
 
-import io.github.tavodin.techstock_manager.assemblers.CategorySpecificationAssembler;
 import io.github.tavodin.techstock_manager.builder.SpecificationBuilder;
 import io.github.tavodin.techstock_manager.dto.CategorySpecificationDTO;
 import io.github.tavodin.techstock_manager.dto.CategorySpecificationRequestDTO;

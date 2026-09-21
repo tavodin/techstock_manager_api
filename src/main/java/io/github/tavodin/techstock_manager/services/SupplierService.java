@@ -1,6 +1,7 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.SupplierAssembler;
+import io.github.tavodin.techstock_manager.dto.SupplierAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.SupplierDTO;
 import io.github.tavodin.techstock_manager.dto.SupplierRequestDTO;
 import io.github.tavodin.techstock_manager.entities.Supplier;
@@ -8,11 +9,14 @@ import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.SupplierRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class SupplierService {
@@ -41,6 +45,13 @@ public class SupplierService {
 
         Page<Supplier> page = repository.getAllByName(nameFilter, pageable);
         return pagedAssembler.toModel(page, assembler);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SupplierAutocompleteDTO> getAllAutocomplete(String name) {
+        Pageable pageable = PageRequest.of(0, 5);
+
+        return repository.getAllAutocomplete(name, pageable);
     }
 
     @Transactional

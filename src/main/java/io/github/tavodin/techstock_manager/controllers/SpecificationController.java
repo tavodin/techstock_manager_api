@@ -45,13 +45,6 @@ public class SpecificationController {
         return service.findAll(name, pageable);
     }
 
-    @PreAuthorize("hasAuthority('READ_CATEGORY_SPECIFICATION')")
-    @GetMapping("/categories")
-    public List<CategorySpecificationsInputDTO> findAllSpecificationByCategoryIdToProduct(
-            @RequestParam("ids") List<Long> ids) {
-        return service.findAllSpecificationByCategoryIds(ids);
-    }
-
     @PreAuthorize("hasAuthority('READ_SPECIFICATION')")
     @GetMapping("/autocomplete")
     public List<SpecificationAutocompleteDTO> getAllSpecificationByName(@RequestParam("name") String name) {

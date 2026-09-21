@@ -29,6 +29,8 @@ public class ProductRequestDTO {
     @Positive(message = "Minimum Stock cannot be equal to zero or negative")
     private Integer minimumStock;
 
+    private Boolean active;
+
     @NotNull(message = "Brand ID is required")
     private Long brandId;
 
@@ -42,14 +44,15 @@ public class ProductRequestDTO {
     public ProductRequestDTO() {
     }
 
-    public ProductRequestDTO(String name, BigDecimal salePrice, String description, String sku, Integer minimumStock, Long brandId, Set<Long> categoriesId, List<ProductSpecificationSaveDTO> specifications) {
+    public ProductRequestDTO(String name, BigDecimal salePrice, String description, String sku, Integer minimumStock, Boolean active, Long brandId, Set<Long> categoryIds, List<ProductSpecificationSaveDTO> specifications) {
         this.name = name;
         this.salePrice = salePrice;
         this.description = description;
         this.sku = sku;
         this.minimumStock = minimumStock;
+        this.active = active;
         this.brandId = brandId;
-        this.categoryIds = categoriesId;
+        this.categoryIds = categoryIds;
         this.specifications = specifications;
     }
 
@@ -91,6 +94,14 @@ public class ProductRequestDTO {
 
     public void setMinimumStock(Integer minimumStock) {
         this.minimumStock = minimumStock;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 
     public Long getBrandId() {

@@ -1,28 +1,30 @@
-package io.github.tavodin.techstock_manager.dto;
+package io.github.tavodin.techstock_manager.dto.purchase;
 
 import io.github.tavodin.techstock_manager.enums.PurchaseStatus;
-import org.springframework.hateoas.RepresentationModel;
-import org.springframework.hateoas.server.core.Relation;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Relation(itemRelation = "purchase", collectionRelation = "purchases")
-public class PurchaseDTO extends RepresentationModel<PurchaseDTO> {
-
+public class PurchaseListDTO {
     private Long id;
     private LocalDate purchaseDate;
     private PurchaseStatus status;
     private BigDecimal totalAmount;
+    private String supplier;
+    private String createdBy;
+    private String updatedBy;
 
-    public PurchaseDTO() {
+    public PurchaseListDTO() {
     }
 
-    public PurchaseDTO(Long id, LocalDate purchaseDate, PurchaseStatus status, BigDecimal totalAmount) {
+    public PurchaseListDTO(Long id, LocalDate purchaseDate, PurchaseStatus status, BigDecimal totalAmount, String supplier, String createdBy, String updatedBy) {
         this.id = id;
         this.purchaseDate = purchaseDate;
         this.status = status;
         this.totalAmount = totalAmount;
+        this.supplier = supplier;
+        this.createdBy = createdBy;
+        this.updatedBy = updatedBy;
     }
 
     public Long getId() {
@@ -55,5 +57,29 @@ public class PurchaseDTO extends RepresentationModel<PurchaseDTO> {
 
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
+    }
+
+    public String getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(String supplier) {
+        this.supplier = supplier;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
     }
 }

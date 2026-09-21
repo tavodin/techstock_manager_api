@@ -1,5 +1,6 @@
 package io.github.tavodin.techstock_manager.controllers;
 
+import io.github.tavodin.techstock_manager.dto.SupplierAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.SupplierDTO;
 import io.github.tavodin.techstock_manager.dto.SupplierRequestDTO;
 import io.github.tavodin.techstock_manager.services.SupplierService;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/suppliers")
@@ -37,6 +39,12 @@ public class SupplierController {
             Pageable pageable
     ) {
         return service.findAll(name, pageable);
+    }
+
+    @PreAuthorize("hasAuthority('READ_SUPPLIER')")
+    @GetMapping("/autocomplete")
+    public List<SupplierAutocompleteDTO> getAllAutocomplete(@RequestParam("name") String name) {
+        return service.getAllAutocomplete(name);
     }
 
     @PreAuthorize("hasAuthority('CREATE_SUPPLIER')")
