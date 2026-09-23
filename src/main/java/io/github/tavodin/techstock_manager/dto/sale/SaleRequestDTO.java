@@ -1,18 +1,17 @@
-package io.github.tavodin.techstock_manager.dto;
+package io.github.tavodin.techstock_manager.dto.sale;
 
+import io.github.tavodin.techstock_manager.enums.PaymentMethod;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class SaleRequestDTO {
 
-    @NotBlank(message = "Payment Method is required")
-    @Size(max = 45, message = "The name must contain a maximum of {max} characters")
-    private String paymentMethod;
+    @NotNull(message = "Payment Method is required")
+    private PaymentMethod paymentMethod;
 
     @NotEmpty(message = "Sale must contain at least one item")
     @Valid
@@ -21,16 +20,16 @@ public class SaleRequestDTO {
     public SaleRequestDTO() {
     }
 
-    public SaleRequestDTO(String paymentMethod, Set<SaleItemRequestDTO> items) {
+    public SaleRequestDTO(PaymentMethod paymentMethod, Set<SaleItemRequestDTO> items) {
         this.paymentMethod = paymentMethod;
         this.items = items;
     }
 
-    public String getPaymentMethod() {
+    public PaymentMethod getPaymentMethod() {
         return paymentMethod;
     }
 
-    public void setPaymentMethod(String paymentMethod) {
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
 

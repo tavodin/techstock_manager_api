@@ -2,9 +2,9 @@ package io.github.tavodin.techstock_manager.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.tavodin.techstock_manager.config.security.filters.JwtAuthenticationFilter;
-import io.github.tavodin.techstock_manager.dto.SaleDTO;
-import io.github.tavodin.techstock_manager.dto.SaleItemRequestDTO;
-import io.github.tavodin.techstock_manager.dto.SaleRequestDTO;
+import io.github.tavodin.techstock_manager.dto.sale.SaleDTO;
+import io.github.tavodin.techstock_manager.dto.sale.SaleItemRequestDTO;
+import io.github.tavodin.techstock_manager.dto.sale.SaleRequestDTO;
 import io.github.tavodin.techstock_manager.enums.SaleStatus;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;

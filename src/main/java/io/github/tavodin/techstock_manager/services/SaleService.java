@@ -1,14 +1,13 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.SaleAssembler;
-import io.github.tavodin.techstock_manager.dto.SaleDTO;
-import io.github.tavodin.techstock_manager.dto.SaleItemRequestDTO;
-import io.github.tavodin.techstock_manager.dto.SaleRequestDTO;
+import io.github.tavodin.techstock_manager.dto.sale.*;
 import io.github.tavodin.techstock_manager.entities.Product;
 import io.github.tavodin.techstock_manager.entities.Sale;
 import io.github.tavodin.techstock_manager.entities.SaleItem;
 import io.github.tavodin.techstock_manager.entities.StockMovement;
 import io.github.tavodin.techstock_manager.enums.MovementType;
+import io.github.tavodin.techstock_manager.enums.PaymentMethod;
 import io.github.tavodin.techstock_manager.enums.SaleStatus;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
@@ -18,12 +17,13 @@ import io.github.tavodin.techstock_manager.repositories.SaleRepository;
 import io.github.tavodin.techstock_manager.repositories.StockMovementRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,9 +58,62 @@ public class SaleService {
     }
 
     @Transactional(readOnly = true)
-    public PagedModel<SaleDTO> findAll(Pageable pageable) {
-        Page<Sale> page = saleRepository.findAll(pageable);
-        return pagedAssembler.toModel(page, assembler);
+    public PagedModel<SaleListDTO> findAll(
+            LocalDate start, LocalDate end,
+            BigDecimal min, BigDecimal max,
+            SaleStatus status,
+            Pageable pageable) {
+
+        if(start == null && end != null) {
+            throw new BusinessException("Start Date is required when the End Date is set");
+        }
+
+        LocalDate now = LocalDate.now();
+
+        if(start != null && end == null && start.isAfter(now)) {
+            end = now.plusDays(1L);
+        }
+
+        if(start != null && end == null) {
+            end = now;
+        }
+
+        if(min == null && max != null) {
+            min = new BigDecimal(max.toString());
+        }
+
+        if(min != null && max == null) {
+            max = new BigDecimal(min.toString());;
+        }
+
+        LocalDateTime startDate = null;
+        LocalDateTime endDate = null;
+
+        if(start != null) {
+            startDate = LocalDateTime.of(
+                    start.getYear(),
+                    start.getMonth(),
+                    start.getDayOfMonth(),
+                    0,0,0
+            );
+        }
+
+        if(end != null) {
+            endDate = LocalDateTime.of(
+                    end.getYear(),
+                    end.getMonth(),
+                    end.getDayOfMonth(),
+                    23,59,59
+            );
+        }
+
+        Page<SaleListDTO> page = saleRepository.getAll(startDate, endDate, min, max, status, pageable);
+        return new PagedModel<>(page);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SaleItemDTO> getAllItemByPurchaseId(Long id) {
+        return saleRepository.getAllItemBySaleId(id);
     }
 
     @Transactional

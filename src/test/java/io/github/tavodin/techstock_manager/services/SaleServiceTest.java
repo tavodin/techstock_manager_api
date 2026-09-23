@@ -2,9 +2,9 @@ package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.SaleAssembler;
 import io.github.tavodin.techstock_manager.builder.ProductBuilder;
-import io.github.tavodin.techstock_manager.dto.SaleDTO;
-import io.github.tavodin.techstock_manager.dto.SaleItemRequestDTO;
-import io.github.tavodin.techstock_manager.dto.SaleRequestDTO;
+import io.github.tavodin.techstock_manager.dto.sale.SaleDTO;
+import io.github.tavodin.techstock_manager.dto.sale.SaleItemRequestDTO;
+import io.github.tavodin.techstock_manager.dto.sale.SaleRequestDTO;
 import io.github.tavodin.techstock_manager.entities.Product;
 import io.github.tavodin.techstock_manager.entities.Sale;
 import io.github.tavodin.techstock_manager.entities.SaleItem;

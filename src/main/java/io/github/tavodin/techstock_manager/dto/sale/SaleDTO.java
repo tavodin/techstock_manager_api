@@ -1,5 +1,6 @@
-package io.github.tavodin.techstock_manager.dto;
+package io.github.tavodin.techstock_manager.dto.sale;
 
+import io.github.tavodin.techstock_manager.enums.PaymentMethod;
 import io.github.tavodin.techstock_manager.enums.SaleStatus;
 import org.springframework.hateoas.RepresentationModel;
 import org.springframework.hateoas.server.core.Relation;
@@ -13,13 +14,13 @@ public class SaleDTO extends RepresentationModel<SaleDTO> {
     private Long id;
     private LocalDateTime saleDate;
     private SaleStatus status;
-    private String paymentMethod;
+    private PaymentMethod paymentMethod;
     private BigDecimal totalAmount;
 
     public SaleDTO() {
     }
 
-    public SaleDTO(Long id, LocalDateTime saleDate, SaleStatus status, String paymentMethod, BigDecimal totalAmount) {
+    public SaleDTO(Long id, LocalDateTime saleDate, SaleStatus status, PaymentMethod paymentMethod, BigDecimal totalAmount) {
         this.id = id;
         this.saleDate = saleDate;
         this.status = status;
@@ -51,11 +52,11 @@ public class SaleDTO extends RepresentationModel<SaleDTO> {
         this.status = status;
     }
 
-    public String getPaymentMethod() {
+    public PaymentMethod getPaymentMethod() {
         return paymentMethod;
     }
 
-    public void setPaymentMethod(String paymentMethod) {
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
 

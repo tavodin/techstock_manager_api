@@ -1,43 +1,40 @@
-package io.github.tavodin.techstock_manager.entities;
+package io.github.tavodin.techstock_manager.dto.sale;
 
 import io.github.tavodin.techstock_manager.enums.PaymentMethod;
 import io.github.tavodin.techstock_manager.enums.SaleStatus;
-import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
-@Entity
-public class Sale extends AuditableEntity {
+public class SaleListDTO {
 
-    @Column(name = "saleDate", nullable = false)
+    private Long id;
     private LocalDateTime saleDate;
-
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
     private SaleStatus status;
-
-    @Column(name = "payment_method", length = 45, nullable = false)
-    @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
-
-    @Column(name = "total_amount", nullable = false)
     private BigDecimal totalAmount;
+    private String createdBy;
+    private String updatedBy;
 
-    @OneToMany(mappedBy = "sale")
-    private Set<SaleItem> saleItems = new HashSet<>();
-
-    public Sale() {
-    }
-
-    public Sale(LocalDateTime saleDate, SaleStatus status, PaymentMethod paymentMethod, BigDecimal totalAmount, Set<SaleItem> saleItems) {
+    public SaleListDTO(Long id, LocalDateTime saleDate, SaleStatus status, PaymentMethod paymentMethod, BigDecimal totalAmount, String createdBy, String updatedBy) {
+        this.id = id;
         this.saleDate = saleDate;
         this.status = status;
         this.paymentMethod = paymentMethod;
         this.totalAmount = totalAmount;
-        this.saleItems = saleItems;
+        this.createdBy = createdBy;
+
+        if(updatedBy != null) {
+            this.updatedBy = updatedBy;
+        }
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public LocalDateTime getSaleDate() {
@@ -72,11 +69,19 @@ public class Sale extends AuditableEntity {
         this.totalAmount = totalAmount;
     }
 
-    public Set<SaleItem> getSaleItems() {
-        return saleItems;
+    public String getCreatedBy() {
+        return createdBy;
     }
 
-    public void setSaleItems(Set<SaleItem> saleItems) {
-        this.saleItems = saleItems;
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
     }
 }

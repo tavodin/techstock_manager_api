@@ -37,7 +37,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("""
             SELECT new io.github.tavodin.techstock_manager.dto.product.ProductAutocompleteDTO(
-                p.id, p.name
+                p.id, p.name, p.salePrice, p.quantityInStock
             )
             FROM Product p
             WHERE (:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%')))

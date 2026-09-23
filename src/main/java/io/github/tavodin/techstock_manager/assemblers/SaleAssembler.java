@@ -1,6 +1,6 @@
 package io.github.tavodin.techstock_manager.assemblers;
 
-import io.github.tavodin.techstock_manager.dto.SaleDTO;
+import io.github.tavodin.techstock_manager.dto.sale.SaleDTO;
 import io.github.tavodin.techstock_manager.entities.Sale;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;

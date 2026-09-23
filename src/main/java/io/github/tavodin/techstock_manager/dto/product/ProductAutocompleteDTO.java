@@ -1,4 +1,11 @@
 package io.github.tavodin.techstock_manager.dto.product;
 
-public record ProductAutocompleteDTO(Long id, String name) {
+import java.math.BigDecimal;
+
+public record ProductAutocompleteDTO(
+        Long id,
+        String name,
+        BigDecimal salePrice,
+        Integer quantityInStock
+) {
 }
