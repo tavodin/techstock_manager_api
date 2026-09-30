@@ -1,11 +1,7 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.ProductAssembler;
-import io.github.tavodin.techstock_manager.dto.product.ProductAutocompleteDTO;
-import io.github.tavodin.techstock_manager.dto.product.ProductDTO;
-import io.github.tavodin.techstock_manager.dto.product.ProductLoadDTO;
-import io.github.tavodin.techstock_manager.dto.product.ProductRequestDTO;
-import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationSaveDTO;
+import io.github.tavodin.techstock_manager.dto.product.*;
 import io.github.tavodin.techstock_manager.entities.*;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
 import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
@@ -64,12 +60,35 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public PagedModel<ProductDTO> findAll(String name, Pageable pageable) {
+    public PagedModel<ProductDTO> findAll(
+            String name,
+            BigDecimal maxSale,
+            BigDecimal minSale,
+            BigDecimal maxPurchase,
+            BigDecimal minPurchase,
+            Set<Long> categoryIds,
+            Long brandId,
+            Boolean active,
+            Boolean belowMinimumStock,
+            Pageable pageable
+    ) {
         String nameFilter = name == null || name.isBlank()
                 ? null
                 : name.trim();
 
-        Page<Product> page = productRepository.getAll(nameFilter, pageable);
+        Page<Product> page = productRepository.getAll(
+                nameFilter,
+                maxSale,
+                minSale,
+                maxPurchase,
+                minPurchase,
+                categoryIds,
+                brandId,
+                active,
+                belowMinimumStock,
+                pageable
+        );
+
         return pagedAssembler.toModel(page, assembler);
     }
 

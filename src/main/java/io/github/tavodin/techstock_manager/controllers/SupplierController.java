@@ -3,6 +3,7 @@ package io.github.tavodin.techstock_manager.controllers;
 import io.github.tavodin.techstock_manager.dto.SupplierAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.SupplierDTO;
 import io.github.tavodin.techstock_manager.dto.SupplierRequestDTO;
+import io.github.tavodin.techstock_manager.dto.purchase.PurchaseDTO;
 import io.github.tavodin.techstock_manager.services.SupplierService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +46,15 @@ public class SupplierController {
     @GetMapping("/autocomplete")
     public List<SupplierAutocompleteDTO> getAllAutocomplete(@RequestParam("name") String name) {
         return service.getAllAutocomplete(name);
+    }
+
+    @PreAuthorize("hasAuthority('READ_SUPPLIER')")
+    @GetMapping("/{id}/purchases")
+    public PagedModel<PurchaseDTO> getAllPurchasesBySupplierId(
+            @PathVariable Long id,
+            Pageable pageable
+    ) {
+        return service.getAllPurchasesBySupplierId(id, pageable);
     }
 
     @PreAuthorize("hasAuthority('CREATE_SUPPLIER')")

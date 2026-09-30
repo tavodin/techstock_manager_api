@@ -22,13 +22,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<String> getNameByUsername(@Param("username") String username);
 
     @Query("""
-            SELECT new io.github.tavodin.techstock_manager.dto.MenuProjection(
-                mi.name, mi.link, m.name
-            )
-            FROM Permission p
-            JOIN p.menuItem mi
-            JOIN mi.menu m
-            WHERE p.name IN :permissions
-            """)
-    List<MenuProjection> getMenuItemByPermissions(@Param("permissions") Collection<String> permissions);
+        SELECT new io.github.tavodin.techstock_manager.dto.MenuProjection(
+            m.id,
+            m.name,
+            m.icon,
+            mi.id,
+            mi.name,
+            mi.link,
+            mi.icon
+        )
+        FROM Permission p
+        JOIN p.menuItem mi
+        JOIN mi.menu m
+        WHERE p.name IN :permissions
+        """)
+    List<MenuProjection> getMenuItemByPermissions(
+            @Param("permissions") Collection<String> permissions);
 }

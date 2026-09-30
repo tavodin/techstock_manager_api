@@ -1,6 +1,7 @@
 package io.github.tavodin.techstock_manager.repositories;
 
 import io.github.tavodin.techstock_manager.dto.SupplierAutocompleteDTO;
+import io.github.tavodin.techstock_manager.entities.Purchase;
 import io.github.tavodin.techstock_manager.entities.Supplier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,4 +33,12 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
             WHERE (:name IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :name, '%')))
             """)
     List<SupplierAutocompleteDTO> getAllAutocomplete(String name, Pageable pageable);
+
+    @Query("""
+            SELECT p
+            FROM Purchase p
+            JOIN p.supplier s
+            WHERE s.id = :id
+            """)
+    Page<Purchase> getAllPurchasesBySupplierId(@Param("id") Long id, Pageable pageable);
 }

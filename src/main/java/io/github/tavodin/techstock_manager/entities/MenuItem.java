@@ -19,6 +19,9 @@ public class MenuItem {
     @Column(length = 50, nullable = false)
     private String link;
 
+    @Column(length = 50)
+    private String icon;
+
     @ManyToOne
     @JoinColumn(name = "menu_id", nullable = false)
     private Menu menu;
@@ -29,10 +32,11 @@ public class MenuItem {
     public MenuItem() {
     }
 
-    public MenuItem(Long id, String name, String link, Menu menu, Set<Permission> permissions) {
+    public MenuItem(Long id, String name, String link, String icon, Menu menu, Set<Permission> permissions) {
         this.id = id;
         this.name = name;
         this.link = link;
+        this.icon = icon;
         this.menu = menu;
         this.permissions = permissions;
     }
@@ -59,6 +63,14 @@ public class MenuItem {
 
     public void setLink(String link) {
         this.link = link;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 
     public Menu getMenu() {

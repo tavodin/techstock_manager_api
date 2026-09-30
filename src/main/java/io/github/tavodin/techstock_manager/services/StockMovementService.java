@@ -2,6 +2,7 @@ package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.StockMovementAssembler;
 import io.github.tavodin.techstock_manager.dto.StockMovementDTO;
+import io.github.tavodin.techstock_manager.enums.MovementType;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.repositories.StockMovementRepository;
 import org.springframework.data.domain.Page;
@@ -28,7 +29,12 @@ public class StockMovementService {
     }
 
     @Transactional(readOnly = true)
-    public PagedModel<StockMovementDTO> findAll(LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public PagedModel<StockMovementDTO> findAll(
+            Long productId,
+            LocalDate startDate, LocalDate endDate,
+            MovementType type,
+            Pageable pageable) {
+
         if(startDate == null && endDate != null) {
             throw new BusinessException("Start Date is required when the End Date is set");
         }
@@ -62,7 +68,8 @@ public class StockMovementService {
             );
         }
 
-        Page<StockMovementDTO> page = stockMovementRepository.getPagedStockMovement(begin, end, pageable);
+        Page<StockMovementDTO> page = stockMovementRepository
+                .getPagedStockMovement(productId, begin, end, type, pageable);
         return pagedAssembler.toModel(page, assembler);
     }
 }

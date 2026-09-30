@@ -36,6 +36,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<UserMenuDTO> getMenu() {
+
         UserDetailsImp user = getAuthenticatedUser();
 
         Collection<String> permissions = user.getAuthorities()
@@ -44,21 +45,29 @@ public class UserService {
                 .filter(authority -> !authority.startsWith("ROLE_"))
                 .toList();
 
-        List<MenuProjection> projections = repository.getMenuItemByPermissions(permissions);
+        List<MenuProjection> projections =
+                repository.getMenuItemByPermissions(permissions);
 
-        Map<String, UserMenuDTO> menus = new LinkedHashMap<>();
+        Map<Long, UserMenuDTO> menus = new LinkedHashMap<>();
 
         for (MenuProjection projection : projections) {
 
             UserMenuDTO menu = menus.computeIfAbsent(
-                    projection.getMenu(),
-                    key -> new UserMenuDTO(key, new ArrayList<>())
+                    projection.getMenuId(),
+                    key -> new UserMenuDTO(
+                            projection.getMenuId(),
+                            projection.getMenu(),
+                            projection.getMenuIcon(),
+                            new ArrayList<>()
+                    )
             );
 
             menu.getMenuItem().add(
                     new MenuItemDTO(
+                            projection.getMenuItemId(),
                             projection.getName(),
-                            projection.getLink()
+                            projection.getLink(),
+                            projection.getMenuItemIcon()
                     )
             );
         }

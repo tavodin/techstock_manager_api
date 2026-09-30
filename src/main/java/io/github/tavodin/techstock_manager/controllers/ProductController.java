@@ -12,8 +12,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/products")
@@ -44,9 +46,36 @@ public class ProductController {
     public PagedModel<ProductDTO> getAll(
             @RequestParam(value = "name", required = false)
             String name,
+            @RequestParam(value = "maxSale", required = false)
+            BigDecimal maxSale,
+            @RequestParam(value = "minSale", required = false)
+            BigDecimal minSale,
+            @RequestParam(value = "maxPurchase", required = false)
+            BigDecimal maxPurchase,
+            @RequestParam(value = "minPurchase", required = false)
+            BigDecimal minPurchase,
+            @RequestParam(value = "categoryIds", required = false)
+            Set<Long> categoryIds,
+            @RequestParam(value = "brandId", required = false)
+            Long brandId,
+            @RequestParam(value = "active", required = false)
+            Boolean active,
+            @RequestParam(value = "belowMinimumStock", required = false)
+            Boolean belowMinimumStock,
             Pageable pageable
     ) {
-        return service.findAll(name, pageable);
+        return service.findAll(
+                name,
+                maxSale,
+                minSale,
+                maxPurchase,
+                minPurchase,
+                categoryIds,
+                brandId,
+                active,
+                belowMinimumStock,
+                pageable
+        );
     }
 
     @PreAuthorize("hasAuthority('READ_PRODUCT')")

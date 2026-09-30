@@ -1,9 +1,12 @@
 package io.github.tavodin.techstock_manager.services;
 
+import io.github.tavodin.techstock_manager.assemblers.PurchaseAssembler;
 import io.github.tavodin.techstock_manager.assemblers.SupplierAssembler;
 import io.github.tavodin.techstock_manager.dto.SupplierAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.SupplierDTO;
 import io.github.tavodin.techstock_manager.dto.SupplierRequestDTO;
+import io.github.tavodin.techstock_manager.dto.purchase.PurchaseDTO;
+import io.github.tavodin.techstock_manager.entities.Purchase;
 import io.github.tavodin.techstock_manager.entities.Supplier;
 import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
@@ -25,10 +28,15 @@ public class SupplierService {
     private final SupplierAssembler assembler;
     private final PagedResourcesAssembler<Supplier> pagedAssembler;
 
-    public SupplierService(SupplierRepository repository, SupplierAssembler assembler, PagedResourcesAssembler<Supplier> pagedAssembler) {
+    private final PurchaseAssembler purchaseAssembler;
+    private final PagedResourcesAssembler<Purchase> purchasePagedAssembler;
+
+    public SupplierService(SupplierRepository repository, SupplierAssembler assembler, PagedResourcesAssembler<Supplier> pagedAssembler, PurchaseAssembler purchaseAssembler, PagedResourcesAssembler<Purchase> purchasePagedAssembler) {
         this.repository = repository;
         this.assembler = assembler;
         this.pagedAssembler = pagedAssembler;
+        this.purchaseAssembler = purchaseAssembler;
+        this.purchasePagedAssembler = purchasePagedAssembler;
     }
 
     @Transactional(readOnly = true)
@@ -52,6 +60,16 @@ public class SupplierService {
         Pageable pageable = PageRequest.of(0, 5);
 
         return repository.getAllAutocomplete(name, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedModel<PurchaseDTO> getAllPurchasesBySupplierId(
+            Long id,
+            Pageable pageable
+    ) {
+        Page<Purchase> page = repository.getAllPurchasesBySupplierId(id, pageable);
+
+        return purchasePagedAssembler.toModel(page, purchaseAssembler);
     }
 
     @Transactional

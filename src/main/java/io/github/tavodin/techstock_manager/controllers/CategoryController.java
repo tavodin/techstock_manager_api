@@ -91,7 +91,7 @@ public class CategoryController {
         return service.findAllSpecificationByCategoryId(id);
     }
 
-    @PreAuthorize("hasAuthority('READ_CATEGORY_SPECIFICATION')")
+    @PreAuthorize("hasAuthority('READ_CATEGORY')")
     @GetMapping("/specifications")
     public List<CategorySpecificationsInputDTO> findAllSpecificationByCategoryIdToProduct(
             @RequestParam("ids") List<Long> ids) {

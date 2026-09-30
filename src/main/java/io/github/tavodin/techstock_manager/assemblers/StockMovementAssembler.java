@@ -14,7 +14,12 @@ public class StockMovementAssembler implements RepresentationModelAssembler<Stoc
     @Override
     public StockMovementDTO toModel(StockMovementDTO dto) {
         dto.add(linkTo(methodOn(StockMovementController.class)
-                .findAll(null, null, PageRequest.of(0, 10)))
+                .findAll(
+                        null,
+                        null,
+                        null,
+                        null,
+                        PageRequest.of(0, 10)))
                 .withRel("findAll")
                 .withType("GET"));
 

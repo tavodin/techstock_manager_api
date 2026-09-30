@@ -15,12 +15,16 @@ public class Menu {
     @Column(length = 45, nullable = false)
     private String name;
 
+    @Column(length = 45)
+    private String icon;
+
     public Menu() {
     }
 
-    public Menu(Long id, String name) {
+    public Menu(Long id, String name, String icon) {
         this.id = id;
         this.name = name;
+        this.icon = icon;
     }
 
     public Long getId() {
@@ -37,6 +41,14 @@ public class Menu {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 
     @Override

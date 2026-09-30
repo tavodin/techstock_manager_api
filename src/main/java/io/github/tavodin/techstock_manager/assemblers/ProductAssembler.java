@@ -21,7 +21,18 @@ public class ProductAssembler implements RepresentationModelAssembler<Product, P
                 .withSelfRel());
 
         model.add(linkTo(methodOn(ProductController.class)
-                .getAll(null, null))
+                .getAll(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
+                ))
                 .withRel("findAll")
                 .withType("GET"));
 

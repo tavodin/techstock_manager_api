@@ -4,15 +4,27 @@ import java.util.*;
 
 public class UserMenuDTO {
 
+    private Long id;
     private String menu;
+    private String icon;
     private List<MenuItemDTO> menuItem = new ArrayList<>();
 
     public UserMenuDTO() {
     }
 
-    public UserMenuDTO(String menu, List<MenuItemDTO> menuItem) {
+    public UserMenuDTO(Long id, String menu, String icon, List<MenuItemDTO> menuItem) {
+        this.id = id;
         this.menu = menu;
+        this.icon = icon;
         this.menuItem = menuItem;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getMenu() {
@@ -21,6 +33,14 @@ public class UserMenuDTO {
 
     public void setMenu(String menu) {
         this.menu = menu;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 
     public List<MenuItemDTO> getMenuItem() {
