@@ -2,15 +2,20 @@ package io.github.tavodin.techstock_manager.repositories;
 
 import io.github.tavodin.techstock_manager.builder.SpecificationBuilder;
 import io.github.tavodin.techstock_manager.configurations.AbstractJpaTest;
-import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
+import io.github.tavodin.techstock_manager.dto.CategorySpecificationsInputDTO;
+import io.github.tavodin.techstock_manager.dto.category.CategoryAutocompleteDTO;
 import io.github.tavodin.techstock_manager.entities.Category;
-import io.github.tavodin.techstock_manager.entities.CategorySpecification;
 import io.github.tavodin.techstock_manager.entities.Specification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,55 +50,113 @@ public class CategoryRepositoryTest extends AbstractJpaTest {
     }
 
     @Test
-    void shouldReturnSpecificationListWhenFindAllSpecificationsByCategoryId() {
-        CategorySpecification categorySpecification = new CategorySpecification();
-        Specification savedSpec = specificationRepository.save(specification);
-        Category savedCategory = repository.save(category);
+    void shouldReturnCategoriesWhenGetAllByName() {
+        Category firstCategory = new Category(null, "Monitor", null, null);
+        Category secondCategory = new Category(null, "Mouse", null, null);
 
-        categorySpecification.setCategory(savedCategory);
-        categorySpecification.setSpecification(savedSpec);
-        categorySpecification.setRequired(true);
+        repository.saveAll(List.of(firstCategory, secondCategory));
 
-        CategorySpecification savedCatSpec = categorySpecRepository.save(categorySpecification);
+        Page<Category> categories = repository.getAll("Mo", PageRequest.of(0, 5));
 
-        List<CategorySpecificationsListDTO> list = repository.findAllSpecificationsByCategoryId(savedCategory.getId());
-        CategorySpecificationsListDTO dto = list.getFirst();
+        Optional<Category> firstCategoryResult = categories.getContent()
+                .stream()
+                .filter(c -> c.getName().equals("Monitor"))
+                .findFirst();
 
-        assertNotNull(list);
-        assertTrue(list.size() > 0);
+        Optional<Category> secondCategoryResult = categories.getContent()
+                .stream()
+                .filter(c -> c.getName().equals("Mouse"))
+                .findFirst();
 
-        assertEquals(savedCatSpec.getId(), dto.getCategorySpecificationId());
-        assertEquals(savedSpec.getName(), dto.getSpecificationName());
-        assertEquals(savedCatSpec.getRequired(), dto.getIsRequired());
+        assertTrue(firstCategoryResult.isPresent());
+        assertTrue(secondCategoryResult.isPresent());
     }
 
     @Test
-    void shouldReturnRequiredSpecificationWhenFindRequiredSpecificationsIdsByCategoryIds() {
-        Specification newSpecification = SpecificationBuilder
+    void shouldReturnSpecificationListWhenFindAllSpecificationsByCategoryId() {
+        Category category = new Category(null, "Memória", null, null);
+        Specification specification = SpecificationBuilder
                 .builder()
                 .withId(null)
-                .withName("Frequência")
                 .withUnit(null)
                 .build();
 
-        List<Specification> savedSpec = specificationRepository.saveAll(List.of(specification, newSpecification));
-        Category savedCategory = repository.save(category);
+        specification = specificationRepository.save(specification);
+        category.setSpecifications(Set.of(specification));
+        category = repository.save(category);
 
-        CategorySpecification ramSpec = new CategorySpecification();
-        ramSpec.setCategory(savedCategory);
-        ramSpec.setSpecification(savedSpec.get(0));
-        ramSpec.setRequired(false);
+        List<Specification> specifications = repository.findAllSpecificationsByCategoryId(category.getId());
 
-        CategorySpecification frequencySpec = new CategorySpecification();
-        frequencySpec.setCategory(savedCategory);
-        frequencySpec.setSpecification(savedSpec.get(1));
-        frequencySpec.setRequired(true);
+        assertTrue(!specifications.isEmpty());
+        assertEquals("RAM", specifications.getFirst().getName());
+        assertEquals(specification.getId(), specifications.getFirst().getId());
+    }
 
-        List<CategorySpecification> catSpecs = categorySpecRepository.saveAll(List.of(ramSpec, frequencySpec));
+    @Test
+    void shouldReturnCategoryAutocompleteDTOListWhenGetCategoriesByName() {
+        Category category = new Category(null, "Memória", null, null);
+        category = repository.save(category);
 
-        List<Long> requiredSpecs = repository
-                .findRequiredSpecificationsIdsByCategoryIds(List.of(savedCategory.getId()));
+        List<CategoryAutocompleteDTO> result = repository
+                .getCategoriesByName("Me", PageRequest.of(0, 5));
 
-        assertEquals(1, requiredSpecs.size());
+        assertNotNull(result);
+        assertEquals(category.getId(), result.getFirst().id());
+        assertEquals(category.getName(), result.getFirst().name());
+    }
+
+    @Test
+    void shouldReturnCategorySpecificationsInputDTOWhenFindAllSpecificationsByCategoryIds() {
+        Category memoryCategory = new Category(null, "Memória", null, null);
+        Category mouseCategory = new Category(null, "Mouse", null, null);
+
+        Specification ramSpecification = SpecificationBuilder
+                .builder()
+                .withId(null)
+                .withUnit(null)
+                .build();
+
+        Specification clockSpecification = SpecificationBuilder
+                .builder()
+                .withId(null)
+                .withName("Clock")
+                .withUnit(null)
+                .build();
+
+        Specification dpiSpecification = SpecificationBuilder
+                .builder()
+                .withId(null)
+                .withName("DPI")
+                .withUnit(null)
+                .build();
+
+        Specification pesoSpecification = SpecificationBuilder
+                .builder()
+                .withId(null)
+                .withName("Peso")
+                .withUnit(null)
+                .build();
+
+        List<Specification> memorySpecification = specificationRepository.saveAll(
+                List.of(ramSpecification, clockSpecification)
+        );
+
+        List<Specification> mouseSpecifications = specificationRepository.saveAll(
+                List.of(dpiSpecification, pesoSpecification)
+        );
+
+        memoryCategory.setSpecifications(new HashSet<>(memorySpecification));
+        mouseCategory.setSpecifications(new HashSet<>(mouseSpecifications));
+
+        List<Category> categories = repository.saveAll(List.of(memoryCategory, mouseCategory));
+        List<Long> ids = categories.stream().map(Category::getId).toList();
+
+        List<CategorySpecificationsInputDTO> findSpecs = repository.findAllSpecificationsByCategoryIds(ids);
+
+        assertTrue(findSpecs.size() == 4);
+        assertTrue(findSpecs.stream().anyMatch(s -> s.specificationName().equals("RAM")));
+        assertTrue(findSpecs.stream().anyMatch(s -> s.specificationName().equals("Clock")));
+        assertTrue(findSpecs.stream().anyMatch(s -> s.specificationName().equals("DPI")));
+        assertTrue(findSpecs.stream().anyMatch(s -> s.specificationName().equals("Peso")));
     }
 }

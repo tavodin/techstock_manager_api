@@ -46,9 +46,6 @@ class CategoryControllerTest {
     private CategoryService service;
 
     @MockitoBean
-    private CategorySpecificationService catSpecService;
-
-    @MockitoBean
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @MockitoBean
@@ -310,21 +307,6 @@ class CategoryControllerTest {
     }
 
     @Test
-    void shouldReturnSpecificationsWhenFindingSpecificationsByValidCategoryId() throws Exception {
-        CategorySpecificationsListDTO dto =new CategorySpecificationsListDTO(
-                1L, "Frequência", SpecificationType.NUMBER, true);
-
-        when(service.findAllSpecificationByCategoryId(validId)).thenReturn(List.of(dto));
-
-        mockMvc.perform(get(PATH + "/{id}/specifications", validId))
-                .andExpect(status().isOk())
-
-                .andExpect(jsonPath("$.[0].categorySpecificationId").value(dto.getCategorySpecificationId()))
-                .andExpect(jsonPath("$.[0].specificationName").value(dto.getSpecificationName()))
-                .andExpect(jsonPath("$.[0].isRequired").value(dto.getIsRequired()));
-    }
-
-    @Test
     void shouldReturnCustomErrorAndNotFoundWhenFindingSpecificationsWithInvalidCategoryId() throws Exception {
         when(service.findAllSpecificationByCategoryId(invalidId)).thenThrow(new ResourceNotFoundException(notFoundMsg));
 
@@ -336,65 +318,6 @@ class CategoryControllerTest {
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message").value(notFoundMsg))
                 .andExpect(jsonPath("$.path").value(PATH + "/" + invalidId + "/specifications"));
-    }
-
-    @Test
-    void shouldReturnCategorySpecificationDTOAndCreatedWhenSavingCategorySpecificationWithValidData() throws Exception {
-        when(catSpecService.save(catSpecRequest)).thenReturn(catSpecDTO);
-
-        mockMvc.perform(post(PATH + "/specifications")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(catSpecRequest)))
-                .andExpect(status().isCreated())
-
-                .andExpect(jsonPath("$.id").value(catSpecDTO.getId()))
-                .andExpect(jsonPath("$.categoryId").value(catSpecDTO.getCategoryId()))
-                .andExpect(jsonPath("$.specificationId").value(catSpecDTO.getSpecificationId()))
-
-                .andExpect(header().string("Location",
-                        containsString("http://localhost" + PATH + "/specifications/" + catSpecDTO.getId())));
-    }
-
-    @Test
-    void shouldReturnCustomErrorAndNotFoundWhenSavingCategorySpecificationWithInvalidCategoryId() throws Exception {
-        CategorySpecificationRequestDTO invalidRequest =
-                new CategorySpecificationRequestDTO(invalidId, validId, true);
-
-        when(catSpecService.save(invalidRequest))
-                .thenThrow(new ResourceNotFoundException("Category not found!"));
-
-        mockMvc.perform(post(PATH + "/specifications")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
-
-                .andExpect(status().isNotFound())
-
-                .andExpect(jsonPath("$.timestamp").exists())
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.message").value(notFoundMsg))
-                .andExpect(jsonPath("$.path").value(PATH + "/specifications"));
-    }
-
-    @Test
-    void shouldReturnCustomErrorAndNotFoundWhenSavingCategorySpecificationWithInvalidSpecificationId() throws Exception {
-        String errorMsg = "Specification not found!";
-
-        CategorySpecificationRequestDTO invalidRequest =
-                new CategorySpecificationRequestDTO(validId, invalidId, true);
-
-        when(catSpecService.save(invalidRequest))
-                .thenThrow(new ResourceNotFoundException(errorMsg));
-
-        mockMvc.perform(post(PATH + "/specifications")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
-
-                .andExpect(status().isNotFound())
-
-                .andExpect(jsonPath("$.timestamp").exists())
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.message").value(errorMsg))
-                .andExpect(jsonPath("$.path").value(PATH + "/specifications"));
     }
 
     @Test
@@ -467,82 +390,6 @@ class CategoryControllerTest {
     }
 
     @Test
-    void shouldReturnCategorySpecificationDTOAndOkWhenUpdatingWithValidData() throws Exception {
-        when(catSpecService.update(validId, catSpecRequest)).thenReturn(catSpecDTO);
-
-        mockMvc.perform(put(PATH + "/specifications/{id}", validId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(catSpecRequest)))
-                .andExpect(status().isOk())
-
-                .andExpect(jsonPath("$.id").value(validId))
-                .andExpect(jsonPath("$.categoryId").value(catSpecDTO.getCategoryId()))
-                .andExpect(jsonPath("$.specificationId").value(catSpecDTO.getSpecificationId()))
-                .andExpect(jsonPath("$.required").value(catSpecDTO.getRequired()));
-    }
-
-    @Test
-    void shouldReturnCustomErrorAndNotFoundWhenUpdatingCategorySpecificationWithInvalidId() throws Exception {
-        String errorMsg = "Category Specification not found!";
-
-        when(catSpecService.update(invalidId, catSpecRequest))
-                .thenThrow(new ResourceNotFoundException(errorMsg));
-
-        mockMvc.perform(put(PATH + "/specifications/{id}", invalidId)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(catSpecRequest)))
-
-                .andExpect(status().isNotFound())
-
-                .andExpect(jsonPath("$.timestamp").exists())
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.message").value(errorMsg))
-                .andExpect(jsonPath("$.path").value(PATH + "/specifications/" + invalidId));
-    }
-
-    @Test
-    void shouldReturnCustomErrorAndNotFoundWhenUpdatingCategorySpecificationWithInvalidCategoryId() throws Exception {
-        CategorySpecificationRequestDTO invalidRequest =
-                new CategorySpecificationRequestDTO(invalidId, validId, true);
-
-        when(catSpecService.update(validId, invalidRequest))
-                .thenThrow(new ResourceNotFoundException(notFoundMsg));
-
-        mockMvc.perform(put(PATH + "/specifications/{id}", validId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
-
-                .andExpect(status().isNotFound())
-
-                .andExpect(jsonPath("$.timestamp").exists())
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.message").value(notFoundMsg))
-                .andExpect(jsonPath("$.path").value(PATH + "/specifications/" + validId));
-    }
-
-    @Test
-    void shouldReturnCustomErrorAndNotFoundWhenUpdatingCategorySpecificationWithInvalidSpecificationId() throws Exception {
-        String errorMsg = "Specification not found!";
-
-        CategorySpecificationRequestDTO invalidRequest =
-                new CategorySpecificationRequestDTO(validId, invalidId, true);
-
-        when(catSpecService.update(validId, invalidRequest))
-                .thenThrow(new ResourceNotFoundException(errorMsg));
-
-        mockMvc.perform(put(PATH + "/specifications/{id}", validId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
-
-                .andExpect(status().isNotFound())
-
-                .andExpect(jsonPath("$.timestamp").exists())
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.message").value(errorMsg))
-                .andExpect(jsonPath("$.path").value(PATH + "/specifications/" + validId));
-    }
-
-    @Test
     void shouldReturnValidationErrorAndBadRequestWhenUpdatingCategorySpecificationWithNullCategoryId() throws Exception {
         String errorMsg = "Category ID is required!";
 
@@ -611,31 +458,5 @@ class CategoryControllerTest {
                 .andExpect(jsonPath("$.errors[*].field").value(hasItem("required")))
                 .andExpect(jsonPath("$.errors[*].message")
                         .value(hasItem(errorMsg)));
-    }
-
-    @Test
-    void shouldReturnNoContentWhenDeletingCategorySpecificationWithValidId() throws Exception {
-        doNothing().when(catSpecService).delete(validId);
-
-        mockMvc.perform(delete(PATH + "/specifications/{id}", validId))
-                .andExpect(status().isNoContent());
-
-        verify(catSpecService).delete(validId);
-    }
-
-    @Test
-    void shouldReturnCustomErrorAndNotFoundWhenDeletingCategorySpecificationWithInvalidId() throws Exception {
-        String errorMsg = "Category Specification not found!";
-
-        doThrow(new ResourceNotFoundException(errorMsg)).when(catSpecService).delete(invalidId);
-
-        mockMvc.perform(delete(PATH + "/specifications/{id}", invalidId))
-                .andExpect(status().isNotFound())
-
-                .andExpect(jsonPath("$.timestamp").exists())
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.message").value(errorMsg))
-                .andExpect(jsonPath("$.path").value(PATH + "/specifications/" + invalidId));
-
     }
 }
