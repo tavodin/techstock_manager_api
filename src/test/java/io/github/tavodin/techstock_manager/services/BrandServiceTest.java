@@ -1,8 +1,11 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.BrandAssembler;
+import io.github.tavodin.techstock_manager.assemblers.UnitAssembler;
+import io.github.tavodin.techstock_manager.dto.BrandAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.BrandDTO;
 import io.github.tavodin.techstock_manager.dto.BrandRequestDTO;
+import io.github.tavodin.techstock_manager.dto.UnitAutocompleteDTO;
 import io.github.tavodin.techstock_manager.entities.Brand;
 import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
@@ -100,7 +103,7 @@ class BrandServiceTest {
         Page<Brand> page = new PageImpl<>(List.of(brand));
         PagedModel<BrandDTO> pagedModel = mock(PagedModel.class);
 
-        when(repository.findAll(pageable)).thenReturn(page);
+        when(repository.getAll(null, pageable)).thenReturn(page);
         when(pagedAssembler.toModel(page, assembler)).thenReturn(pagedModel);
 
         PagedModel<BrandDTO> result = service.findAll(null, pageable);
@@ -108,8 +111,83 @@ class BrandServiceTest {
         assertNotNull(result);
         assertEquals(pagedModel, result);
 
-        verify(repository).findAll(pageable);
+        verify(repository).getAll(null, pageable);
         verify(pagedAssembler).toModel(page, assembler);
+    }
+
+    @Test
+    void shouldTrimStringWhenFindAllWithNameWithSpaces() {
+        PagedModel<BrandDTO> pagedModel = mock(PagedModel.class);
+        Page<Brand> page = new PageImpl<>(List.of(brand));
+        Pageable pageable = mock(Pageable.class);
+        String name = "  " + dto.getName() + "  ";
+        String nameWithNoSpaces = name.trim();
+
+        when(repository.getAll(nameWithNoSpaces, pageable))
+                .thenReturn(page);
+        when(pagedAssembler.toModel(any(Page.class), any(BrandAssembler.class)))
+                .thenReturn(pagedModel);
+
+        service.findAll(name, pageable);
+
+        ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+
+        verify(repository).getAll(nameCaptor.capture(), eq(pageable));
+
+        assertEquals(nameWithNoSpaces, nameCaptor.getValue());
+    }
+
+    @Test
+    void shouldReturnNullWhenFindAllWithBlankName() {
+        PagedModel<BrandDTO> pagedModel = mock(PagedModel.class);
+        Page<Brand> page = new PageImpl<>(List.of(brand));
+        Pageable pageable = mock(Pageable.class);
+        String blankName = "";
+
+        when(repository.getAll(null, pageable))
+                .thenReturn(page);
+        when(pagedAssembler.toModel(any(Page.class), any(BrandAssembler.class)))
+                .thenReturn(pagedModel);
+
+        service.findAll(blankName, pageable);
+
+        ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+
+        verify(repository).getAll(nameCaptor.capture(), eq(pageable));
+
+        assertNull(nameCaptor.getValue());
+    }
+
+    @Test
+    void shouldTrimStringWhenGetBrandsToAutocompleteWithNameWithSpaces() {
+        when(repository.getBrandsByName(anyString(), any(Pageable.class)))
+                .thenReturn(List.of(new BrandAutocompleteDTO(dto.getId(), dto.getName())));
+
+        service.getBrandsToAutocomplete(" DELL  ");
+
+        ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+
+        verify(repository).getBrandsByName(nameCaptor.capture(), pageableCaptor.capture());
+
+        assertEquals("DELL", nameCaptor.getValue());
+        assertNotNull(pageableCaptor.getValue());
+    }
+
+    @Test
+    void shouldReturnNullWhenGetBrandsToAutocompleteWithBlankName() {
+        when(repository.getBrandsByName(eq(null), any(Pageable.class)))
+                .thenReturn(List.of(new BrandAutocompleteDTO(dto.getId(), dto.getName())));
+
+        service.getBrandsToAutocomplete("");
+
+        ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+
+        verify(repository).getBrandsByName(nameCaptor.capture(), pageableCaptor.capture());
+
+        assertNull(nameCaptor.getValue());
+        assertNotNull(pageableCaptor.getValue());
     }
 
     @Test

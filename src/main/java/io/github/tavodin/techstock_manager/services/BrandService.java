@@ -40,13 +40,21 @@ public class BrandService {
 
     @Transactional(readOnly = true)
     public PagedModel<BrandDTO> findAll(String name, Pageable pageable) {
-        Page<Brand> page = repository.getAll(name, pageable);
+        String brandName = name == null || name.isBlank()
+                ? null
+                : name.trim();
+
+        Page<Brand> page = repository.getAll(brandName, pageable);
         return pagedAssembler.toModel(page, assembler);
     }
 
     @Transactional(readOnly = true)
     public List<BrandAutocompleteDTO> getBrandsToAutocomplete(String name) {
-        return repository.getBrandsByName(name, PageRequest.of(0, 5));
+        String nameFilter = name == null || name.isBlank()
+                ? null
+                : name.trim();
+
+        return repository.getBrandsByName(nameFilter, PageRequest.of(0, 5));
     }
 
     @Transactional
