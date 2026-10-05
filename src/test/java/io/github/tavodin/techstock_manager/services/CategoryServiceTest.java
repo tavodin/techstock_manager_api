@@ -2,17 +2,22 @@ package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.CategoryAssembler;
 import io.github.tavodin.techstock_manager.builder.SpecificationBuilder;
+import io.github.tavodin.techstock_manager.dto.CategorySpecificationsInputDTO;
 import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
+import io.github.tavodin.techstock_manager.dto.category.CategoryAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryDTO;
+import io.github.tavodin.techstock_manager.dto.category.CategoryLoadDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryRequestDTO;
 import io.github.tavodin.techstock_manager.entities.Category;
 import io.github.tavodin.techstock_manager.entities.Specification;
 import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.CategoryRepository;
+import io.github.tavodin.techstock_manager.repositories.SpecificationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -25,8 +30,10 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -36,6 +43,9 @@ class CategoryServiceTest {
 
     @Mock
     private CategoryRepository repository;
+
+    @Mock
+    private SpecificationRepository specRepository;
 
     @Mock
     private CategoryAssembler assembler;
@@ -49,11 +59,13 @@ class CategoryServiceTest {
     private Long validId = 1L;
     private Long invalidId = 2L;
     private String notFoundMsg = "Category not found!";
+    private String specificationsNotFound = "One or more specifications were not found";
     private String entityInUseMsg = "Category is in use and cannot be deleted";
 
     private Category category = new Category();
     private CategoryDTO categoryDTO;
     private CategoryRequestDTO request;
+    private Specification specification;
 
     @BeforeEach
     void setUp() {
@@ -66,7 +78,9 @@ class CategoryServiceTest {
         category.setUpdatedAt(updatedAt);
 
         categoryDTO = new CategoryDTO(category);
-        request = new CategoryRequestDTO(category.getName(), null);
+        request = new CategoryRequestDTO(category.getName(), Set.of(validId));
+
+        specification = SpecificationBuilder.builder().build();
     }
 
     @Test
@@ -104,22 +118,134 @@ class CategoryServiceTest {
         Page<Category> page = new PageImpl<>(List.of(category));
         PagedModel<CategoryDTO> pagedModel = mock(PagedModel.class);
 
-        when(repository.findAll(pageable)).thenReturn(page);
+        when(repository.getAll(category.getName(), pageable)).thenReturn(page);
         when(pagedAssembler.toModel(page, assembler)).thenReturn(pagedModel);
 
-        PagedModel<CategoryDTO> actual = service.findAll(null, pageable);
+        PagedModel<CategoryDTO> actual = service.findAll(category.getName(), pageable);
 
         assertNotNull(actual);
         assertEquals(pagedModel, actual);
 
-        verify(repository).findAll(pageable);
+        verify(repository).getAll(category.getName(), pageable);
         verify(pagedAssembler).toModel(page, assembler);
     }
 
     @Test
+    void shouldTrimStringWhenFindAllWithNameWithSpaces() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Category> page = new PageImpl<>(List.of(category));
+        PagedModel<CategoryDTO> pagedModel = mock(PagedModel.class);
+        String nameWithSpaces = "  " + category.getName() + "  ";
+
+        when(repository.getAll(category.getName(), pageable)).thenReturn(page);
+        when(pagedAssembler.toModel(page, assembler)).thenReturn(pagedModel);
+
+        service.findAll(nameWithSpaces, pageable);
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(repository).getAll(captor.capture(), eq(pageable));
+
+        assertEquals(category.getName(), captor.getValue());
+    }
+
+    @Test
+    void shouldReturnNullWhenFindAllWithBlankString() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Category> page = new PageImpl<>(List.of(category));
+        PagedModel<CategoryDTO> pagedModel = mock(PagedModel.class);
+
+        when(repository.getAll(null, pageable)).thenReturn(page);
+        when(pagedAssembler.toModel(page, assembler)).thenReturn(pagedModel);
+
+        service.findAll("", pageable);
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(repository).getAll(captor.capture(), eq(pageable));
+
+        assertNull(captor.getValue());
+    }
+
+    @Test
+    void shouldReturnCategoryAutocompleteDTOListWhenGetCategoriesToAutocomplete() {
+        List<CategoryAutocompleteDTO> dto = List.of(new CategoryAutocompleteDTO(category.getId(), categoryDTO.getName()));
+        when(repository.getCategoriesByName(eq(category.getName()), any(Pageable.class)))
+                .thenReturn(dto);
+
+        List<CategoryAutocompleteDTO> result = service.getCategoriesToAutocomplete(categoryDTO.getName());
+
+        assertEquals(category.getId(), result.getFirst().id());
+        assertEquals(category.getName(), result.getFirst().name());
+    }
+
+    @Test
+    void shouldTrimStringWhenGetCategoriesToAutocompleteWithNameWithSpaces() {
+        List<CategoryAutocompleteDTO> dto = List.of(
+                new CategoryAutocompleteDTO(
+                        category.getId(),
+                        categoryDTO.getName()
+                )
+        );
+
+        String nameWithSpaces = "   " + category.getName() + "   ";
+
+        when(repository.getCategoriesByName(eq(category.getName()), any(Pageable.class)))
+                .thenReturn(dto);
+
+        service.getCategoriesToAutocomplete(nameWithSpaces);
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(repository).getCategoriesByName(captor.capture(), any(Pageable.class));
+
+        assertEquals(category.getName(), captor.getValue());
+    }
+
+    @Test
+    void shouldReturnNullWhenGetCategoriesToAutocompleteWithBlankName() {
+        List<CategoryAutocompleteDTO> dto = List.of(
+                new CategoryAutocompleteDTO(
+                        category.getId(),
+                        categoryDTO.getName()
+                )
+        );
+
+        when(repository.getCategoriesByName(eq(null), any(Pageable.class)))
+                .thenReturn(dto);
+
+        service.getCategoriesToAutocomplete("");
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(repository).getCategoriesByName(captor.capture(), any(Pageable.class));
+
+        assertNull(captor.getValue());
+    }
+
+    @Test
+    void shouldReturnCategorySpecificationsListDTOWhenFindAllSpecificationByCategoryIdWithValidId() {
+        when(repository.findById(validId)).thenReturn(Optional.of(category));
+        when(repository.findAllSpecificationsByCategoryId(validId)).thenReturn(List.of(specification));
+
+        List<CategorySpecificationsListDTO> result = service.findAllSpecificationByCategoryId(validId);
+
+        assertNotNull(result);
+        assertEquals(specification.getId(), result.getFirst().getSpecificationId());
+        assertEquals(specification.getName(), result.getFirst().getSpecificationName());
+    }
+
+    @Test
+    void shouldThrowResourceNotFoundExceptionWhenFindAllSpecificationByCategoryIdWithInvalidId() {
+        when(repository.findById(invalidId)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException result = assertThrows(ResourceNotFoundException.class, () ->
+                service.findAllSpecificationByCategoryId(invalidId)
+        );
+
+        assertEquals(notFoundMsg, result.getMessage());
+    }
+
+    @Test
     void shouldReturnSpecificationListWhenFindingSpecificationsWithValidCategoryId() {
-        List<Specification> specList = List.of(
-                SpecificationBuilder.builder().build());
+        Specification spec = SpecificationBuilder.builder().build();
+        List<Specification> specList = List.of(spec);
 
         when(repository.findById(validId)).thenReturn(Optional.of(category));
         when(repository.findAllSpecificationsByCategoryId(validId)).thenReturn(specList);
@@ -128,6 +254,8 @@ class CategoryServiceTest {
         CategorySpecificationsListDTO dto = actual.getFirst();
 
         assertTrue(actual.size() > 0);
+        assertEquals(spec.getId(), dto.getSpecificationId());
+        assertEquals(spec.getName(), dto.getSpecificationName());
     }
 
     @Test
@@ -141,41 +269,94 @@ class CategoryServiceTest {
     }
 
     @Test
-    void shouldReturnCategoryDTOWhenSaving() {
-        Category savedCategory = new Category();
-        savedCategory.setName(categoryDTO.getName());
+    void shouldReturnCategoryLoadDTOWhenLoadCategoryByIdWithValidId() {
+        when(repository.loadCategoryById(validId)).thenReturn(Optional.of(category));
 
-        when(repository.save(savedCategory)).thenReturn(category);
+        CategoryLoadDTO result = service.loadCategoryById(validId);
+
+        assertEquals(category.getId(), result.getId());
+        assertEquals(category.getName(), result.getName());
+        assertTrue(result.getSpecifications().isEmpty());
+    }
+
+    @Test
+    void shouldThrowResourceNotFoundExceptionWhenLoadCategoryByIdWithInvalidId() {
+        when(repository.loadCategoryById(invalidId)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException result = assertThrows(ResourceNotFoundException.class, () ->
+                service.loadCategoryById(invalidId));
+
+        assertEquals(notFoundMsg, result.getMessage());
+    }
+
+    @Test
+    void shouldReturnCategoryDTOWhenSaving() {
+        when(specRepository.getSpecificationByIds(Set.of(validId))).thenReturn(Set.of(specification));
+        when(repository.save(any(Category.class))).thenReturn(category);
         when(assembler.toModel(category)).thenReturn(categoryDTO);
 
-        CategoryDTO actual = service.save(request);
+        service.save(request);
 
-        assertEquals(categoryDTO.getId(), actual.getId());
-        assertEquals(categoryDTO.getName(), actual.getName());
-        assertEquals(categoryDTO.getCreatedAt(), actual.getCreatedAt());
-        assertEquals(categoryDTO.getUpdatedAt(), actual.getUpdatedAt());
+        ArgumentCaptor<Category> captor = ArgumentCaptor.forClass(Category.class);
+        verify(repository).save(captor.capture());
+
+        assertEquals(request.name(), captor.getValue().getName());
+        assertTrue(captor.getValue().getSpecifications()
+                .stream().anyMatch(s -> s.getName().equals(specification.getName())));
+    }
+
+    @Test
+    void shouldNotCallGetSpecificationByIdsWhenSpecificationIdsIsNull() {
+        CategoryRequestDTO requestDTO = new CategoryRequestDTO(category.getName(), null);
+
+        when(repository.save(any(Category.class))).thenReturn(category);
+        when(assembler.toModel(category)).thenReturn(categoryDTO);
+
+        service.save(requestDTO);
+
+        verify(specRepository, never()).getSpecificationByIds(anySet());
+    }
+
+    @Test
+    void shouldNotCallGetSpecificationByIdsWhenSpecificationIdsIsEmpty() {
+        CategoryRequestDTO requestDTO = new CategoryRequestDTO(category.getName(), Set.of());
+
+        when(repository.save(any(Category.class))).thenReturn(category);
+        when(assembler.toModel(category)).thenReturn(categoryDTO);
+
+        service.save(requestDTO);
+
+        verify(specRepository, never()).getSpecificationByIds(anySet());
+    }
+
+    @Test
+    void shouldThrowResourceNotFoundExceptionWhenSavingWithNullSpecificationIds() {
+        when(specRepository.getSpecificationByIds(request.specificationIds()))
+                .thenReturn(Set.of());
+
+        ResourceNotFoundException result = assertThrows(ResourceNotFoundException.class, () ->
+                service.save(request)
+        );
+
+        assertEquals(specificationsNotFound, result.getMessage());
     }
 
     @Test
     void shouldReturnCategoryDTOWhenUpdatingWithValidId() {
         CategoryRequestDTO updateRequest = new CategoryRequestDTO("Mouse", null);
 
-        Category updateCategory = new Category();
-        updateCategory.setId(category.getId());
-        updateCategory.setName(updateRequest.name());
-
-        category.setName(updateCategory.getName());
-
         when(repository.findById(validId)).thenReturn(Optional.of(category));
-        when(repository.save(updateCategory)).thenReturn(category);
+        when(repository.save(any(Category.class))).thenReturn(category);
         when(assembler.toModel(category)).thenReturn(categoryDTO);
 
-        CategoryDTO actual = service.update(validId, updateRequest);
+        service.update(validId, updateRequest);
 
-        assertEquals(categoryDTO.getId(), actual.getId());
-        assertEquals(categoryDTO.getName(), actual.getName());
-        assertEquals(categoryDTO.getCreatedAt(), actual.getCreatedAt());
-        assertEquals(categoryDTO.getUpdatedAt(), actual.getUpdatedAt());
+        ArgumentCaptor<Category> captor = ArgumentCaptor.forClass(Category.class);
+        verify(repository).save(captor.capture());
+
+        assertEquals(category.getId(), captor.getValue().getId());
+        assertEquals(updateRequest.name(), captor.getValue().getName());
+        assertTrue(captor.getValue().getSpecifications().isEmpty());
     }
 
     @Test
@@ -189,6 +370,32 @@ class CategoryServiceTest {
         assertEquals(notFoundMsg, actual.getMessage());
         verify(repository, never()).save(any(Category.class));
         verify(assembler, never()).toModel(any(Category.class));
+    }
+
+    @Test
+    void shouldNotCallGetSpecificationByIdsWhenUpdatingWithNullSpecificationIds() {
+        CategoryRequestDTO requestDTO = new CategoryRequestDTO(category.getName(), null);
+
+        when(repository.findById(validId)).thenReturn(Optional.of(category));
+        when(repository.save(any(Category.class))).thenReturn(category);
+        when(assembler.toModel(category)).thenReturn(categoryDTO);
+
+        service.update(validId, requestDTO);
+
+        verify(specRepository, never()).getSpecificationByIds(anySet());
+    }
+
+    @Test
+    void shouldNotCallGetSpecificationByIdsWhenUpdatingWithBlankSpecificationIds() {
+        CategoryRequestDTO requestDTO = new CategoryRequestDTO(category.getName(), Set.of());
+
+        when(repository.findById(validId)).thenReturn(Optional.of(category));
+        when(repository.save(any(Category.class))).thenReturn(category);
+        when(assembler.toModel(category)).thenReturn(categoryDTO);
+
+        service.update(validId, requestDTO);
+
+        verify(specRepository, never()).getSpecificationByIds(anySet());
     }
 
     @Test
@@ -229,5 +436,24 @@ class CategoryServiceTest {
         assertEquals(entityInUseMsg, actual.getMessage());
 
         verify(repository).delete(category);
+    }
+
+    @Test
+    void shouldReturnCategorySpecificationsInputDTOWhenFindAllSpecificationByCategoryIdsWithValidIds() {
+        CategorySpecificationsInputDTO dto = new CategorySpecificationsInputDTO(
+                specification.getId(), specification.getName(), specification.getDataType(), null
+        );
+
+        when(repository.findAllSpecificationsByCategoryIds(new ArrayList<>(request.specificationIds())))
+                .thenReturn(List.of(dto));
+
+        List<CategorySpecificationsInputDTO> result = service
+                .findAllSpecificationByCategoryIds(new ArrayList<>(request.specificationIds()));
+
+        assertNotNull(result);
+        assertEquals(dto.specificationId(), result.getFirst().specificationId());
+        assertEquals(dto.specificationName(), result.getFirst().specificationName());
+        assertEquals(dto.specificationType(), result.getFirst().specificationType());
+        assertEquals(dto.unitSymbol(), result.getFirst().unitSymbol());
     }
 }

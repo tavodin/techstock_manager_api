@@ -2,11 +2,11 @@ package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.CategoryAssembler;
 import io.github.tavodin.techstock_manager.dto.CategorySpecificationsInputDTO;
+import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryLoadDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryRequestDTO;
-import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
 import io.github.tavodin.techstock_manager.entities.Category;
 import io.github.tavodin.techstock_manager.entities.Specification;
 import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
@@ -51,18 +51,21 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public PagedModel<CategoryDTO> findAll(String name, Pageable pageable) {
-        Page<Category> page = repository.getAll(name, pageable);
+        String nameFilter = getTrimStringOrNull(name);
+        Page<Category> page = repository.getAll(nameFilter, pageable);
         return pagedAssembler.toModel(page, assembler);
     }
 
     @Transactional(readOnly = true)
     public List<CategoryAutocompleteDTO> getCategoriesToAutocomplete(String name) {
-        return repository.getCategoriesByName(name, PageRequest.of(0, 5));
+        String nameFilter = getTrimStringOrNull(name);
+        return repository.getCategoriesByName(nameFilter, PageRequest.of(0, 5));
     }
 
     @Transactional(readOnly = true)
     public List<CategorySpecificationsListDTO> findAllSpecificationByCategoryId(Long id) {
         getEntityOrThrowException(id);
+
         List<CategorySpecificationsListDTO> entity = repository.findAllSpecificationsByCategoryId(id)
                 .stream()
                 .map(CategorySpecificationsListDTO::new)
@@ -72,17 +75,20 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public CategoryLoadDTO loadCategoryById(Long id) {
-        Category category = repository.loadCategoryById(id);
+        Category category = repository.loadCategoryById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
         return new CategoryLoadDTO(category);
     }
 
     @Transactional
     public CategoryDTO save(CategoryRequestDTO request) {
-        Set<Specification> specs = getSpecificationOrThrowException(request.specificationIds());
-
         Category entity = new Category();
         entity.setName(request.name());
-        entity.setSpecifications(specs);
+
+        if(request.specificationIds() != null && !request.specificationIds().isEmpty()) {
+            Set<Specification> specs = getSpecificationOrThrowException(request.specificationIds());
+            entity.setSpecifications(specs);
+        }
 
         entity = repository.save(entity);
         return assembler.toModel(entity);
@@ -91,10 +97,13 @@ public class CategoryService {
     @Transactional
     public CategoryDTO update(Long id, CategoryRequestDTO request) {
         Category entity = getEntityOrThrowException(id);
-        Set<Specification> specs = getSpecificationOrThrowException(request.specificationIds());
+
+        if(request.specificationIds() != null && !request.specificationIds().isEmpty()) {
+            Set<Specification> specs = getSpecificationOrThrowException(request.specificationIds());
+            entity.setSpecifications(specs);
+        }
 
         entity.setName(request.name());
-        entity.setSpecifications(specs);
         entity = repository.save(entity);
 
         return assembler.toModel(entity);
@@ -114,6 +123,12 @@ public class CategoryService {
     @Transactional(readOnly = true)
     public List<CategorySpecificationsInputDTO> findAllSpecificationByCategoryIds(List<Long> ids) {
         return repository.findAllSpecificationsByCategoryIds(ids);
+    }
+
+    private String getTrimStringOrNull(String name) {
+        return name == null || name.isBlank()
+                ? null
+                : name.trim();
     }
 
     private Category getEntityOrThrowException(Long id) {

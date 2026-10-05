@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
@@ -42,7 +43,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
             LEFT JOIN c.specifications
             WHERE c.id = :id
             """)
-    Category loadCategoryById(@Param("id") Long id);
+    Optional<Category> loadCategoryById(@Param("id") Long id);
 
     @Query("""
             SELECT new io.github.tavodin.techstock_manager.dto.CategorySpecificationsInputDTO(

@@ -40,19 +40,15 @@ public class BrandService {
 
     @Transactional(readOnly = true)
     public PagedModel<BrandDTO> findAll(String name, Pageable pageable) {
-        String brandName = name == null || name.isBlank()
-                ? null
-                : name.trim();
+        String nameFilter = getTrimStringOrNull(name);
 
-        Page<Brand> page = repository.getAll(brandName, pageable);
+        Page<Brand> page = repository.getAll(nameFilter, pageable);
         return pagedAssembler.toModel(page, assembler);
     }
 
     @Transactional(readOnly = true)
     public List<BrandAutocompleteDTO> getBrandsToAutocomplete(String name) {
-        String nameFilter = name == null || name.isBlank()
-                ? null
-                : name.trim();
+        String nameFilter = getTrimStringOrNull(name);
 
         return repository.getBrandsByName(nameFilter, PageRequest.of(0, 5));
     }
@@ -82,6 +78,12 @@ public class BrandService {
         } catch (DataIntegrityViolationException e) {
             throw new EntityInUseException("Brand is in use and cannot be deleted");
         }
+    }
+
+    private String getTrimStringOrNull(String name) {
+        return name == null || name.isBlank()
+                ? null
+                : name.trim();
     }
 
     private Brand getEntityOrThrowException(Long id) {
