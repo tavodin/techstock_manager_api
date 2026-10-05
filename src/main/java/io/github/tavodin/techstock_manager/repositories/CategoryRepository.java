@@ -2,10 +2,8 @@ package io.github.tavodin.techstock_manager.repositories;
 
 import io.github.tavodin.techstock_manager.dto.CategorySpecificationsInputDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryAutocompleteDTO;
-import io.github.tavodin.techstock_manager.dto.category.CategoryLoadDTO;
 import io.github.tavodin.techstock_manager.entities.Category;
 import io.github.tavodin.techstock_manager.entities.Specification;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

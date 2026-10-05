@@ -32,9 +32,8 @@ public class ProductService {
     private final ProductSpecificationRepository prodSpecRepository;
     private final ProductAssembler assembler;
     private final PagedResourcesAssembler<Product> pagedAssembler;
-    private final EntityManager entityManager;
 
-    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, BrandRepository brandRepository, SpecificationRepository specRepository, ProductSpecificationRepository prodSpecRepository, ProductAssembler assembler, PagedResourcesAssembler<Product> pagedAssembler, EntityManager entityManager) {
+    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, BrandRepository brandRepository, SpecificationRepository specRepository, ProductSpecificationRepository prodSpecRepository, ProductAssembler assembler, PagedResourcesAssembler<Product> pagedAssembler) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.brandRepository = brandRepository;
@@ -42,7 +41,6 @@ public class ProductService {
         this.prodSpecRepository = prodSpecRepository;
         this.assembler = assembler;
         this.pagedAssembler = pagedAssembler;
-        this.entityManager = entityManager;
     }
 
     @Transactional(readOnly = true)

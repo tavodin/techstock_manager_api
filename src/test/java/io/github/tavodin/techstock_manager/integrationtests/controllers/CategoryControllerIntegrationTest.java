@@ -65,7 +65,7 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
     private Long invalidId = Long.MAX_VALUE;
     private String notFoundMsg = "Category not found!";
     private String validationErrorMsg = "Entity validation error";
-    private CategoryRequestDTO request = new CategoryRequestDTO("Monitor");
+    private CategoryRequestDTO request = new CategoryRequestDTO("Monitor", null);
     private String token;
 
     @BeforeEach
@@ -143,7 +143,7 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
     void shouldReturnPageCategoriesWhenFindAll() throws JsonProcessingException {
         createCategoryDTO(request);
         createCategoryDTO(
-                new CategoryRequestDTO("Mouse"));
+                new CategoryRequestDTO("Mouse", null));
 
         int number = 0;
         int size = 5;
@@ -194,7 +194,7 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotSaveCategoryWhenSavingWithNullName() throws JsonProcessingException {
-        CategoryRequestDTO invalidRequest = new CategoryRequestDTO(null);
+        CategoryRequestDTO invalidRequest = new CategoryRequestDTO(null, null);
 
         var content = given()
                 .spec(specification)
@@ -222,7 +222,7 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotSaveCategoryWhenSavingWithLongName() throws JsonProcessingException {
-        CategoryRequestDTO invalidRequest = new CategoryRequestDTO("e".repeat(101));
+        CategoryRequestDTO invalidRequest = new CategoryRequestDTO("e".repeat(101), null);
 
         var content = given()
                 .spec(specification)
@@ -251,7 +251,7 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
     @Test
     void shouldUpdateCategoryWhenUpdatingWithValidData() throws JsonProcessingException {
         CategoryDTO savedCategory = createCategoryDTO(request);
-        CategoryRequestDTO updateRequest = new CategoryRequestDTO("Webcam");
+        CategoryRequestDTO updateRequest = new CategoryRequestDTO("Webcam", null);
 
         var response = given()
                 .spec(specification)
@@ -296,7 +296,7 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
     @Test
     void shouldNotUpdateCategoryWhenUpdatingWithNullName() throws JsonProcessingException {
         CategoryDTO savedCategory = createCategoryDTO(request);
-        CategoryRequestDTO invalidRequest = new CategoryRequestDTO(null);
+        CategoryRequestDTO invalidRequest = new CategoryRequestDTO(null, null);
 
         var content = given()
                 .spec(specification)
@@ -326,7 +326,7 @@ class CategoryControllerIntegrationTest extends AbstractIntegrationTest {
     @Test
     void shouldNotUpdateCategoryWhenUpdatingLongName() throws JsonProcessingException {
         CategoryDTO savedCategory = createCategoryDTO(request);
-        CategoryRequestDTO invalidRequest = new CategoryRequestDTO("e".repeat(101));
+        CategoryRequestDTO invalidRequest = new CategoryRequestDTO("e".repeat(101), null);
 
         var content = given()
                 .spec(specification)

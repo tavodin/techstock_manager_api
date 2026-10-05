@@ -103,7 +103,7 @@ class BrandServiceTest {
         when(repository.findAll(pageable)).thenReturn(page);
         when(pagedAssembler.toModel(page, assembler)).thenReturn(pagedModel);
 
-        PagedModel<BrandDTO> result = service.findAll(pageable);
+        PagedModel<BrandDTO> result = service.findAll(null, pageable);
 
         assertNotNull(result);
         assertEquals(pagedModel, result);

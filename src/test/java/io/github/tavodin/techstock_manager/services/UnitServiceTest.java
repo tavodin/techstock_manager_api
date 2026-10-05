@@ -1,6 +1,7 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.UnitAssembler;
+import io.github.tavodin.techstock_manager.dto.UnitAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.UnitDTO;
 import io.github.tavodin.techstock_manager.dto.UnitRequestDTO;
 import io.github.tavodin.techstock_manager.entities.Unit;
@@ -10,6 +11,7 @@ import io.github.tavodin.techstock_manager.repositories.UnitRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -112,16 +114,86 @@ class UnitServiceTest {
         Page<Unit> page = new PageImpl<>(List.of(unit));
         PagedModel<UnitDTO> pagedModel = mock(PagedModel.class);
 
-        when(repository.findAll(pageable)).thenReturn(page);
+        when(repository.findAllPaged(unit.getName(), pageable)).thenReturn(page);
         when(pagedAssembler.toModel(page, assembler)).thenReturn(pagedModel);
 
-        PagedModel<UnitDTO> result = service.findAll(pageable);
+        PagedModel<UnitDTO> result = service.findAll(unit.getName(), pageable);
 
         assertNotNull(result);
         assertEquals(pagedModel, result);
 
-        verify(repository).findAll(pageable);
+        verify(repository).findAllPaged(unit.getName(), pageable);
         verify(pagedAssembler).toModel(page, assembler);
+    }
+
+    @Test
+    void shouldTrimStringWhenFindAllWithNameWithSpaces() {
+        PagedModel<UnitDTO> pagedModel = mock(PagedModel.class);
+        Pageable pageable = mock(Pageable.class);
+
+        when(repository.findAllPaged(anyString(), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(unit)));
+        when(pagedAssembler.toModel(any(Page.class), any(UnitAssembler.class)))
+                .thenReturn(pagedModel);
+
+        service.findAll(" Gramas  ", pageable);
+
+        ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+
+        verify(repository).findAllPaged(nameCaptor.capture(), eq(pageable));
+
+        assertEquals("Gramas", nameCaptor.getValue());
+    }
+
+    @Test
+    void shouldReturnNullWhenFindAllWithBlankName() {
+        PagedModel<UnitDTO> pagedModel = mock(PagedModel.class);
+        Pageable pageable = mock(Pageable.class);
+
+        when(repository.findAllPaged(null, pageable))
+                .thenReturn(new PageImpl<>(List.of(unit)));
+        when(pagedAssembler.toModel(any(Page.class), any(UnitAssembler.class)))
+                .thenReturn(pagedModel);
+
+        service.findAll("", pageable);
+
+        ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+
+        verify(repository).findAllPaged(nameCaptor.capture(), eq(pageable));
+
+        assertNull(nameCaptor.getValue());
+    }
+
+    @Test
+    void shouldTrimStringWhenUnitAutocompleteWithNameWithSpaces() {
+        when(repository.getUnitsByName(anyString(), any(Pageable.class)))
+                .thenReturn(List.of(new UnitAutocompleteDTO(unitDTO.getId(), unitDTO.getName())));
+
+        service.unitAutocomplete(" Gramas  ");
+
+        ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+
+        verify(repository).getUnitsByName(nameCaptor.capture(), pageableCaptor.capture());
+
+        assertEquals("Gramas", nameCaptor.getValue());
+        assertNotNull(pageableCaptor.getValue());
+    }
+
+    @Test
+    void shouldReturnNullWhenUnitAutocompleteWithNullName() {
+        when(repository.getUnitsByName(isNull(), any(Pageable.class)))
+                .thenReturn(List.of(new UnitAutocompleteDTO(unitDTO.getId(), unitDTO.getName())));
+
+        service.unitAutocomplete(null);
+
+        ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+
+        verify(repository).getUnitsByName(nameCaptor.capture(), pageableCaptor.capture());
+
+        assertNull(nameCaptor.getValue());
+        assertNotNull(pageableCaptor.getValue());
     }
 
     @Test

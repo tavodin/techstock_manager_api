@@ -83,7 +83,6 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
     private String missingSpecMsg = "Missing required specifications";
 
     private ProductRequestDTO request;
-    private ProductUpdateDTO updateDTO;
     private Category category;
     private Brand brand;
     private Specification specificationEntity;
@@ -115,15 +114,6 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
         request.setDescription(null);
         request.setMinimumStock(5);
 
-        updateDTO = new ProductUpdateDTO(
-                "Teclado Logitech sem fio",
-                BigDecimal.valueOf(399.99),
-                "Teclado sem fio para escritório",
-                "TEC-001",
-                3,
-                validId,
-                Set.of(validId)
-        );
 
         specificationEntity = SpecificationBuilder
                 .builder()
@@ -925,14 +915,14 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
         Brand updateBrand = saveBrand(new Brand(null, "Logitech", null, null));
         Category updateCategory = saveCategory(new Category(null, "Teclado", null, null));
 
-        updateDTO.setBrandId(updateBrand.getId());
-        updateDTO.setCategoryIds(Set.of(updateCategory.getId()));
+        request.setBrandId(updateBrand.getId());
+        request.setCategoryIds(Set.of(updateCategory.getId()));
 
         var content = given()
                 .spec(specification)
                 .pathParam("id", product.getId())
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(200)
@@ -943,11 +933,11 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
         ProductDTO responseBody = objectMapper.readValue(content, ProductDTO.class);
 
         assertEquals(product.getId(), responseBody.getId());
-        assertEquals(updateDTO.getName(), responseBody.getName());
+        assertEquals(request.getName(), responseBody.getName());
         assertTrue(responseBody.getCostPrice().compareTo(BigDecimal.ZERO) == 0);
-        assertEquals(updateDTO.getDescription(), responseBody.getDescription());
-        assertEquals(updateDTO.getMinimumStock(), responseBody.getMinimumStock());
-        assertEquals(updateDTO.getSalePrice(), responseBody.getSalePrice());
+        assertEquals(request.getDescription(), responseBody.getDescription());
+        assertEquals(request.getMinimumStock(), responseBody.getMinimumStock());
+        assertEquals(request.getSalePrice(), responseBody.getSalePrice());
     }
 
     @Test
@@ -968,15 +958,15 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
         Brand updateBrand = saveBrand(new Brand(null, "Logitech", null, null));
         Category updateCategory = saveCategory(new Category(null, "Teclado", null, null));
 
-        updateDTO.setDescription(null);
-        updateDTO.setBrandId(updateBrand.getId());
-        updateDTO.setCategoryIds(Set.of(updateCategory.getId()));
+        request.setDescription(null);
+        request.setBrandId(updateBrand.getId());
+        request.setCategoryIds(Set.of(updateCategory.getId()));
 
         var content = given()
                 .spec(specification)
                 .pathParam("id", product.getId())
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(200)
@@ -995,7 +985,7 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
                 .spec(specification)
                 .pathParam("id", invalidId)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(404)
@@ -1029,21 +1019,11 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
         newProduct = productRepository.save(newProduct);
 
-        ProductUpdateDTO newUpdateDTO = new ProductUpdateDTO(
-                "Teclado Logitech sem fio",
-                BigDecimal.valueOf(399.99),
-                "Teclado sem fio para escritório",
-                newProduct.getSku(),
-                3,
-                savedBrand.getId(),
-                Set.of(savedCategory.getId())
-        );
-
         CustomError error = given()
                 .spec(specification)
                 .pathParam("id", product.getId())
                 .contentType(CONTENT_TYPE)
-                .body(newUpdateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(409)
@@ -1068,14 +1048,14 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
         product = productRepository.save(product);
 
-        updateDTO.setBrandId(invalidId);
-        updateDTO.setCategoryIds(Set.of(category.getId()));
+        request.setBrandId(invalidId);
+        request.setCategoryIds(Set.of(category.getId()));
 
         CustomError error = given()
                 .pathParam("id", product.getId())
                 .spec(specification)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(404)
@@ -1100,14 +1080,14 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
         product = productRepository.save(product);
 
-        updateDTO.setBrandId(savedBrand.getId());
-        updateDTO.setCategoryIds(Set.of(invalidId));
+        request.setBrandId(savedBrand.getId());
+        request.setCategoryIds(Set.of(invalidId));
 
         CustomError error = given()
                 .pathParam("id", product.getId())
                 .spec(specification)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(404)
@@ -1123,12 +1103,12 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateWhenUpdatingProductWithNullName() throws JsonProcessingException {
-        updateDTO.setName(null);
+        request.setName(null);
         var content = given()
                 .pathParam("id", invalidId)
                 .spec(specification)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(400)
@@ -1151,12 +1131,12 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateWhenUpdatingProductWithTooShortName() throws JsonProcessingException {
-        updateDTO.setName("e");
+        request.setName("e");
         var content = given()
                 .pathParam("id", invalidId)
                 .spec(specification)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(400)
@@ -1179,12 +1159,12 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateWhenUpdatingProductWithTooLongName() throws JsonProcessingException {
-        updateDTO.setName("e".repeat(201));
+        request.setName("e".repeat(201));
         var content = given()
                 .pathParam("id", invalidId)
                 .spec(specification)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(400)
@@ -1207,12 +1187,12 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateWhenUpdatingProductWithNullSalePrice() throws JsonProcessingException {
-        updateDTO.setSalePrice(null);
+        request.setSalePrice(null);
         var content = given()
                 .pathParam("id", invalidId)
                 .spec(specification)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(400)
@@ -1235,12 +1215,12 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateWhenUpdatingProductWithZeroCostPrice() throws JsonProcessingException {
-        updateDTO.setSalePrice(BigDecimal.ZERO);
+        request.setSalePrice(BigDecimal.ZERO);
         var content = given()
                 .pathParam("id", invalidId)
                 .spec(specification)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(400)
@@ -1263,12 +1243,12 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateWhenUpdatingProductWithNegativeCostPrice() throws JsonProcessingException {
-        updateDTO.setSalePrice(BigDecimal.valueOf(-10.1));
+        request.setSalePrice(BigDecimal.valueOf(-10.1));
         var content = given()
                 .pathParam("id", invalidId)
                 .spec(specification)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(400)
@@ -1291,12 +1271,12 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateWhenUpdatingProductWithNullSku() throws JsonProcessingException {
-        updateDTO.setSku(null);
+        request.setSku(null);
         var content = given()
                 .pathParam("id", invalidId)
                 .spec(specification)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(400)
@@ -1319,12 +1299,12 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateWhenUpdatingProductWithTooShortSku() throws JsonProcessingException {
-        updateDTO.setSku("e");
+        request.setSku("e");
         var content = given()
                 .pathParam("id", invalidId)
                 .spec(specification)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(400)
@@ -1347,12 +1327,12 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateWhenUpdatingProductWithTooLongSku() throws JsonProcessingException {
-        updateDTO.setSku("e".repeat(31));
+        request.setSku("e".repeat(31));
         var content = given()
                 .pathParam("id", invalidId)
                 .spec(specification)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(400)
@@ -1375,12 +1355,12 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateWhenUpdatingProductWithNullMinimumStock() throws JsonProcessingException {
-        updateDTO.setMinimumStock(null);
+        request.setMinimumStock(null);
         var content = given()
                 .pathParam("id", invalidId)
                 .spec(specification)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(400)
@@ -1403,12 +1383,12 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateWhenUpdatingProductWithZeroMinimumStock() throws JsonProcessingException {
-        updateDTO.setMinimumStock(0);
+        request.setMinimumStock(0);
         var content = given()
                 .pathParam("id", invalidId)
                 .spec(specification)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(400)
@@ -1431,12 +1411,12 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateWhenUpdatingProductWithNegativeMinimumStock() throws JsonProcessingException {
-        updateDTO.setMinimumStock(-1);
+        request.setMinimumStock(-1);
         var content = given()
                 .pathParam("id", invalidId)
                 .spec(specification)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(400)
@@ -1459,12 +1439,12 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateWhenUpdatingProductWithNullBrandId() throws JsonProcessingException {
-        updateDTO.setBrandId(null);
+        request.setBrandId(null);
         var content = given()
                 .pathParam("id", invalidId)
                 .spec(specification)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(400)
@@ -1487,12 +1467,12 @@ class ProductControllerIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void shouldNotUpdateWhenUpdatingProductWithNullCategoryIds() throws JsonProcessingException {
-        updateDTO.setCategoryIds(null);
+        request.setCategoryIds(null);
         var content = given()
                 .pathParam("id", invalidId)
                 .spec(specification)
                 .contentType(CONTENT_TYPE)
-                .body(updateDTO)
+                .body(request)
                 .put("{id}")
                 .then()
                 .statusCode(400)

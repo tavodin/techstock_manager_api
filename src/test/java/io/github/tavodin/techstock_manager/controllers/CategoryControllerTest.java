@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
@@ -75,7 +76,7 @@ class CategoryControllerTest {
         category.setUpdatedAt(updatedAt);
 
         categoryDTO = new CategoryDTO(category);
-        request = new CategoryRequestDTO(category.getName());
+        request = new CategoryRequestDTO(category.getName(), Set.of(validId));
 
         catSpecRequest = new CategorySpecificationRequestDTO(validId, validId, true);
         catSpecDTO = new CategorySpecificationDTO(
@@ -158,7 +159,7 @@ class CategoryControllerTest {
 
     @Test
     void shouldReturnValidationErrorAndBadRequestWhenSavingNullName() throws Exception {
-        CategoryRequestDTO invalidRequest = new CategoryRequestDTO(null);
+        CategoryRequestDTO invalidRequest = new CategoryRequestDTO(null, null);
         mockMvc.perform(post(PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
@@ -177,7 +178,7 @@ class CategoryControllerTest {
 
     @Test
     void shouldReturnValidationErrorAndBadRequestWhenSavingWithLongName() throws Exception {
-        CategoryRequestDTO invalidRequest = new CategoryRequestDTO("e".repeat(101));
+        CategoryRequestDTO invalidRequest = new CategoryRequestDTO("e".repeat(101), null);
 
         mockMvc.perform(post(PATH)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -229,7 +230,7 @@ class CategoryControllerTest {
 
     @Test
     void shouldReturnValidationErrorAndBadRequestWhenUpdatingWithNullName() throws Exception {
-        CategoryRequestDTO invalidRequest = new CategoryRequestDTO(null);
+        CategoryRequestDTO invalidRequest = new CategoryRequestDTO(null, null);
         mockMvc.perform(put(PATH + "/{id}", invalidId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
@@ -248,7 +249,7 @@ class CategoryControllerTest {
 
     @Test
     void shouldReturnValidationErrorAndBadRequestWhenUpdatingWithLongName() throws Exception {
-        CategoryRequestDTO invalidRequest = new CategoryRequestDTO("e".repeat(101));
+        CategoryRequestDTO invalidRequest = new CategoryRequestDTO("e".repeat(101), null);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON)

@@ -101,7 +101,7 @@ class BrandControllerTest {
         PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(1, 0, 1);
         PagedModel<BrandDTO> pagedModel = PagedModel.of(brands, metadata);
 
-        when(service.findAll(any(Pageable.class))).thenReturn(pagedModel);
+        when(service.findAll(anyString(), any(Pageable.class))).thenReturn(pagedModel);
 
         mockMvc.perform(get(PATH)
                         .param("page", "0")

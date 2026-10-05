@@ -114,7 +114,7 @@ public class SpecificationControllerTest {
         PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(1, 0, 1);
         PagedModel<SpecificationDTO> pagedModel = PagedModel.of(specifications, metadata);
 
-        when(service.findAll(any(Pageable.class))).thenReturn(pagedModel);
+        when(service.findAll(anyString(), any(Pageable.class))).thenReturn(pagedModel);
 
         mockMvc.perform(get(path)
                 .param("page", "0")

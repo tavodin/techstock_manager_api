@@ -420,8 +420,6 @@ public class ProductSpecificationServiceTest {
     @Test
     void shouldDeleteWhenDeletingWithValidIds() {
         when(productRepository.findById(validId)).thenReturn(Optional.of(product));
-        when(categoryRepository.findRequiredSpecificationsIdsByCategoryIds(List.of(category.getId())))
-                .thenReturn(List.of(3L, 2L));
         when(repository.getByProductIdAndSpecificationId(validId, validId))
                 .thenReturn(Optional.of(productSpecification));
         doNothing().when(repository).delete(productSpecification);
@@ -442,8 +440,6 @@ public class ProductSpecificationServiceTest {
     @Test
     void shouldThrowBusinessExceptionWhenDeletingWithRequiredSpecificationId() {
         when(productRepository.findById(validId)).thenReturn(Optional.of(product));
-        when(categoryRepository.findRequiredSpecificationsIdsByCategoryIds(List.of(category.getId())))
-                .thenReturn(List.of(category.getId()));
 
         BusinessException actual = assertThrows(BusinessException.class, () ->
                 service.delete(validId, validId));
@@ -454,8 +450,6 @@ public class ProductSpecificationServiceTest {
     @Test
     void shouldThrowResourceNotFoundExceptionWhenDeletingWithInvalidProductOrSpecificationId() {
         when(productRepository.findById(validId)).thenReturn(Optional.of(product));
-        when(categoryRepository.findRequiredSpecificationsIdsByCategoryIds(List.of(category.getId())))
-                .thenReturn(List.of(category.getId()));
         when(repository.getByProductIdAndSpecificationId(validId, invalidId))
                 .thenReturn(Optional.empty());
 

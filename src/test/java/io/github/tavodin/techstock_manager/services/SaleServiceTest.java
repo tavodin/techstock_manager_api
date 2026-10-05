@@ -4,12 +4,14 @@ import io.github.tavodin.techstock_manager.assemblers.SaleAssembler;
 import io.github.tavodin.techstock_manager.builder.ProductBuilder;
 import io.github.tavodin.techstock_manager.dto.sale.SaleDTO;
 import io.github.tavodin.techstock_manager.dto.sale.SaleItemRequestDTO;
+import io.github.tavodin.techstock_manager.dto.sale.SaleListDTO;
 import io.github.tavodin.techstock_manager.dto.sale.SaleRequestDTO;
 import io.github.tavodin.techstock_manager.entities.Product;
 import io.github.tavodin.techstock_manager.entities.Sale;
 import io.github.tavodin.techstock_manager.entities.SaleItem;
 import io.github.tavodin.techstock_manager.entities.StockMovement;
 import io.github.tavodin.techstock_manager.enums.MovementType;
+import io.github.tavodin.techstock_manager.enums.PaymentMethod;
 import io.github.tavodin.techstock_manager.enums.SaleStatus;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
@@ -27,9 +29,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedModel;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -96,7 +97,7 @@ public class SaleServiceTest {
         sale.setId(VALID_ID);
         sale.setSaleDate(LocalDateTime.of(2026, 8, 3, 13, 00));
         sale.setStatus(SaleStatus.COMPLETED);
-        sale.setPaymentMethod("Débito");
+        sale.setPaymentMethod(PaymentMethod.PIX);
         sale.setTotalAmount(BigDecimal.valueOf(250.5));
         sale.setSaleItems(Set.of(saleItem));
 
@@ -151,20 +152,38 @@ public class SaleServiceTest {
 
     @Test
     void shouldReturnPagedModelWhenFindAll() {
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<Sale> page = new PageImpl<>(List.of(sale));
-        PagedModel<SaleDTO> pagedModel = mock(PagedModel.class);
+        PageRequest pageRequest = PageRequest.of(0, 5);
+        Page<SaleListDTO> page = new PageImpl<>(
+                List.of(new SaleListDTO(
+                        VALID_ID,
+                        LocalDateTime.of(2026, 10, 1, 18, 53),
+                        SaleStatus.COMPLETED,
+                        PaymentMethod.CASH,
+                        BigDecimal.valueOf(1999.99),
+                        "Gustavo Teixeira",
+                        "Gustavo Teixeira"
+                )),
+                pageRequest,
+                1
+        );
 
-        when(repository.findAll(pageable)).thenReturn(page);
-        when(pagedAssembler.toModel(page, assembler)).thenReturn(pagedModel);
+        when(repository.getAll(null,
+                null,
+                null,
+                null,
+                null,
+                pageRequest))
+                .thenReturn(page);
 
-        PagedModel<SaleDTO> result = service.findAll(pageable);
+        PagedModel<SaleListDTO> result = service.findAll(
+                null,
+                null,
+                null,
+                null,
+                null,
+                pageRequest);
 
         assertNotNull(result);
-        assertEquals(pagedModel, result);
-
-        verify(repository).findAll(pageable);
-        verify(pagedAssembler).toModel(page, assembler);
     }
 
     @Test

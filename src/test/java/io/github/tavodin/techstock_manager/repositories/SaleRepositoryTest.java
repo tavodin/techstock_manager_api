@@ -6,6 +6,7 @@ import io.github.tavodin.techstock_manager.entities.Brand;
 import io.github.tavodin.techstock_manager.entities.Product;
 import io.github.tavodin.techstock_manager.entities.Sale;
 import io.github.tavodin.techstock_manager.entities.SaleItem;
+import io.github.tavodin.techstock_manager.enums.PaymentMethod;
 import io.github.tavodin.techstock_manager.enums.SaleStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,7 +58,7 @@ public class SaleRepositoryTest extends AbstractJpaTest {
         sale.setStatus(SaleStatus.COMPLETED);
         sale.setTotalAmount(BigDecimal.valueOf(2550.5));
         sale.setSaleDate(LocalDateTime.of(2026, 5, 8, 17, 30));
-        sale.setPaymentMethod("Débito");
+        sale.setPaymentMethod(PaymentMethod.CASH);
 
         sale = repository.save(sale);
 

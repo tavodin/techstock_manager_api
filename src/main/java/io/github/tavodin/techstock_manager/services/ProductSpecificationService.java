@@ -27,13 +27,11 @@ public class ProductSpecificationService {
     private final ProductSpecificationRepository repository;
     private final ProductRepository productRepository;
     private final SpecificationRepository specificationRepository;
-    private final CategoryRepository categoryRepository;
 
-    public ProductSpecificationService(ProductSpecificationRepository repository, ProductRepository productRepository, SpecificationRepository specificationRepository, CategoryRepository categoryRepository) {
+    public ProductSpecificationService(ProductSpecificationRepository repository, ProductRepository productRepository, SpecificationRepository specificationRepository) {
         this.repository = repository;
         this.productRepository = productRepository;
         this.specificationRepository = specificationRepository;
-        this.categoryRepository = categoryRepository;
     }
 
     @Transactional(readOnly = true)

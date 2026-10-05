@@ -105,15 +105,22 @@ public class SupplierServiceTest {
     }
 
     @Test
+    void shouldTrimStringWhenGetAllWithStringWithSpaces() {
+        String name = " distribuidora  ";
+
+        when(repository.getAllByName(name, any(Pageable.class)));
+    }
+
+    @Test
     void shouldReturnPagedModelWhenFindAll() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Supplier> page = new PageImpl<>(List.of(supplier));
         PagedModel<SupplierDTO> pagedModel = mock(PagedModel.class);
 
-        when(repository.findAll(pageable)).thenReturn(page);
+        when(repository.getAllByName(null, pageable)).thenReturn(page);
         when(pagedAssembler.toModel(page, assembler)).thenReturn(pagedModel);
 
-        PagedModel<SupplierDTO> actual = service.findAll(pageable);
+        PagedModel<SupplierDTO> actual = service.findAll(null, pageable);
 
         assertNotNull(actual);
 

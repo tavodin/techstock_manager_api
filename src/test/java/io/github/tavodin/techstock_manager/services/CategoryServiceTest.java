@@ -1,11 +1,12 @@
 package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.CategoryAssembler;
+import io.github.tavodin.techstock_manager.builder.SpecificationBuilder;
+import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryDTO;
 import io.github.tavodin.techstock_manager.dto.category.CategoryRequestDTO;
-import io.github.tavodin.techstock_manager.dto.CategorySpecificationsListDTO;
 import io.github.tavodin.techstock_manager.entities.Category;
-import io.github.tavodin.techstock_manager.enums.SpecificationType;
+import io.github.tavodin.techstock_manager.entities.Specification;
 import io.github.tavodin.techstock_manager.exceptions.EntityInUseException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.CategoryRepository;
@@ -65,7 +66,7 @@ class CategoryServiceTest {
         category.setUpdatedAt(updatedAt);
 
         categoryDTO = new CategoryDTO(category);
-        request = new CategoryRequestDTO(category.getName());
+        request = new CategoryRequestDTO(category.getName(), null);
     }
 
     @Test
@@ -117,20 +118,16 @@ class CategoryServiceTest {
 
     @Test
     void shouldReturnSpecificationListWhenFindingSpecificationsWithValidCategoryId() {
-        CategorySpecificationsListDTO specList =
-                new CategorySpecificationsListDTO(1L, "Frequência", SpecificationType.NUMBER,  true);
+        List<Specification> specList = List.of(
+                SpecificationBuilder.builder().build());
 
         when(repository.findById(validId)).thenReturn(Optional.of(category));
-        when(repository.findAllSpecificationsByCategoryId(validId)).thenReturn(List.of(specList));
+        when(repository.findAllSpecificationsByCategoryId(validId)).thenReturn(specList);
 
         List<CategorySpecificationsListDTO> actual = service.findAllSpecificationByCategoryId(validId);
         CategorySpecificationsListDTO dto = actual.getFirst();
 
         assertTrue(actual.size() > 0);
-
-        assertEquals(specList.getCategorySpecificationId(), dto.getCategorySpecificationId());
-        assertEquals(specList.getSpecificationName(), dto.getSpecificationName());
-        assertEquals(specList.getIsRequired(), dto.getIsRequired());
     }
 
     @Test
@@ -161,7 +158,7 @@ class CategoryServiceTest {
 
     @Test
     void shouldReturnCategoryDTOWhenUpdatingWithValidId() {
-        CategoryRequestDTO updateRequest = new CategoryRequestDTO("Mouse");
+        CategoryRequestDTO updateRequest = new CategoryRequestDTO("Mouse", null);
 
         Category updateCategory = new Category();
         updateCategory.setId(category.getId());

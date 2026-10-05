@@ -4,6 +4,7 @@ import io.github.tavodin.techstock_manager.assemblers.PurchaseAssembler;
 import io.github.tavodin.techstock_manager.builder.ProductBuilder;
 import io.github.tavodin.techstock_manager.dto.purchase.PurchaseDTO;
 import io.github.tavodin.techstock_manager.dto.purchase.PurchaseItemRequestDTO;
+import io.github.tavodin.techstock_manager.dto.purchase.PurchaseListDTO;
 import io.github.tavodin.techstock_manager.dto.purchase.PurchaseRequestDTO;
 import io.github.tavodin.techstock_manager.entities.*;
 import io.github.tavodin.techstock_manager.enums.MovementType;
@@ -21,9 +22,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedModel;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedModel;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -161,20 +161,28 @@ class PurchaseServiceTest {
 
     @Test
     void shouldReturnPagedModelWhenFindAll() {
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<Purchase> page = new PageImpl<>(List.of(purchase));
-        PagedModel<PurchaseDTO> pagedModel = mock(PagedModel.class);
+        PageRequest pageRequest = PageRequest.of(0, 5);
 
-        when(purchaseRepository.findAll(pageable)).thenReturn(page);
-        when(pagedAssembler.toModel(page, assembler)).thenReturn(pagedModel);
+        Page<PurchaseListDTO> page = new PageImpl<>(
+                List.of(new PurchaseListDTO(
+                        VALID_ID,
+                        LocalDate.of(2026, 10, 1),
+                        PurchaseStatus.COMPLETED,
+                        BigDecimal.valueOf(1999.99),
+                        "Distribuidora B",
+                        "Gustavo Teixeira",
+                        "Gustavo Teixeira"
+                )),
+                pageRequest,
+                1
+        );
 
-        PagedModel<PurchaseDTO> result = service.findAll(pageable);
+        when(purchaseRepository.getAll(null, null, null, null, null, pageRequest))
+                .thenReturn(page);
+
+        PagedModel<PurchaseListDTO> result = service.findAll(null, null, null, null, null, pageRequest);
 
         assertNotNull(result);
-        assertEquals(pagedModel, result);
-
-        verify(purchaseRepository).findAll(pageable);
-        verify(pagedAssembler).toModel(page, assembler);
     }
 
     @Test

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.tavodin.techstock_manager.config.security.filters.JwtAuthenticationFilter;
 import io.github.tavodin.techstock_manager.dto.purchase.PurchaseDTO;
 import io.github.tavodin.techstock_manager.dto.purchase.PurchaseItemRequestDTO;
+import io.github.tavodin.techstock_manager.dto.purchase.PurchaseListDTO;
 import io.github.tavodin.techstock_manager.dto.purchase.PurchaseRequestDTO;
 import io.github.tavodin.techstock_manager.enums.PurchaseStatus;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
@@ -14,9 +15,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
-import org.springframework.hateoas.PagedModel;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -108,31 +112,53 @@ public class PurchaseControllerTest {
 
     @Test
     void shouldReturnPurchasePageAndOkWhenFindAll() throws Exception {
-        List<PurchaseDTO> purchases = List.of(dto);
-        PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(1, 0, 1);
-        PagedModel<PurchaseDTO> pagedModel = PagedModel.of(purchases, metadata);
+        PurchaseListDTO listDTO = new PurchaseListDTO(
+                VALID_ID,
+                LocalDate.of(2026, 10, 01),
+                PurchaseStatus.COMPLETED,
+                BigDecimal.valueOf(100.00),
+                "Distribuidora A",
+                "Gustavo Teixeira",
+                "Gustavo Teixeira"
+        );
 
-        when(service.findAll(any(Pageable.class))).thenReturn(pagedModel);
+        PageRequest pageRequest = PageRequest.of(0, 5);
 
-        mockMvc.perform(get(PATH)
-                        .param("page", "0")
-                        .param("size", "10"))
+        Page<PurchaseListDTO> page = new PageImpl<>(
+                List.of(listDTO),
+                pageRequest,
+                1
+        );
+
+        PagedModel<PurchaseListDTO> pagedModel = new PagedModel<>(page);
+
+        when(service.findAll(null, null, null, null, null, pageRequest))
+                .thenReturn(pagedModel);
+
+        mockMvc.perform(get(PATH))
 
                 .andExpect(status().isOk())
 
-                .andExpect(jsonPath("$._embedded").exists())
-                .andExpect(jsonPath("$._embedded.purchases[0].id")
-                        .value(dto.getId()))
-                .andExpect(jsonPath("$._embedded.purchases[0].purchaseDate")
+                .andExpect(jsonPath("$.content").exists())
+                .andExpect(jsonPath("$.content[0].id")
+                        .value(listDTO.getId()))
+                .andExpect(jsonPath("$.content[0].purchaseDate")
                         .exists())
-                .andExpect(jsonPath("$._embedded.purchases[0].status")
-                        .value(dto.getStatus().toString()))
-                .andExpect(jsonPath("$._embedded.purchases[0].totalAmount")
-                        .value(dto.getTotalAmount()))
-                .andExpect(jsonPath("$.page.size").value(1))
+                .andExpect(jsonPath("$.content[0].status")
+                        .value(listDTO.getStatus().toString()))
+                .andExpect(jsonPath("$.content[0].totalAmount")
+                        .value(listDTO.getTotalAmount()))
+                .andExpect(jsonPath("$.content[0].supplier")
+                        .value(listDTO.getSupplier()))
+                .andExpect(jsonPath("$.content[0].createdBy")
+                        .value(listDTO.getCreatedBy()))
+                .andExpect(jsonPath("$.content[0].updatedBy")
+                        .value(listDTO.getUpdatedBy()))
+
+                .andExpect(jsonPath("$.page.size").value(pageRequest.getPageSize()))
                 .andExpect(jsonPath("$.page.totalElements").value(1))
                 .andExpect(jsonPath("$.page.totalPages").value(1))
-                .andExpect(jsonPath("$.page.number").value(0));
+                .andExpect(jsonPath("$.page.number").value(pageRequest.getPageNumber()));
     }
 
     @Test

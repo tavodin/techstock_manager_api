@@ -14,6 +14,11 @@ public class CategorySpecificationsListDTO {
         this.specificationName = specification.getName();
     }
 
+    public CategorySpecificationsListDTO(Long specificationId, String specificationName) {
+        this.specificationId = specificationId;
+        this.specificationName = specificationName;
+    }
+
     public Long getSpecificationId() {
         return specificationId;
     }

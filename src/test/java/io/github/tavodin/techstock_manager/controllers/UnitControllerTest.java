@@ -130,7 +130,7 @@ class UnitControllerTest {
         PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(1, 0, 1);
         PagedModel<UnitDTO> pagedModel = PagedModel.of(units, metadata);
 
-        when(service.findAll(any(Pageable.class))).thenReturn(pagedModel);
+        when(service.findAll(anyString(), any(Pageable.class))).thenReturn(pagedModel);
 
         mockMvc.perform(get("/units")
                 .param("page", "0")

@@ -30,7 +30,8 @@ public class Specification extends BaseEntity {
     public Specification() {
     }
 
-    public Specification(String name, SpecificationType type, Boolean filterable, Unit unit) {
+    public Specification(Long id, String name, SpecificationType type, Boolean filterable, Unit unit, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        super(id, createdAt, updatedAt);
         this.name = name;
         this.dataType = type;
         this.filterable = filterable;
@@ -43,6 +44,13 @@ public class Specification extends BaseEntity {
         this.dataType = dataType;
         this.filterable = filterable;
         this.categories = categories;
+        this.unit = unit;
+    }
+
+    public Specification(String name, SpecificationType dataType, Boolean filterable, Unit unit) {
+        this.name = name;
+        this.dataType = dataType;
+        this.filterable = filterable;
         this.unit = unit;
     }
 

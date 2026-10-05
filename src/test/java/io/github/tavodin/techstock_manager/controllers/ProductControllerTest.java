@@ -68,7 +68,6 @@ class ProductControllerTest {
 
     private ProductDTO dto;
     private ProductRequestDTO request;
-    private ProductUpdateDTO updateDTO;
     private ProductSpecificationListDTO listSpecDTO;
     private ProductSpecificationSaveDTO saveSpecRequest;
     private ProductSpecificationUpdateDTO updateSpecRequest;
@@ -87,15 +86,6 @@ class ProductControllerTest {
                 Set.of(validId),
                 List.of(new ProductSpecificationSaveDTO(validId, "1920x1080", null, null))
         );
-
-        updateDTO = new ProductUpdateDTO();
-        updateDTO.setName("Teclado DELL sem fio");
-        updateDTO.setSalePrice(BigDecimal.valueOf(300.0));
-        updateDTO.setDescription("Teclado para escritório");
-        updateDTO.setMinimumStock(2);
-        updateDTO.setSku("TEC-001");
-        updateDTO.setBrandId(validId);
-        updateDTO.setCategoryIds(Set.of(validId));
 
         dto = new ProductDTO(
                 validId,
@@ -575,37 +565,37 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnProductDTOAndOkWhenUpdatingProductWithValidData() throws Exception {
-        dto.setName(updateDTO.getName());
-        dto.setSalePrice(updateDTO.getSalePrice());
-        dto.setDescription(updateDTO.getDescription());
-        dto.setSku(updateDTO.getSku());
-        dto.setMinimumStock(updateDTO.getMinimumStock());
+        dto.setName(request.getName());
+        dto.setSalePrice(request.getSalePrice());
+        dto.setDescription(request.getDescription());
+        dto.setSku(request.getSku());
+        dto.setMinimumStock(request.getMinimumStock());
 
-        when(service.update(validId, updateDTO)).thenReturn(dto);
+        when(service.update(validId, request)).thenReturn(dto);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateDTO)))
+                .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(validId))
-                .andExpect(jsonPath("$.name").value(updateDTO.getName()))
+                .andExpect(jsonPath("$.name").value(request.getName()))
                 .andExpect(jsonPath("$.costPrice").value(dto.getCostPrice()))
-                .andExpect(jsonPath("$.salePrice").value(updateDTO.getSalePrice()))
-                .andExpect(jsonPath("$.description").value(updateDTO.getDescription()))
-                .andExpect(jsonPath("$.sku").value(updateDTO.getSku()))
+                .andExpect(jsonPath("$.salePrice").value(request.getSalePrice()))
+                .andExpect(jsonPath("$.description").value(request.getDescription()))
+                .andExpect(jsonPath("$.sku").value(request.getSku()))
                 .andExpect(jsonPath("$.quantityInStock").value(dto.getQuantityInStock()))
-                .andExpect(jsonPath("$.minimumStock").value(updateDTO.getMinimumStock()))
+                .andExpect(jsonPath("$.minimumStock").value(request.getMinimumStock()))
                 .andExpect(jsonPath("$.active").value(dto.getActive()));
     }
 
     @Test
     void shouldReturnCustomErrorAndNotFoundWhenUpdatingWithInvalidProductId() throws Exception {
-        when(service.update(invalidId, updateDTO)).thenThrow(new ResourceNotFoundException(productNotFoundMsg));
+        when(service.update(invalidId, request)).thenThrow(new ResourceNotFoundException(productNotFoundMsg));
 
         mockMvc.perform(put(PATH + "/{id}", invalidId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateDTO)))
+                .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isNotFound())
 
@@ -617,11 +607,11 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnCustomErrorAndNotFoundWhenUpdatingWithInvalidBrandId() throws Exception {
-        when(service.update(validId, updateDTO)).thenThrow(new ResourceNotFoundException(brandNotFoundMsg));
+        when(service.update(validId, request)).thenThrow(new ResourceNotFoundException(brandNotFoundMsg));
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
+                        .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isNotFound())
 
@@ -633,11 +623,11 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnCustomErrorAndNotFoundWhenUpdatingWithInvalidCategoryIds() throws Exception {
-        when(service.update(validId, updateDTO)).thenThrow(new ResourceNotFoundException(categoryNotFoundMsg));
+        when(service.update(validId, request)).thenThrow(new ResourceNotFoundException(categoryNotFoundMsg));
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
+                        .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isNotFound())
 
@@ -649,11 +639,11 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnCustomErrorAndConflictWhenUpdatingWithExistSku() throws Exception {
-        when(service.update(validId, updateDTO)).thenThrow(new AlreadyExistsException(skuExistsMsg));
+        when(service.update(validId, request)).thenThrow(new AlreadyExistsException(skuExistsMsg));
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
+                        .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isConflict())
 
@@ -665,23 +655,23 @@ class ProductControllerTest {
 
     @Test
     void shouldUpdateProductAndReturnOkWhenUpdatingWithNullDescription() throws Exception {
-        updateDTO.setDescription(null);
-        when(service.update(validId, updateDTO)).thenReturn(dto);
+        request.setDescription(null);
+        when(service.update(validId, request)).thenReturn(dto);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateDTO)))
+                .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isOk());
     }
 
     @Test
     void shouldReturnValidationAndBadRequestWhenUpdatingWithNullName() throws Exception {
-        updateDTO.setName(null);
+        request.setName(null);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateDTO)))
+                .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isBadRequest())
 
@@ -697,11 +687,11 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnValidationAndBadRequestWhenUpdatingWithTooShortName() throws Exception {
-        updateDTO.setName("e");
+        request.setName("e");
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
+                        .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isBadRequest())
 
@@ -727,11 +717,11 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnValidationAndBadRequestWhenUpdatingWithNullSalePrice() throws Exception {
-        updateDTO.setSalePrice(null);
+        request.setSalePrice(null);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
+                        .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isBadRequest())
 
@@ -742,11 +732,11 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnValidationAndBadRequestWhenUpdatingWithNegativeSalePrice() throws Exception {
-        updateDTO.setSalePrice(BigDecimal.valueOf(-2.0));
+        request.setSalePrice(BigDecimal.valueOf(-2.0));
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
+                        .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isBadRequest())
 
@@ -757,11 +747,11 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnValidationAndBadRequestWhenUpdatingWithZeroSalePrice() throws Exception {
-        updateDTO.setSalePrice(BigDecimal.ZERO);
+        request.setSalePrice(BigDecimal.ZERO);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
+                        .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isBadRequest())
 
@@ -772,11 +762,11 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnValidationAndBadRequestWhenUpdatingWithNullSku() throws Exception {
-        updateDTO.setSku(null);
+        request.setSku(null);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
+                        .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isBadRequest())
 
@@ -787,11 +777,11 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnValidationAndBadRequestWhenUpdatingWithTooShortSku() throws Exception {
-        updateDTO.setSku("e");
+        request.setSku("e");
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
+                        .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isBadRequest())
 
@@ -802,11 +792,11 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnValidationAndBadRequestWhenUpdatingWithTooLongSku() throws Exception {
-        updateDTO.setSku("e".repeat(31));
+        request.setSku("e".repeat(31));
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
+                        .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isBadRequest())
 
@@ -817,11 +807,11 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnValidationAndBadRequestWhenUpdatingWithNullMinimumStock() throws Exception {
-        updateDTO.setMinimumStock(null);
+        request.setMinimumStock(null);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
+                        .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isBadRequest())
 
@@ -832,11 +822,11 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnValidationAndBadRequestWhenUpdatingWithNegativeMinimumStock() throws Exception {
-        updateDTO.setMinimumStock(-1);
+        request.setMinimumStock(-1);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
+                        .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isBadRequest())
 
@@ -847,11 +837,11 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnValidationAndBadRequestWhenUpdatingWithZeroMinimumStock() throws Exception {
-        updateDTO.setMinimumStock(0);
+        request.setMinimumStock(0);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
+                        .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isBadRequest())
 
@@ -862,11 +852,11 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnValidationErrorAndBadRequestWhenUpdatingWithNullBrandId() throws Exception {
-        updateDTO.setBrandId(null);
+        request.setBrandId(null);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
+                        .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isBadRequest())
 
@@ -877,11 +867,11 @@ class ProductControllerTest {
 
     @Test
     void shouldReturnValidationAndBadRequestWhenUpdatingWithNullCategoryIds() throws Exception {
-        updateDTO.setCategoryIds(null);
+        request.setCategoryIds(null);
 
         mockMvc.perform(put(PATH + "/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateDTO)))
+                        .content(objectMapper.writeValueAsString(request)))
 
                 .andExpect(status().isBadRequest())
 

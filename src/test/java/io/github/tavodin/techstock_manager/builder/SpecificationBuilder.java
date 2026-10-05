@@ -56,6 +56,6 @@ public class SpecificationBuilder {
     }
 
     public Specification build() {
-        return new Specification(id, name, dataType, filterable, null, unit, createdAt, updatedAt);
+        return new Specification(id, name, dataType, filterable, unit, createdAt, updatedAt);
     }
 }

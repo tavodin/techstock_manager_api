@@ -4,17 +4,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.tavodin.techstock_manager.builder.ProductBuilder;
 import io.github.tavodin.techstock_manager.configurations.AbstractIntegrationTest;
-import io.github.tavodin.techstock_manager.dto.sale.SaleDTO;
-import io.github.tavodin.techstock_manager.dto.sale.SaleItemRequestDTO;
-import io.github.tavodin.techstock_manager.dto.sale.SaleRequestDTO;
 import io.github.tavodin.techstock_manager.dto.error.CustomError;
 import io.github.tavodin.techstock_manager.dto.error.FieldError;
 import io.github.tavodin.techstock_manager.dto.error.ValidationError;
+import io.github.tavodin.techstock_manager.dto.sale.SaleDTO;
+import io.github.tavodin.techstock_manager.dto.sale.SaleItemRequestDTO;
+import io.github.tavodin.techstock_manager.dto.sale.SaleRequestDTO;
 import io.github.tavodin.techstock_manager.entities.Brand;
 import io.github.tavodin.techstock_manager.entities.Product;
 import io.github.tavodin.techstock_manager.entities.SaleItem;
 import io.github.tavodin.techstock_manager.entities.StockMovement;
 import io.github.tavodin.techstock_manager.enums.MovementType;
+import io.github.tavodin.techstock_manager.enums.PaymentMethod;
 import io.github.tavodin.techstock_manager.enums.SaleStatus;
 import io.github.tavodin.techstock_manager.integrationtests.utils.AuthTestUtil;
 import io.github.tavodin.techstock_manager.repositories.*;
@@ -73,7 +74,7 @@ public class SaleControllerIntegrationTest extends AbstractIntegrationTest {
     private static final String EXCEEDING_STOCK_MSG = "Insufficient stock quantity";
     private static final String VALIDATION_ERROR = "Entity validation error";
     private Integer quantity = 2;
-    private String paymentMethod = "Débito";
+    private PaymentMethod paymentMethod = PaymentMethod.CASH;
 
     private String token;
 
@@ -341,38 +342,6 @@ public class SaleControllerIntegrationTest extends AbstractIntegrationTest {
         assertEquals(PATH, errors.getPath());
 
         assertEquals("Payment Method is required", error.get("paymentMethod"));
-    }
-
-    @Test
-    void shouldNotSaveWhenSavingWithTooLongPaymentMethod() throws JsonProcessingException {
-        SaleItemRequestDTO item = new SaleItemRequestDTO(quantity, INVALID_ID);
-
-        SaleRequestDTO request = new SaleRequestDTO(
-                "e".repeat(46),
-                Set.of(item)
-        );
-
-        var response = given()
-                .spec(specification)
-                .body(request)
-                .contentType(CONTENT_TYPE)
-                .post()
-                .then()
-                .statusCode(400)
-                .extract()
-                .body()
-                .asString();
-
-        ValidationError errors = objectMapper.readValue(response, ValidationError.class);
-        Map<String, String> error = errors.getErrors().stream()
-                .collect(Collectors.toMap(FieldError::getField, FieldError::getMessage));
-
-        assertEquals(VALIDATION_ERROR, errors.getMessage());
-        assertEquals(400, errors.getStatus());
-        assertNotNull(errors.getTimestamp());
-        assertEquals(PATH, errors.getPath());
-
-        assertEquals("The name must contain a maximum of 45 characters", error.get("paymentMethod"));
     }
 
     @Test

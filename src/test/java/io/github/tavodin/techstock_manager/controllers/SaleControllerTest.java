@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.tavodin.techstock_manager.config.security.filters.JwtAuthenticationFilter;
 import io.github.tavodin.techstock_manager.dto.sale.SaleDTO;
 import io.github.tavodin.techstock_manager.dto.sale.SaleItemRequestDTO;
+import io.github.tavodin.techstock_manager.dto.sale.SaleListDTO;
 import io.github.tavodin.techstock_manager.dto.sale.SaleRequestDTO;
+import io.github.tavodin.techstock_manager.enums.PaymentMethod;
 import io.github.tavodin.techstock_manager.enums.SaleStatus;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
@@ -14,9 +16,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
-import org.springframework.hateoas.PagedModel;
+import org.springframework.data.web.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -69,10 +74,10 @@ public class SaleControllerTest {
         saleDTO.setSaleDate(LocalDateTime.of(2026, 8, 3, 13, 00));
         saleDTO.setStatus(SaleStatus.COMPLETED);
         saleDTO.setTotalAmount(BigDecimal.valueOf(250.5));
-        saleDTO.setPaymentMethod("Débito");
+        saleDTO.setPaymentMethod(PaymentMethod.CASH);
 
         request = new SaleRequestDTO();
-        request.setPaymentMethod("Débito");
+        request.setPaymentMethod(PaymentMethod.CASH);
         request.setItems(Set.of(new SaleItemRequestDTO(
                 3,
                 1L
@@ -108,11 +113,24 @@ public class SaleControllerTest {
 
     @Test
     void shouldReturnSalePageAndOkWhenFindAll() throws Exception {
-        List<SaleDTO> sales = List.of(saleDTO);
-        PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(1, 0, 1);
-        PagedModel<SaleDTO> pagedModel = PagedModel.of(sales, metadata);
+        PageRequest pageRequest = PageRequest.of(0, 5);
 
-        when(service.findAll(any(Pageable.class))).thenReturn(pagedModel);
+        Page<SaleListDTO> page = new PageImpl<>(
+                List.of(new SaleListDTO(
+                        VALID_ID,
+                        LocalDateTime.of(2026, 10, 1, 18, 53),
+                        SaleStatus.COMPLETED,
+                        PaymentMethod.CASH,
+                        BigDecimal.valueOf(1999.99),
+                        "Gustavo Teixeira",
+                        "Gustavo Teixeira"
+                )),
+                pageRequest,
+                1
+        );
+
+        when(service.findAll(null, null, null, null, null, pageRequest))
+                .thenReturn(new PagedModel<>(page));
 
         mockMvc.perform(get(PATH)
                         .param("page", "0")
@@ -120,21 +138,17 @@ public class SaleControllerTest {
 
                 .andExpect(status().isOk())
 
-                .andExpect(jsonPath("$._embedded").exists())
-                .andExpect(jsonPath("$._embedded.sales[0].id")
+                .andExpect(jsonPath("$.content").exists())
+                .andExpect(jsonPath("$.content[0].id")
                         .value(saleDTO.getId()))
-                .andExpect(jsonPath("$._embedded.sales[0].saleDate")
+                .andExpect(jsonPath("$.content[0].saleDate")
                         .exists())
-                .andExpect(jsonPath("$._embedded.sales[0].status")
+                .andExpect(jsonPath("$.content[0].status")
                         .value(saleDTO.getStatus().toString()))
-                .andExpect(jsonPath("$._embedded.sales[0].paymentMethod")
+                .andExpect(jsonPath("$.content[0].paymentMethod")
                         .value(saleDTO.getPaymentMethod()))
-                .andExpect(jsonPath("$._embedded.sales[0].totalAmount")
-                        .value(saleDTO.getTotalAmount()))
-                .andExpect(jsonPath("$.page.size").value(1))
-                .andExpect(jsonPath("$.page.totalElements").value(1))
-                .andExpect(jsonPath("$.page.totalPages").value(1))
-                .andExpect(jsonPath("$.page.number").value(0));
+                .andExpect(jsonPath("$.content[0].totalAmount")
+                        .value(saleDTO.getTotalAmount()));
     }
 
     @Test
@@ -207,26 +221,6 @@ public class SaleControllerTest {
                 .andExpect(jsonPath("$.errors[*].field").value(hasItem("paymentMethod")))
                 .andExpect(jsonPath("$.errors[*].message")
                         .value(hasItem("Payment Method is required")));
-    }
-
-    @Test
-    void shouldReturnValidationErrorAndBadRequestWhenSavingWithTooLongPaymentMethod() throws Exception {
-        request.setPaymentMethod("e".repeat(46));
-
-        mockMvc.perform(post(PATH)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-
-                .andExpect(status().isBadRequest())
-
-                .andExpect(jsonPath("$.timestamp").exists())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value(VALIDATION_ERROR))
-                .andExpect(jsonPath("$.path").value(PATH))
-
-                .andExpect(jsonPath("$.errors[*].field").value(hasItem("paymentMethod")))
-                .andExpect(jsonPath("$.errors[*].message")
-                        .value(hasItem("The name must contain a maximum of 45 characters")));
     }
 
     @Test

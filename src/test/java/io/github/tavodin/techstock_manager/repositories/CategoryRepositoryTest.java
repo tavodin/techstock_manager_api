@@ -25,9 +25,6 @@ public class CategoryRepositoryTest extends AbstractJpaTest {
     private CategoryRepository repository;
 
     @Autowired
-    private CategorySpecificationRepository categorySpecRepository;
-
-    @Autowired
     private SpecificationRepository specificationRepository;
 
     private Specification specification;
@@ -45,7 +42,6 @@ public class CategoryRepositoryTest extends AbstractJpaTest {
         category.setName("Memória RAM");
 
         repository.deleteAll();
-        categorySpecRepository.deleteAll();
         specificationRepository.deleteAll();
     }
 
