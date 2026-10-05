@@ -2,7 +2,9 @@ package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.assemblers.SpecificationAssembler;
 import io.github.tavodin.techstock_manager.builder.SpecificationBuilder;
+import io.github.tavodin.techstock_manager.dto.SpecificationAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationDTO;
+import io.github.tavodin.techstock_manager.dto.SpecificationLoadUpdateDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationRequestDTO;
 import io.github.tavodin.techstock_manager.entities.Specification;
 import io.github.tavodin.techstock_manager.entities.Unit;
@@ -13,6 +15,7 @@ import io.github.tavodin.techstock_manager.repositories.UnitRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -48,8 +51,9 @@ public class SpecificationServiceTest {
     @InjectMocks
     private SpecificationService service;
 
-    private Long validId;
-    private Long invalidID;
+    private final static Long VALID_ID = 1L;
+    private final static Long INVALID_ID = 2L;
+    private final static String NOT_FOUND_MSG = "Specification not found!";
 
     private Specification specification;
     private SpecificationDTO specificationDTO;
@@ -78,16 +82,14 @@ public class SpecificationServiceTest {
 
         unit = new Unit("Hertz", "Hz");
 
-        validId = 1L;
-        invalidID = 2L;
     }
 
     @Test
     void shouldReturnSpecificationDTOWhenIdExists() {
-        when(repository.getSpecificationById(validId)).thenReturn(Optional.of(specificationDTO));
+        when(repository.getSpecificationById(VALID_ID)).thenReturn(Optional.of(specificationDTO));
         when(assembler.toModel(any(SpecificationDTO.class))).thenReturn(specificationDTO);
 
-        SpecificationDTO findUnit = service.findById(validId);
+        SpecificationDTO findUnit = service.findById(VALID_ID);
 
         assertNotNull(findUnit.getId());
         assertEquals(specificationDTO.getName(), findUnit.getName());
@@ -96,19 +98,130 @@ public class SpecificationServiceTest {
         assertEquals(specificationDTO.getCreatedAt(), findUnit.getCreatedAt());
         assertEquals(specificationDTO.getUpdatedAt(), findUnit.getUpdatedAt());
 
-        verify(repository).getSpecificationById(validId);
+        verify(repository).getSpecificationById(VALID_ID);
         verify(assembler).toModel(specificationDTO);
     }
 
     @Test
     void shouldThrowResourceNotFoundExceptionWhenIdDoesNotExists() {
-        when(repository.getSpecificationById(invalidID)).thenReturn(Optional.empty());
+        when(repository.getSpecificationById(INVALID_ID)).thenReturn(Optional.empty());
 
         ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
-                service.findById(invalidID)
+                service.findById(INVALID_ID)
         );
 
         assertEquals("Specification not found!", actual.getMessage());
+    }
+
+    @Test
+    void shouldReturnSpecificationLoadUpdateDTOWhenGetSpecificationForUpdateWithValidId() {
+        SpecificationLoadUpdateDTO spec = new SpecificationLoadUpdateDTO(
+                specification.getName(),
+                specification.getDataType(),
+                specification.getFilterable(),
+                null,
+                null
+        );
+
+        when(repository.loadSpecificationToUpdateFields(VALID_ID))
+                .thenReturn(Optional.of(spec));
+
+        SpecificationLoadUpdateDTO result = service.getSpecificationForUpdate(VALID_ID);
+
+        assertEquals(specification.getName(), result.getName());
+        assertEquals(specification.getDataType(), result.getDataType());
+        assertEquals(specification.getFilterable(), result.getFilterable());
+        assertNull(result.getUnit());
+    }
+
+    @Test
+    void shouldThrowResourceNotFoundExceptionWhenGetSpecificationForUpdateWithInvalidId() {
+        when(repository.loadSpecificationToUpdateFields(INVALID_ID))
+                .thenReturn(Optional.empty());
+
+        ResourceNotFoundException result = assertThrows(ResourceNotFoundException.class, () ->
+            service.getSpecificationForUpdate(INVALID_ID)
+        );
+
+        assertEquals(NOT_FOUND_MSG, result.getMessage());
+    }
+
+    @Test
+    void shouldReturnSpecificationAutocompleteDTOListWhenGetSpecificationsByName() {
+        Pageable pageable = PageRequest.of(0, 5);
+
+        SpecificationAutocompleteDTO spec = new SpecificationAutocompleteDTO(
+                specification.getId(),
+                specification.getName()
+        );
+
+        Page<SpecificationAutocompleteDTO> page = new PageImpl<>(
+                List.of(spec),
+                pageable,
+                1
+        );
+
+        when(repository.getSpecificationsByName(specification.getName(), pageable)).thenReturn(page);
+
+        List<SpecificationAutocompleteDTO> result = service.getSpecificationsByName(specification.getName());
+
+        assertTrue(!result.isEmpty());
+    }
+
+    @Test
+    void shouldTrimStringWhenGetSpecificationsByNameWithNameWithSpaces() {
+        Pageable pageable = PageRequest.of(0, 5);
+
+        SpecificationAutocompleteDTO spec = new SpecificationAutocompleteDTO(
+                specification.getId(),
+                specification.getName()
+        );
+
+        Page<SpecificationAutocompleteDTO> page = new PageImpl<>(
+                List.of(spec),
+                pageable,
+                1
+        );
+
+        String nameWithSpaces = "  " + specification.getName() + "  ";
+
+        when(repository.getSpecificationsByName(eq(specification.getName()), any(Pageable.class)))
+                .thenReturn(page);
+
+        service.getSpecificationsByName(nameWithSpaces);
+
+        ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+
+        verify(repository).getSpecificationsByName(nameCaptor.capture(), eq(pageable));
+
+        assertEquals(specification.getName(), nameCaptor.getValue());
+    }
+
+    @Test
+    void shouldReturnNullWhenGetSpecificationsByNameWithNullName() {
+        Pageable pageable = PageRequest.of(0, 5);
+
+        SpecificationAutocompleteDTO spec = new SpecificationAutocompleteDTO(
+                specification.getId(),
+                specification.getName()
+        );
+
+        Page<SpecificationAutocompleteDTO> page = new PageImpl<>(
+                List.of(spec),
+                pageable,
+                1
+        );
+
+        when(repository.getSpecificationsByName(eq(null), any(Pageable.class)))
+                .thenReturn(page);
+
+        service.getSpecificationsByName("");
+
+        ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+
+        verify(repository).getSpecificationsByName(nameCaptor.capture(), eq(pageable));
+
+        assertNull(nameCaptor.getValue());
     }
 
     @Test
@@ -130,10 +243,48 @@ public class SpecificationServiceTest {
     }
 
     @Test
+    void shouldTrimStringWhenWhenFindAllWithNameWithSpaces() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<SpecificationDTO> page = new PageImpl<>(List.of(specificationDTO));
+        PagedModel<SpecificationDTO> pagedModel = mock(PagedModel.class);
+
+        String nameWithSpaces = "  " + specification.getName() + "  ";
+
+        when(repository.findAllProjected(specification.getName(), pageable))
+                .thenReturn(page);
+        when(pagedAssembler.toModel(page, assembler)).thenReturn(pagedModel);
+
+        service.findAll(nameWithSpaces, pageable);
+
+        ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+        verify(repository).findAllProjected(nameCaptor.capture(), eq(pageable));
+
+        assertEquals(specification.getName(), nameCaptor.getValue());
+    }
+
+    @Test
+    void shouldReturnNullWhenWhenFindAllWithNullName() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<SpecificationDTO> page = new PageImpl<>(List.of(specificationDTO));
+        PagedModel<SpecificationDTO> pagedModel = mock(PagedModel.class);
+
+        when(repository.findAllProjected(null, pageable))
+                .thenReturn(page);
+        when(pagedAssembler.toModel(page, assembler)).thenReturn(pagedModel);
+
+        service.findAll("", pageable);
+
+        ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+        verify(repository).findAllProjected(nameCaptor.capture(), eq(pageable));
+
+        assertNull(nameCaptor.getValue());
+    }
+
+    @Test
     void shouldSaveSpecificationWhenSave() {
         Specification saveSpecification = SpecificationBuilder.builder().withId(null).build();
 
-        when(unitRepository.findById(validId)).thenReturn(Optional.of(unit));
+        when(unitRepository.findById(VALID_ID)).thenReturn(Optional.of(unit));
         when(repository.save(saveSpecification)).thenReturn(specification);
         when(assembler.toModel(specificationDTO)).thenReturn(specificationDTO);
 
@@ -156,9 +307,9 @@ public class SpecificationServiceTest {
                 specification.getName(),
                 specification.getDataType(),
                 specification.getFilterable(),
-                invalidID);
+                INVALID_ID);
 
-        when(unitRepository.findById(invalidID)).thenReturn(Optional.empty());
+        when(unitRepository.findById(INVALID_ID)).thenReturn(Optional.empty());
 
         ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
                 service.save(invalidRequest));
@@ -185,7 +336,7 @@ public class SpecificationServiceTest {
     @Test
     void shouldUpdateSpecificationWhenUpdate() {
         Specification updateEntity = SpecificationBuilder.builder()
-                .withId(validId)
+                .withId(VALID_ID)
                 .withName("Terabyte")
                 .withSpecificationType(specification.getDataType())
                 .withFilterable(specification.getFilterable())
@@ -199,11 +350,11 @@ public class SpecificationServiceTest {
 
         SpecificationDTO dtoUpdate = new SpecificationDTO(updateEntity);
 
-        when(repository.findById(validId)).thenReturn(Optional.of(specification));
+        when(repository.findById(VALID_ID)).thenReturn(Optional.of(specification));
         when(repository.save(any(Specification.class))).thenReturn(updateEntity);
         when(assembler.toModel(dtoUpdate)).thenReturn(dtoUpdate);
 
-        SpecificationDTO actual = service.update(validId, updateRequest);
+        SpecificationDTO actual = service.update(VALID_ID, updateRequest);
 
         assertEquals(updateEntity.getId(), actual.getId());
         assertEquals(updateEntity.getName(), actual.getName());
@@ -214,9 +365,9 @@ public class SpecificationServiceTest {
     }
 
     @Test
-    void shouldCallUnitFindByIdWhenSpecificationUnitIdAndRequestUnitIdIsDifferent() {
+    void shouldCallUnitFindByIdWhenUpdatingWithDifferentSpecificationUnitIdAndRequestUnitId() {
         Specification updateEntity = SpecificationBuilder.builder()
-                .withId(validId)
+                .withId(VALID_ID)
                 .withName("Terabyte")
                 .withSpecificationType(specification.getDataType())
                 .withFilterable(specification.getFilterable())
@@ -228,20 +379,39 @@ public class SpecificationServiceTest {
                 updateEntity.getFilterable(),
                 2L);
 
-        when(repository.findById(validId)).thenReturn(Optional.of(specification));
+        when(repository.findById(VALID_ID)).thenReturn(Optional.of(specification));
         when(unitRepository.findById(anyLong())).thenReturn(Optional.of(unit));
         when(repository.save(any(Specification.class))).thenReturn(updateEntity);
         when(assembler.toModel(any(SpecificationDTO.class))).thenReturn(any(SpecificationDTO.class));
 
-        SpecificationDTO actual = service.update(validId, updateRequest);
+        service.update(VALID_ID, updateRequest);
 
         verify(unitRepository).findById(anyLong());
     }
 
     @Test
+    void shouldCallFindByIdWhenUpdatingWithValidRequestUnitIdAndNullSpecificationUnit() {
+        specification.setUnit(null);
+        when(repository.findById(VALID_ID)).thenReturn(Optional.of(specification));
+        when(unitRepository.findById(anyLong())).thenReturn(Optional.of(unit));
+        when(repository.save(any(Specification.class))).thenReturn(specification);
+
+        SpecificationRequestDTO updateRequest = new SpecificationRequestDTO(
+                "Terabyte",
+                specification.getDataType(),
+                specification.getFilterable(),
+                2L
+        );
+
+        service.update(VALID_ID, updateRequest);
+
+        verify(unitRepository).findById(updateRequest.unitId());
+    }
+
+    @Test
     void shouldNotCallUnitFindByIdWhenUpdatingWithNullId() {
         Specification updateEntity = SpecificationBuilder.builder()
-                .withId(validId)
+                .withId(VALID_ID)
                 .withName("Terabyte")
                 .withSpecificationType(specification.getDataType())
                 .withFilterable(specification.getFilterable())
@@ -257,7 +427,7 @@ public class SpecificationServiceTest {
         when(repository.save(any(Specification.class))).thenReturn(updateEntity);
         when(assembler.toModel(any(SpecificationDTO.class))).thenReturn(any(SpecificationDTO.class));
 
-        service.update(validId, requestNullUnitId);
+        service.update(VALID_ID, requestNullUnitId);
 
         verify(unitRepository, never()).findById(anyLong());
     }
@@ -270,11 +440,11 @@ public class SpecificationServiceTest {
                 specification.getFilterable(),
                 2L);
 
-        when(repository.findById(validId)).thenReturn(Optional.of(specification));
+        when(repository.findById(VALID_ID)).thenReturn(Optional.of(specification));
         when(unitRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
-                service.update(validId, updateRequest));
+                service.update(VALID_ID, updateRequest));
 
         assertEquals("Unit not found!", actual.getMessage());
         verify(unitRepository).findById(anyLong());
@@ -282,21 +452,21 @@ public class SpecificationServiceTest {
 
     @Test
     void shouldDeleteSpecificationWhenIdExists() {
-        when(repository.findById(validId)).thenReturn(Optional.of(specification));
+        when(repository.findById(VALID_ID)).thenReturn(Optional.of(specification));
         doNothing().when(repository).delete(specification);
 
-        service.delete(validId);
+        service.delete(VALID_ID);
 
-        verify(repository).findById(validId);
+        verify(repository).findById(VALID_ID);
         verify(repository).delete(specification);
     }
 
     @Test
-    void shouldThrownExceptionWhenIdDoesNotExistInDelete() {
-        when(repository.findById(invalidID)).thenReturn(Optional.empty());
+    void shouldThrownExceptionWhenDeletingWithInvalidId() {
+        when(repository.findById(INVALID_ID)).thenReturn(Optional.empty());
 
         ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
-                service.delete(invalidID));
+                service.delete(INVALID_ID));
 
         assertEquals("Specification not found!", actual.getMessage());
 
@@ -305,14 +475,14 @@ public class SpecificationServiceTest {
 
     @Test
     void shouldThrownEntityInUseWhenDeletingEntityWithRelationships() {
-        when(repository.findById(validId)).thenReturn(Optional.of(specification));
+        when(repository.findById(VALID_ID)).thenReturn(Optional.of(specification));
         doNothing().when(repository).delete(specification);
         doThrow(new DataIntegrityViolationException("FK constraint"))
                 .when(repository)
                 .flush();
 
         EntityInUseException actual = assertThrows(EntityInUseException.class, () ->
-                service.delete(validId));
+                service.delete(VALID_ID));
 
         assertEquals("Specification is in use and cannot be deleted", actual.getMessage());
 

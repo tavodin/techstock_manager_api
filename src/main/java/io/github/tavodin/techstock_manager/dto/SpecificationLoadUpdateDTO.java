@@ -1,6 +1,5 @@
 package io.github.tavodin.techstock_manager.dto;
 
-import io.github.tavodin.techstock_manager.entities.Specification;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
 
 public class SpecificationLoadUpdateDTO {
@@ -12,16 +11,13 @@ public class SpecificationLoadUpdateDTO {
     public SpecificationLoadUpdateDTO() {
     }
 
-    public SpecificationLoadUpdateDTO(Specification specification) {
-        this.name = specification.getName();
-        this.dataType = specification.getDataType();
-        this.filterable = specification.getFilterable();
+    public SpecificationLoadUpdateDTO(String name, SpecificationType dataType, Boolean filterable, Long unitId, String unitName) {
+        this.name = name;
+        this.dataType = dataType;
+        this.filterable = filterable;
 
-        if(specification.getUnit() != null) {
-            this.unit = new UnitAutocompleteDTO(
-                    specification.getUnit().getId(),
-                    specification.getUnit().getName()
-            );
+        if(unitId != null) {
+            this.unit = new UnitAutocompleteDTO(unitId, unitName);
         }
     }
 

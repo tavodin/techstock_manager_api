@@ -1,6 +1,5 @@
 package io.github.tavodin.techstock_manager.repositories;
 
-import io.github.tavodin.techstock_manager.dto.CategorySpecificationsInputDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationDTO;
 import io.github.tavodin.techstock_manager.dto.SpecificationLoadUpdateDTO;
@@ -30,6 +29,16 @@ public interface SpecificationRepository extends JpaRepository<Specification, Lo
             WHERE s.id = :id
             """)
     Optional<SpecificationDTO> getSpecificationById(@Param("id") Long id);
+
+    @Query("""
+            SELECT new io.github.tavodin.techstock_manager.dto.SpecificationLoadUpdateDTO(
+                s.name, s.dataType, s.filterable, u.id, u.name
+            )
+            FROM Specification s
+            LEFT JOIN s.unit u
+            WHERE s.id = :id
+            """)
+    Optional<SpecificationLoadUpdateDTO> loadSpecificationToUpdateFields(@Param("id") Long id);
 
     @Query("""
             SELECT new io.github.tavodin.techstock_manager.dto.SpecificationDTO(

@@ -42,25 +42,24 @@ public class SpecificationService {
 
     @Transactional(readOnly = true)
     public SpecificationLoadUpdateDTO getSpecificationForUpdate(Long id) {
-        Specification entity = specificationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Specification not found"));
-
-        return new SpecificationLoadUpdateDTO(entity);
+        return specificationRepository.loadSpecificationToUpdateFields(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Specification not found!"));
     }
-
-
 
     @Transactional(readOnly = true)
     public PagedModel<SpecificationDTO> findAll(String name, Pageable pageable) {
-        Page<SpecificationDTO> page = specificationRepository.findAllProjected(name, pageable);
+        String filterName = getTrimStringOrNull(name);
 
+        Page<SpecificationDTO> page = specificationRepository.findAllProjected(filterName, pageable);
         return pagedAssembler.toModel(page, specificationAssembler);
     }
 
     @Transactional(readOnly = true)
     public List<SpecificationAutocompleteDTO> getSpecificationsByName(String name) {
+        String filterName = getTrimStringOrNull(name);
+
         Pageable pageable = PageRequest.of(0, 5);
-        Page<SpecificationAutocompleteDTO> page = specificationRepository.getSpecificationsByName(name, pageable);
+        Page<SpecificationAutocompleteDTO> page = specificationRepository.getSpecificationsByName(filterName, pageable);
         return page.getContent();
     }
 
@@ -121,6 +120,12 @@ public class SpecificationService {
         } catch (DataIntegrityViolationException e) {
             throw new EntityInUseException("Specification is in use and cannot be deleted");
         }
+    }
+
+    private String getTrimStringOrNull(String name) {
+        return name == null || name.isBlank()
+                ? null
+                : name.trim();
     }
 
     private SpecificationDTO getDTOOrThrownException(Long id) {
