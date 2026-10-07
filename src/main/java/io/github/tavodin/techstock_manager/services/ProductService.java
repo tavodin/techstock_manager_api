@@ -7,7 +7,6 @@ import io.github.tavodin.techstock_manager.enums.SpecificationType;
 import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.*;
-import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -52,7 +51,7 @@ public class ProductService {
     @Transactional(readOnly = true)
     public ProductLoadDTO loadProductById(Long id) {
         Product entity = productRepository.getProductToLoad(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product no found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         return new ProductLoadDTO(entity);
     }
@@ -88,6 +87,16 @@ public class ProductService {
         );
 
         return pagedAssembler.toModel(page, assembler);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductAutocompleteDTO> getAllAutocomplete(String name) {
+        String nameFilter = name == null || name.isBlank()
+                ? null
+                : name.trim();
+
+        Pageable pageable = PageRequest.of(0, 5);
+        return productRepository.getAllAutocomplete(nameFilter, pageable);
     }
 
     @Transactional
@@ -141,7 +150,7 @@ public class ProductService {
                 .map(Category::getId)
                 .toList();
 
-        if (!findCategoryIds.equals(request.getCategoryIds())) {
+        if (!findCategoryIds.equals(new ArrayList<>(request.getCategoryIds()))) {
             Set<Category> findCategories = new HashSet<>(getCategoriesOrThrowException(request.getCategoryIds()));
             findProduct.setCategories(findCategories);
         }
@@ -238,11 +247,5 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         return product;
-    }
-
-
-    public List<ProductAutocompleteDTO> getAllAutocomplete(String name) {
-        Pageable pageable = PageRequest.of(0, 5);
-        return productRepository.getAllAutocomplete(name, pageable);
     }
 }

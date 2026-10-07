@@ -3,9 +3,7 @@ package io.github.tavodin.techstock_manager.services;
 import io.github.tavodin.techstock_manager.assemblers.ProductAssembler;
 import io.github.tavodin.techstock_manager.builder.ProductBuilder;
 import io.github.tavodin.techstock_manager.builder.SpecificationBuilder;
-import io.github.tavodin.techstock_manager.dto.product.ProductDTO;
-import io.github.tavodin.techstock_manager.dto.product.ProductRequestDTO;
-import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationSaveDTO;
+import io.github.tavodin.techstock_manager.dto.product.*;
 import io.github.tavodin.techstock_manager.entities.*;
 import io.github.tavodin.techstock_manager.enums.SpecificationType;
 import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
@@ -18,10 +16,15 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedModel;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -50,6 +53,9 @@ class ProductServiceTest {
     @Mock
     private ProductAssembler assembler;
 
+    @Mock
+    private PagedResourcesAssembler<Product> pagedAssembler;
+
     @InjectMocks
     private ProductService service;
 
@@ -57,7 +63,6 @@ class ProductServiceTest {
     private Long invalidId = 2L;
     private Set<Long> validCategoryIds = Set.of(validId);
     private List<Long> validSpecificationIds = List.of(validId);
-    private List<Long> requiredSpecificationIds = List.of(validId);
 
     private String prodNotFoundMsg = "Product not found";
     private String brandNotFoundMsg = "Brand not found";
@@ -69,7 +74,7 @@ class ProductServiceTest {
     private Brand brand = new Brand();
     private Category category = new Category();
     private Specification specification;
-    private ProductRequestDTO saveDTO = new ProductRequestDTO();
+    private ProductRequestDTO requestDTO = new ProductRequestDTO();
     private ProductDTO dto;
     private ProductSpecification productSpecification = new ProductSpecification();
 
@@ -96,14 +101,15 @@ class ProductServiceTest {
                 .withSpecificationType(SpecificationType.STRING)
                 .build();
 
-        saveDTO.setName(product.getName());
-        saveDTO.setSalePrice(product.getSalePrice());
-        saveDTO.setDescription(product.getDescription());
-        saveDTO.setMinimumStock(product.getMinimumStock());
-        saveDTO.setSku(product.getSku());
-        saveDTO.setCategoryIds(validCategoryIds);
-        saveDTO.setBrandId(validId);
-        saveDTO.setSpecifications(List.of(
+        requestDTO.setName(product.getName());
+        requestDTO.setSalePrice(product.getSalePrice());
+        requestDTO.setDescription(product.getDescription());
+        requestDTO.setMinimumStock(product.getMinimumStock());
+        requestDTO.setActive(true);
+        requestDTO.setSku(product.getSku());
+        requestDTO.setBrandId(validId);
+        requestDTO.setCategoryIds(validCategoryIds);
+        requestDTO.setSpecifications(List.of(
                 new ProductSpecificationSaveDTO(
                         validId,
                         "1920x1080",
@@ -144,16 +150,266 @@ class ProductServiceTest {
     }
 
     @Test
+    void shouldReturnProductLoadDTOWhenLoadProductByIdWithValidId() {
+        when(productRepository.getProductToLoad(validId)).thenReturn(Optional.of(product));
+
+        ProductLoadDTO result = service.loadProductById(validId);
+
+        assertEquals(product.getId(), result.getId());
+        assertEquals(product.getName(), result.getName());
+        assertEquals(product.getMinimumStock(), result.getMinimumStock());
+        assertEquals(product.getSku(), result.getSku());
+    }
+
+    @Test
+    void shouldThrowResourceNotFoundExceptionWhenLoadProductByIdWithInvalidId() {
+        when(productRepository.getProductToLoad(invalidId)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException result = assertThrows(ResourceNotFoundException.class, () ->
+                service.loadProductById(invalidId)
+        );
+
+        assertEquals(prodNotFoundMsg, result.getMessage());
+    }
+
+    @Test
+    void shouldReturnProductDTOPagedModelWhenFindAll() {
+        PagedModel<ProductDTO> pagedModel = mock(PagedModel.class);
+        Pageable pageable = PageRequest.of(0, 3);
+        Page<Product> page = new PageImpl<>(
+                List.of(product),
+                pageable,
+                1
+        );
+
+        when(productRepository.getAll(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                pageable
+        )).thenReturn(page);
+
+        when(pagedAssembler.toModel(eq(page), any(ProductAssembler.class))).thenReturn(pagedModel);
+
+        PagedModel<ProductDTO> result = service.findAll(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                pageable
+        );
+
+        assertNotNull(result);
+
+        verify(productRepository).getAll(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                pageable
+        );
+    }
+
+    @Test
+    void shouldTrimNameWhenFindAllWithNameWithSpaces() {
+        PagedModel<ProductDTO> pagedModel = mock(PagedModel.class);
+        Pageable pageable = PageRequest.of(0, 3);
+        Page<Product> page = new PageImpl<>(
+                List.of(product),
+                pageable,
+                1
+        );
+
+        when(productRepository.getAll(
+                product.getName(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                pageable
+        )).thenReturn(page);
+
+        when(pagedAssembler.toModel(eq(page), any(ProductAssembler.class))).thenReturn(pagedModel);
+
+        PagedModel<ProductDTO> result = service.findAll(
+                "  " + product.getName() + "  ",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                pageable
+        );
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+
+        verify(productRepository).getAll(
+                captor.capture(),
+                eq(null),
+                eq(null),
+                eq(null),
+                eq(null),
+                eq(null),
+                eq(null),
+                eq(null),
+                eq(null),
+                eq(pageable)
+        );
+
+        assertEquals(product.getName(), captor.getValue());
+    }
+
+    @Test
+    void shouldReturnNullWhenFindAllWithBlankName() {
+        PagedModel<ProductDTO> pagedModel = mock(PagedModel.class);
+        Pageable pageable = PageRequest.of(0, 3);
+        Page<Product> page = new PageImpl<>(
+                List.of(product),
+                pageable,
+                1
+        );
+
+        when(productRepository.getAll(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                pageable
+        )).thenReturn(page);
+
+        when(pagedAssembler.toModel(eq(page), any(ProductAssembler.class))).thenReturn(pagedModel);
+
+        PagedModel<ProductDTO> result = service.findAll(
+                "  ",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                pageable
+        );
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+
+        verify(productRepository).getAll(
+                captor.capture(),
+                eq(null),
+                eq(null),
+                eq(null),
+                eq(null),
+                eq(null),
+                eq(null),
+                eq(null),
+                eq(null),
+                eq(pageable)
+        );
+
+        assertNull(captor.getValue());
+    }
+
+    @Test
+    void shouldReturnProductAutocompleteDTOWhenGetAllAutocomplete() {
+        ProductAutocompleteDTO autocompleteDTO = new ProductAutocompleteDTO(
+                product.getId(),
+                product.getName(),
+                product.getSalePrice(),
+                product.getQuantityInStock()
+        );
+        Pageable pageable = PageRequest.of(0, 5);
+
+        when(productRepository.getAllAutocomplete(null, pageable)).thenReturn(List.of(autocompleteDTO));
+
+        List<ProductAutocompleteDTO> result = service.getAllAutocomplete(null);
+
+        assertNotNull(result);
+        assertEquals(autocompleteDTO.id(), result.getFirst().id());
+        assertEquals(autocompleteDTO.name(), result.getFirst().name());
+        assertEquals(autocompleteDTO.salePrice(), result.getFirst().salePrice());
+        assertEquals(autocompleteDTO.quantityInStock(), result.getFirst().quantityInStock());
+    }
+
+    @Test
+    void shouldTrimNameWhenGetAllAutocompleteWithNameWithSpaces() {
+        ProductAutocompleteDTO autocompleteDTO = new ProductAutocompleteDTO(
+                product.getId(),
+                product.getName(),
+                product.getSalePrice(),
+                product.getQuantityInStock()
+        );
+        Pageable pageable = PageRequest.of(0, 5);
+
+        when(productRepository.getAllAutocomplete(product.getName(), pageable)).thenReturn(List.of(autocompleteDTO));
+
+        service.getAllAutocomplete("  " + product.getName() + "  ");
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(productRepository).getAllAutocomplete(captor.capture(), eq(pageable));
+
+        assertEquals(product.getName(), captor.getValue());
+    }
+
+    @Test
+    void shouldReturnNullWhenGetAllAutocompleteWithBlankName() {
+        ProductAutocompleteDTO autocompleteDTO = new ProductAutocompleteDTO(
+                product.getId(),
+                product.getName(),
+                product.getSalePrice(),
+                product.getQuantityInStock()
+        );
+        Pageable pageable = PageRequest.of(0, 5);
+
+        when(productRepository.getAllAutocomplete(null, pageable)).thenReturn(List.of(autocompleteDTO));
+
+        service.getAllAutocomplete("  ");
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(productRepository).getAllAutocomplete(captor.capture(), eq(pageable));
+
+        assertNull(captor.getValue());
+    }
+
+    @Test
     void shouldCreateProductEntityWhenSavingWithValidId() {
         when(brandRepository.findById(validId)).thenReturn(Optional.of(brand));
         when(categoryRepository.findAllById(validCategoryIds)).thenReturn(List.of(category));
-        when(productRepository.existsBySku(saveDTO.getSku())).thenReturn(false);
+        when(productRepository.existsBySku(requestDTO.getSku())).thenReturn(false);
         when(productRepository.save(any(Product.class))).thenReturn(product);
         when(specificationRepository.getSpecificationsByIds(validSpecificationIds)).thenReturn(List.of(specification));
         when(prodSpecRepository.saveAll(any(List.class))).thenReturn(List.of(productSpecification));
         when(assembler.toModel(any(Product.class))).thenReturn(dto);
 
-        ProductDTO actual = service.save(saveDTO);
+        ProductDTO actual = service.save(requestDTO);
 
         assertNotNull(actual);
 
@@ -164,13 +420,13 @@ class ProductServiceTest {
 
         Product captured = captor.getValue();
 
-        assertEquals(saveDTO.getName(), captured.getName());
+        assertEquals(requestDTO.getName(), captured.getName());
         assertTrue(captured.getCostPrice().compareTo(BigDecimal.ZERO) == 0);
-        assertTrue(captured.getSalePrice().compareTo(saveDTO.getSalePrice()) == 0);
-        assertEquals(saveDTO.getDescription(), captured.getDescription());
-        assertEquals(saveDTO.getSku(), captured.getSku());
+        assertTrue(captured.getSalePrice().compareTo(requestDTO.getSalePrice()) == 0);
+        assertEquals(requestDTO.getDescription(), captured.getDescription());
+        assertEquals(requestDTO.getSku(), captured.getSku());
         assertTrue(captured.getQuantityInStock() == 0);
-        assertEquals(saveDTO.getMinimumStock(), captured.getMinimumStock());
+        assertEquals(requestDTO.getMinimumStock(), captured.getMinimumStock());
         assertEquals(true, captured.getActive());
 
         assertEquals(brand.getName(), captured.getBrand().getName());
@@ -181,13 +437,13 @@ class ProductServiceTest {
     void shouldCreateSpecificationWhenSavingWithValidData() {
         when(brandRepository.findById(validId)).thenReturn(Optional.of(brand));
         when(categoryRepository.findAllById(validCategoryIds)).thenReturn(List.of(category));
-        when(productRepository.existsBySku(saveDTO.getSku())).thenReturn(false);
+        when(productRepository.existsBySku(requestDTO.getSku())).thenReturn(false);
         when(productRepository.save(any(Product.class))).thenReturn(product);
         when(specificationRepository.getSpecificationsByIds(validSpecificationIds)).thenReturn(List.of(specification));
         when(prodSpecRepository.saveAll(any(List.class))).thenReturn(List.of(productSpecification));
         when(assembler.toModel(any(Product.class))).thenReturn(dto);
 
-        ProductDTO actual = service.save(saveDTO);
+        ProductDTO actual = service.save(requestDTO);
 
         assertNotNull(actual);
 
@@ -221,11 +477,11 @@ class ProductServiceTest {
 
     @Test
     void shouldThrowResourceNotFoundExceptionWhenSavingWithInvalidBrandId() {
-        saveDTO.setBrandId(invalidId);
+        requestDTO.setBrandId(invalidId);
         when(brandRepository.findById(invalidId)).thenReturn(Optional.empty());
 
         ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
-            service.save(saveDTO)
+            service.save(requestDTO)
         );
 
         assertEquals(brandNotFoundMsg, actual.getMessage());
@@ -233,13 +489,13 @@ class ProductServiceTest {
 
     @Test
     void shouldThrowResourceNotFoundExceptionWhenSavingWithInvalidCategoryId() {
-        saveDTO.setCategoryIds(Set.of(invalidId));
+        requestDTO.setCategoryIds(Set.of(invalidId));
 
         when(brandRepository.findById(validId)).thenReturn(Optional.of(brand));
         when(categoryRepository.findAllById(Set.of(invalidId))).thenReturn(List.of());
 
         ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
-                service.save(saveDTO)
+                service.save(requestDTO)
         );
 
         assertEquals(categoryNotFoundMsg, actual.getMessage());
@@ -249,10 +505,10 @@ class ProductServiceTest {
     void shouldThrowAlreadyExistsExceptionWhenSavingWithExistsSKU() {
         when(brandRepository.findById(validId)).thenReturn(Optional.of(brand));
         when(categoryRepository.findAllById(validCategoryIds)).thenReturn(List.of(category));
-        when(productRepository.existsBySku(saveDTO.getSku())).thenReturn(true);
+        when(productRepository.existsBySku(requestDTO.getSku())).thenReturn(true);
 
         AlreadyExistsException actual = assertThrows(AlreadyExistsException.class, () ->
-                service.save(saveDTO)
+                service.save(requestDTO)
         );
 
         assertEquals(existsSkuMsg, actual.getMessage());
@@ -262,11 +518,11 @@ class ProductServiceTest {
     void shouldThrowResourceNotFoundExceptionWhenSavingWithInvalidSpecificationId() {
         when(brandRepository.findById(validId)).thenReturn(Optional.of(brand));
         when(categoryRepository.findAllById(validCategoryIds)).thenReturn(List.of(category));
-        when(productRepository.existsBySku(saveDTO.getSku())).thenReturn(false);
+        when(productRepository.existsBySku(requestDTO.getSku())).thenReturn(false);
         when(specificationRepository.getSpecificationsByIds(List.of(validId))).thenReturn(List.of());
 
         ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
-                service.save(saveDTO)
+                service.save(requestDTO)
         );
 
         assertEquals(specificationNotFoundMsg, actual.getMessage());
@@ -276,13 +532,13 @@ class ProductServiceTest {
     void shouldSetValueNumberWhenSpecificationWithStringType() {
         when(brandRepository.findById(validId)).thenReturn(Optional.of(brand));
         when(categoryRepository.findAllById(validCategoryIds)).thenReturn(List.of(category));
-        when(productRepository.existsBySku(saveDTO.getSku())).thenReturn(false);
+        when(productRepository.existsBySku(requestDTO.getSku())).thenReturn(false);
         when(productRepository.save(any(Product.class))).thenReturn(product);
         when(specificationRepository.getSpecificationsByIds(validSpecificationIds)).thenReturn(List.of(specification));
         when(prodSpecRepository.saveAll(any(List.class))).thenReturn(List.of(productSpecification));
         when(assembler.toModel(any(Product.class))).thenReturn(dto);
 
-        service.save(saveDTO);
+        service.save(requestDTO);
 
         ArgumentCaptor<List> captor =
                 ArgumentCaptor.forClass(List.class);
@@ -312,17 +568,17 @@ class ProductServiceTest {
                 null
         );
 
-        saveDTO.setSpecifications(List.of(prodSpec));
+        requestDTO.setSpecifications(List.of(prodSpec));
 
         when(brandRepository.findById(validId)).thenReturn(Optional.of(brand));
         when(categoryRepository.findAllById(validCategoryIds)).thenReturn(List.of(category));
-        when(productRepository.existsBySku(saveDTO.getSku())).thenReturn(false);
+        when(productRepository.existsBySku(requestDTO.getSku())).thenReturn(false);
         when(productRepository.save(any(Product.class))).thenReturn(product);
         when(specificationRepository.getSpecificationsByIds(validSpecificationIds)).thenReturn(List.of(spec));
         when(prodSpecRepository.saveAll(any(List.class))).thenReturn(List.of(productSpecification));
         when(assembler.toModel(any(Product.class))).thenReturn(dto);
 
-        service.save(saveDTO);
+        service.save(requestDTO);
 
         ArgumentCaptor<List> captor =
                 ArgumentCaptor.forClass(List.class);
@@ -352,17 +608,17 @@ class ProductServiceTest {
                 false
         );
 
-        saveDTO.setSpecifications(List.of(prodSpec));
+        requestDTO.setSpecifications(List.of(prodSpec));
 
         when(brandRepository.findById(validId)).thenReturn(Optional.of(brand));
         when(categoryRepository.findAllById(validCategoryIds)).thenReturn(List.of(category));
-        when(productRepository.existsBySku(saveDTO.getSku())).thenReturn(false);
+        when(productRepository.existsBySku(requestDTO.getSku())).thenReturn(false);
         when(productRepository.save(any(Product.class))).thenReturn(product);
         when(specificationRepository.getSpecificationsByIds(validSpecificationIds)).thenReturn(List.of(spec));
         when(prodSpecRepository.saveAll(any(List.class))).thenReturn(List.of(productSpecification));
         when(assembler.toModel(any(Product.class))).thenReturn(dto);
 
-        service.save(saveDTO);
+        service.save(requestDTO);
 
         ArgumentCaptor<List> captor =
                 ArgumentCaptor.forClass(List.class);
@@ -379,26 +635,73 @@ class ProductServiceTest {
 
     @Test
     void shouldUpdateProductWhenUpdatingWithValidData() {
-        saveDTO.setName("Monitor Gamer Samsung 24 polegadas");
-        saveDTO.setSalePrice(BigDecimal.valueOf(2000.1));
-        saveDTO.setMinimumStock(2);
+        requestDTO.setName("Monitor Gamer Samsung 24 polegadas");
+        requestDTO.setSalePrice(BigDecimal.valueOf(2000.1));
+        requestDTO.setMinimumStock(2);
 
         when(productRepository.findById(validId)).thenReturn(Optional.of(product));
-        when(productRepository.existsBySkuAndIdNot(saveDTO.getSku(), validId)).thenReturn(false);
-        when(brandRepository.findById(saveDTO.getBrandId())).thenReturn(Optional.of(brand));
-        when(categoryRepository.findAllById(saveDTO.getCategoryIds())).thenReturn(List.of(category));
-        when(productRepository.save(any(Product.class))).thenReturn(product);
+        when(productRepository.existsBySkuAndIdNot(requestDTO.getSku(), validId)).thenReturn(false);
+        when(brandRepository.findById(requestDTO.getBrandId())).thenReturn(Optional.of(brand));
+        when(categoryRepository.findAllById(requestDTO.getCategoryIds())).thenReturn(List.of(category));
+        when(productRepository.saveAndFlush(any(Product.class))).thenReturn(product);
+        when(specificationRepository.getSpecificationsByIds(validSpecificationIds)).thenReturn(List.of(specification));
+        when(prodSpecRepository.saveAll(any(List.class))).thenReturn(List.of(productSpecification));
         when(assembler.toModel(any(Product.class))).thenReturn(dto);
 
-        ProductDTO actual = service.update(validId, saveDTO);
+        ProductDTO actual = service.update(validId, requestDTO);
 
         assertNotNull(actual);
 
         ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
-        verify(productRepository).save(captor.capture());
+        verify(productRepository).saveAndFlush(captor.capture());
         Product captured = captor.getValue();
 
-        assertEquals(captured.getName(), saveDTO.getName());
+        assertEquals(captured.getName(), requestDTO.getName());
+        assertTrue(captured.getSalePrice().compareTo(requestDTO.getSalePrice()) == 0);
+        assertEquals(captured.getMinimumStock(), requestDTO.getMinimumStock());
+    }
+
+    @Test
+    void shouldCreateSpecificationWhenUpdatingWithValidData() {
+        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
+        when(productRepository.existsBySkuAndIdNot(requestDTO.getSku(), validId)).thenReturn(false);
+        when(brandRepository.findById(requestDTO.getBrandId())).thenReturn(Optional.of(brand));
+        when(categoryRepository.findAllById(requestDTO.getCategoryIds())).thenReturn(List.of(category));
+        when(productRepository.saveAndFlush(any(Product.class))).thenReturn(product);
+        when(specificationRepository.getSpecificationsByIds(validSpecificationIds)).thenReturn(List.of(specification));
+        when(prodSpecRepository.saveAll(any(List.class))).thenReturn(List.of(productSpecification));
+        when(assembler.toModel(any(Product.class))).thenReturn(dto);
+
+        ProductDTO actual = service.update(validId, requestDTO);
+
+        assertNotNull(actual);
+
+        ArgumentCaptor<List> captor =
+                ArgumentCaptor.forClass(List.class);
+
+        verify(prodSpecRepository).saveAll(captor.capture());
+
+        List<ProductSpecification> captured = captor.getValue();
+
+        assertTrue(captured.stream()
+                .anyMatch(ps ->
+                        ps.getSpecification().getName().equals(specification.getName())
+                                && ps.getSpecification().getId().equals(specification.getId())
+                )
+        );
+
+        assertTrue(captured.stream()
+                .anyMatch(ps ->
+                        ps.getProduct().getId().equals(product.getId())
+                                && ps.getProduct().getName().equals(product.getName())
+                )
+        );
+
+        assertTrue(captured.stream()
+                .anyMatch(ps ->
+                        ps.getValueString().equals("1920x1080")
+                )
+        );
     }
 
     @Test
@@ -406,7 +709,7 @@ class ProductServiceTest {
         when(productRepository.findById(invalidId)).thenReturn(Optional.empty());
 
         ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
-                service.update(invalidId, saveDTO));
+                service.update(invalidId, requestDTO));
 
         assertEquals(prodNotFoundMsg, actual.getMessage());
     }
@@ -414,10 +717,10 @@ class ProductServiceTest {
     @Test
     void shouldThrowAlreadyExistsExceptionWhenUpdatingWithExistsSku() {
         when(productRepository.findById(validId)).thenReturn(Optional.of(product));
-        when(productRepository.existsBySkuAndIdNot(saveDTO.getSku(), validId)).thenReturn(true);
+        when(productRepository.existsBySkuAndIdNot(requestDTO.getSku(), validId)).thenReturn(true);
 
         AlreadyExistsException actual = assertThrows(AlreadyExistsException.class, () ->
-                service.update(validId, saveDTO));
+                service.update(validId, requestDTO));
 
         assertEquals(existsSkuMsg, actual.getMessage());
     }
@@ -425,40 +728,60 @@ class ProductServiceTest {
     @Test
     void shouldCallBrandFindByIdWhenUpdatingWithValidBrandId() {
         when(productRepository.findById(validId)).thenReturn(Optional.of(product));
-        when(productRepository.existsBySkuAndIdNot(saveDTO.getSku(), validId)).thenReturn(false);
-        when(brandRepository.findById(saveDTO.getBrandId())).thenReturn(Optional.of(brand));
-        when(categoryRepository.findAllById(saveDTO.getCategoryIds())).thenReturn(List.of(category));
-        when(productRepository.save(any(Product.class))).thenReturn(product);
+        when(productRepository.existsBySkuAndIdNot(requestDTO.getSku(), validId)).thenReturn(false);
+        when(brandRepository.findById(requestDTO.getBrandId())).thenReturn(Optional.of(brand));
+        when(categoryRepository.findAllById(requestDTO.getCategoryIds())).thenReturn(List.of(category));
+        when(productRepository.saveAndFlush(any(Product.class))).thenReturn(product);
+        when(specificationRepository.getSpecificationsByIds(validSpecificationIds)).thenReturn(List.of(specification));
+        when(prodSpecRepository.saveAll(any(List.class))).thenReturn(List.of(productSpecification));
         when(assembler.toModel(any(Product.class))).thenReturn(dto);
 
-        service.update(validId, saveDTO);
+        service.update(validId, requestDTO);
 
-        verify(brandRepository).findById(saveDTO.getBrandId());
+        verify(brandRepository).findById(requestDTO.getBrandId());
     }
 
     @Test
     void shouldThrowResourceNotFoundExceptionWhenUpdatingWithInvalidBrandId() {
-        saveDTO.setBrandId(3L);
+        requestDTO.setBrandId(3L);
 
         when(productRepository.findById(validId)).thenReturn(Optional.of(product));
-        when(productRepository.existsBySkuAndIdNot(saveDTO.getSku(), validId)).thenReturn(false);
+        when(productRepository.existsBySkuAndIdNot(requestDTO.getSku(), validId)).thenReturn(false);
         when(brandRepository.findById(3L)).thenReturn(Optional.empty());
 
         ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
-                service.update(validId, saveDTO));
+                service.update(validId, requestDTO));
 
         assertEquals(brandNotFoundMsg, actual.getMessage());
     }
 
     @Test
+    void shouldNotCallCategoryFindAllByIdWhenUpdatingWithSameCategories() {
+        product.setCategories(Set.of(category));
+        requestDTO.setCategoryIds(Set.of(category.getId()));
+
+        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
+        when(productRepository.existsBySkuAndIdNot(requestDTO.getSku(), validId)).thenReturn(false);
+        when(brandRepository.findById(requestDTO.getBrandId())).thenReturn(Optional.of(brand));
+        when(productRepository.saveAndFlush(any(Product.class))).thenReturn(product);
+        when(specificationRepository.getSpecificationsByIds(validSpecificationIds)).thenReturn(List.of(specification));
+        when(prodSpecRepository.saveAll(any(List.class))).thenReturn(List.of(productSpecification));
+        when(assembler.toModel(any(Product.class))).thenReturn(dto);
+
+        service.update(validId, requestDTO);
+
+        verify(categoryRepository, never()).findAllById(any(Set.class));
+    }
+
+    @Test
     void shouldThrowResourceNotFoundExceptionWhenUpdatingWithInvalidCategoryIds() {
         when(productRepository.findById(validId)).thenReturn(Optional.of(product));
-        when(productRepository.existsBySkuAndIdNot(saveDTO.getSku(), validId)).thenReturn(false);
-        when(brandRepository.findById(saveDTO.getBrandId())).thenReturn(Optional.of(brand));
-        when(categoryRepository.findAllById(saveDTO.getCategoryIds())).thenReturn(List.of());
+        when(productRepository.existsBySkuAndIdNot(requestDTO.getSku(), validId)).thenReturn(false);
+        when(brandRepository.findById(requestDTO.getBrandId())).thenReturn(Optional.of(brand));
+        when(categoryRepository.findAllById(requestDTO.getCategoryIds())).thenReturn(List.of());
 
         ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
-                service.update(validId, saveDTO));
+                service.update(validId, requestDTO));
 
         assertEquals(categoryNotFoundMsg, actual.getMessage());
     }
