@@ -1,18 +1,8 @@
 package io.github.tavodin.techstock_manager.services;
 
-import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationDTO;
 import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationListDTO;
-import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationSaveDTO;
-import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationUpdateDTO;
-import io.github.tavodin.techstock_manager.entities.Category;
-import io.github.tavodin.techstock_manager.entities.Product;
 import io.github.tavodin.techstock_manager.entities.ProductSpecification;
-import io.github.tavodin.techstock_manager.entities.Specification;
-import io.github.tavodin.techstock_manager.enums.SpecificationType;
-import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
-import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
-import io.github.tavodin.techstock_manager.repositories.CategoryRepository;
 import io.github.tavodin.techstock_manager.repositories.ProductRepository;
 import io.github.tavodin.techstock_manager.repositories.ProductSpecificationRepository;
 import io.github.tavodin.techstock_manager.repositories.SpecificationRepository;
@@ -42,89 +32,10 @@ public class ProductSpecificationService {
     }
 
     @Transactional
-    public ProductSpecificationDTO save(Long prodId, ProductSpecificationSaveDTO request) {
-        ProductSpecification entity = new ProductSpecification();
-
-        if(repository.existsByProduct_IdAndSpecification_Id(prodId, request.specificationId())) {
-            throw new AlreadyExistsException("The product cannot have the same specification");
-        }
-
-        Product findProduct = productRepository.findById(prodId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
-        Specification findSpecification = getSpecificationOrThrownException(request.specificationId());
-
-        entity.setProduct(findProduct);
-        entity.setSpecification(findSpecification);
-
-        if(findSpecification.getDataType() == SpecificationType.STRING) {
-            if(request.valueString() == null) {
-                throw new BusinessException("Value String cannot be null");
-            }
-            entity.setValueString(request.valueString());
-        } else if (findSpecification.getDataType() == SpecificationType.NUMBER) {
-            if(request.valueNumber() == null) {
-                throw new BusinessException("Value Number cannot be null");
-            }
-            entity.setValueNumber(request.valueNumber());
-        } else {
-            if(request.valueBoolean() == null) {
-                throw new BusinessException("Value Boolean cannot be null");
-            }
-            entity.setValueBoolean(request.valueBoolean());
-        }
-
-        entity = repository.save(entity);
-
-        return new ProductSpecificationDTO(entity);
-    }
-
-    @Transactional
-    public ProductSpecificationDTO update(Long prodId, Long specId, ProductSpecificationUpdateDTO request) {
-        ProductSpecification entity = getProdSpecOrThrowException(prodId, specId);
-        Specification findSpecification = getSpecificationOrThrownException(specId);
-
-        if(findSpecification.getDataType() == SpecificationType.STRING) {
-            if(request.valueString() == null) {
-                throw new BusinessException("Value String cannot be null");
-            }
-            entity.setValueString(request.valueString());
-        } else if (findSpecification.getDataType() == SpecificationType.NUMBER) {
-            if(request.valueNumber() == null) {
-                throw new BusinessException("Value Number cannot be null");
-            }
-            entity.setValueNumber(request.valueNumber());
-        } else {
-            if(request.valueBoolean() == null) {
-                throw new BusinessException("Value Boolean cannot be null");
-            }
-            entity.setValueBoolean(request.valueBoolean());
-        }
-
-        entity = repository.save(entity);
-
-        return new ProductSpecificationDTO(entity);
-    }
-
-    @Transactional
     public void delete(Long prodId, Long specId) {
-        Product findProduct = productRepository.findById(prodId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
-        List<Long> catIds = findProduct.getCategories().stream().map(Category::getId).toList();
-
-        ProductSpecification findProdSpec = getProdSpecOrThrowException(prodId, specId);
+        ProductSpecification findProdSpec = repository.getByProductIdAndSpecificationId(prodId, specId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product Specification not found"));
 
         repository.delete(findProdSpec);
-    }
-
-    private ProductSpecification getProdSpecOrThrowException(Long prodId, Long specId) {
-        return repository.getByProductIdAndSpecificationId(prodId, specId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product Specification not found"));
-    }
-
-    private Specification getSpecificationOrThrownException(Long specId) {
-        return specificationRepository.findById(specId)
-                .orElseThrow(() -> new ResourceNotFoundException("Specification not found"));
     }
 }

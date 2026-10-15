@@ -2,13 +2,10 @@ package io.github.tavodin.techstock_manager.services;
 
 import io.github.tavodin.techstock_manager.builder.ProductBuilder;
 import io.github.tavodin.techstock_manager.builder.SpecificationBuilder;
-import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationDTO;
 import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationListDTO;
 import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationSaveDTO;
 import io.github.tavodin.techstock_manager.dto.product.ProductSpecificationUpdateDTO;
 import io.github.tavodin.techstock_manager.entities.*;
-import io.github.tavodin.techstock_manager.enums.SpecificationType;
-import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
 import io.github.tavodin.techstock_manager.exceptions.BusinessException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.CategoryRepository;
@@ -18,7 +15,6 @@ import io.github.tavodin.techstock_manager.repositories.SpecificationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,7 +24,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -51,7 +48,6 @@ public class ProductSpecificationServiceTest {
 
     private Long validId = 1L;
     private Long invalidId = 2L;
-    private String existsSpecMsg = "The product cannot have the same specification";
     private String productNotFoundMsg = "Product not found";
     private String specificationNotFoundMsg = "Specification not found";
     private String prodSpecNotFoudMsg = "Product Specification not found";
@@ -150,276 +146,7 @@ public class ProductSpecificationServiceTest {
     }
 
     @Test
-    void shouldSaveWhenSavingWithValidData() {
-        when(repository.existsByProduct_IdAndSpecification_Id(product.getId(), saveRequest.specificationId()))
-                .thenReturn(false);
-        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
-        when(specificationRepository.findById(validId)).thenReturn(Optional.of(specification));
-        when(repository.save(any(ProductSpecification.class))).thenReturn(productSpecification);
-
-        ProductSpecificationDTO actual = service.save(validId, saveRequest);
-
-        ArgumentCaptor<ProductSpecification> captor = ArgumentCaptor.forClass(ProductSpecification.class);
-        verify(repository).save(captor.capture());
-        ProductSpecification captured = captor.getValue();
-
-        assertNotNull(actual);
-        assertNull(captured.getId());
-        assertNull(captured.getValueBoolean());
-        assertNull(captured.getValueString());
-        assertEquals(saveRequest.valueNumber(), captured.getValueNumber());
-        assertEquals(product, captured.getProduct());
-        assertEquals(specification, captured.getSpecification());
-    }
-
-    @Test
-    void shouldThrowAlreadyExistsExceptionWhenSavingWithExistingSpecification() {
-        ProductSpecificationSaveDTO invalidRequest = new ProductSpecificationSaveDTO(
-                invalidId, null, null, null);
-
-        when(repository.existsByProduct_IdAndSpecification_Id(invalidId, invalidRequest.specificationId()))
-                .thenReturn(true);
-
-        AlreadyExistsException actual = assertThrows(AlreadyExistsException.class, () ->
-                service.save(invalidId, invalidRequest));
-
-        assertEquals(existsSpecMsg, actual.getMessage());
-    }
-
-    @Test
-    void shouldThrowResourceNotFoundExceptionWhenSavingWithInvalidProductId() {
-        when(repository.existsByProduct_IdAndSpecification_Id(invalidId, saveRequest.specificationId()))
-                .thenReturn(false);
-        when(productRepository.findById(invalidId)).thenReturn(Optional.empty());
-
-        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
-                service.save(invalidId, saveRequest));
-
-        assertEquals(productNotFoundMsg, actual.getMessage());
-    }
-
-    @Test
-    void shouldThrowResourceNotFoundExceptionWhenSavingWithInvalidSpecificationId() {
-        ProductSpecificationSaveDTO invalidRequest = new ProductSpecificationSaveDTO(
-                invalidId, null, null, null);
-
-        when(repository.existsByProduct_IdAndSpecification_Id(validId, invalidRequest.specificationId()))
-                .thenReturn(false);
-        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
-        when(specificationRepository.findById(invalidRequest.specificationId()))
-                .thenReturn(Optional.empty());
-
-        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
-                service.save(validId, invalidRequest));
-
-        assertEquals(specificationNotFoundMsg, actual.getMessage());
-    }
-
-    @Test
-    void shouldThrownBusinessExceptionWhenSavingWithNullValueString() {
-        specification.setDataType(SpecificationType.STRING);
-        ProductSpecificationSaveDTO invalidRequest = new ProductSpecificationSaveDTO(
-                specification.getId(), null, null, null);
-
-        when(repository.existsByProduct_IdAndSpecification_Id(validId, invalidRequest.specificationId()))
-                .thenReturn(false);
-        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
-        when(specificationRepository.findById(validId)).thenReturn(Optional.of(specification));
-
-        BusinessException actual = assertThrows(BusinessException.class, () ->
-                service.save(validId, invalidRequest));
-
-        assertEquals(nullValueStringMsg, actual.getMessage());
-    }
-
-    @Test
-    void shouldThrownBusinessExceptionWhenSavingWithNullValueNumber() {
-        specification.setDataType(SpecificationType.NUMBER);
-        ProductSpecificationSaveDTO invalidRequest = new ProductSpecificationSaveDTO(
-                specification.getId(), null, null, null);
-
-        when(repository.existsByProduct_IdAndSpecification_Id(validId, invalidRequest.specificationId()))
-                .thenReturn(false);
-        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
-        when(specificationRepository.findById(validId)).thenReturn(Optional.of(specification));
-
-        BusinessException actual = assertThrows(BusinessException.class, () ->
-                service.save(validId, invalidRequest));
-
-        assertEquals(nullValueNumberMsg, actual.getMessage());
-    }
-
-    @Test
-    void shouldThrownBusinessExceptionWhenSavingWithNullValueBoolean() {
-        specification.setDataType(SpecificationType.BOOLEAN);
-        ProductSpecificationSaveDTO invalidRequest = new ProductSpecificationSaveDTO(
-                specification.getId(), null, null, null);
-
-        when(repository.existsByProduct_IdAndSpecification_Id(validId, invalidRequest.specificationId()))
-                .thenReturn(false);
-        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
-        when(specificationRepository.findById(validId)).thenReturn(Optional.of(specification));
-
-        BusinessException actual = assertThrows(BusinessException.class, () ->
-                service.save(validId, invalidRequest));
-
-        assertEquals(nullValueBooleanMsg, actual.getMessage());
-    }
-
-    @Test
-    void shouldUpdateWhenUpdatingWithValidData() {
-        when(repository.getByProductIdAndSpecificationId(product.getId(), specification.getId()))
-                .thenReturn(Optional.of(productSpecification));
-        when(specificationRepository.findById(specification.getId())).thenReturn(Optional.of(specification));
-        when(repository.save(any(ProductSpecification.class))).thenReturn(productSpecification);
-
-        ProductSpecificationDTO actual = service.update(validId, validId, updateRequest);
-
-        ArgumentCaptor<ProductSpecification> captor = ArgumentCaptor.forClass(ProductSpecification.class);
-        verify(repository).save(captor.capture());
-        ProductSpecification captured = captor.getValue();
-
-        assertNotNull(actual);
-        assertNull(captured.getValueString());
-        assertEquals(updateRequest.valueNumber(), captured.getValueNumber());
-        assertNull(captured.getValueBoolean());
-        assertEquals(product, captured.getProduct());
-        assertEquals(specification, captured.getSpecification());
-    }
-
-    @Test
-    void shouldThrowResourceNotFoundExceptionWhenUpdatingWithInvalidProductOrSpecificationId() {
-        when(repository.getByProductIdAndSpecificationId(invalidId, invalidId))
-                .thenReturn(Optional.empty());
-
-        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
-                service.update(invalidId, invalidId, updateRequest));
-
-        assertEquals(prodSpecNotFoudMsg, actual.getMessage());
-    }
-
-    @Test
-    void shouldThrowResourceNotFoundExceptionWhenUpdatingWithInvalidSpecificationId() {
-        when(repository.getByProductIdAndSpecificationId(validId, invalidId))
-                .thenReturn(Optional.of(productSpecification));
-        when(specificationRepository.findById(invalidId)).thenReturn(Optional.empty());
-
-        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
-                service.update(validId, invalidId, updateRequest));
-
-        assertEquals(specificationNotFoundMsg, actual.getMessage());
-    }
-
-    @Test
-    void shouldSetValueStringWhenUpdatingWithStringType() {
-        specification.setDataType(SpecificationType.STRING);
-        ProductSpecificationUpdateDTO validRequest = new ProductSpecificationUpdateDTO(
-                "1920x1080", null, null
-        );
-
-        when(repository.getByProductIdAndSpecificationId(product.getId(), specification.getId()))
-                .thenReturn(Optional.of(productSpecification));
-        when(specificationRepository.findById(specification.getId())).thenReturn(Optional.of(specification));
-        when(repository.save(any(ProductSpecification.class))).thenReturn(productSpecification);
-
-        service.update(validId, validId, validRequest);
-
-        ArgumentCaptor<ProductSpecification> captor = ArgumentCaptor.forClass(ProductSpecification.class);
-        verify(repository).save(captor.capture());
-        ProductSpecification captured = captor.getValue();
-
-        assertEquals(validRequest.valueString(), captured.getValueString());
-    }
-
-    @Test
-    void shouldThrowBusinessExceptionWhenUpdatingWithNullValueString() {
-        specification.setDataType(SpecificationType.STRING);
-
-        when(repository.getByProductIdAndSpecificationId(product.getId(), specification.getId()))
-                .thenReturn(Optional.of(productSpecification));
-        when(specificationRepository.findById(specification.getId())).thenReturn(Optional.of(specification));
-
-        BusinessException actual = assertThrows(BusinessException.class, () ->
-                service.update(validId, validId, invalidRequest));
-
-        assertEquals(nullValueStringMsg, actual.getMessage());
-    }
-
-    @Test
-    void shouldSetValueNumberWhenUpdatingWithNumberType() {
-        specification.setDataType(SpecificationType.NUMBER);
-        ProductSpecificationUpdateDTO validRequest = new ProductSpecificationUpdateDTO(
-                null, 120.0, null
-        );
-
-        when(repository.getByProductIdAndSpecificationId(product.getId(), specification.getId()))
-                .thenReturn(Optional.of(productSpecification));
-        when(specificationRepository.findById(specification.getId())).thenReturn(Optional.of(specification));
-        when(repository.save(any(ProductSpecification.class))).thenReturn(productSpecification);
-
-        service.update(validId, validId, validRequest);
-
-        ArgumentCaptor<ProductSpecification> captor = ArgumentCaptor.forClass(ProductSpecification.class);
-        verify(repository).save(captor.capture());
-        ProductSpecification captured = captor.getValue();
-
-        assertEquals(validRequest.valueString(), captured.getValueString());
-    }
-
-    @Test
-    void shouldThrowBusinessExceptionWhenUpdatingWithNullNumberString() {
-        specification.setDataType(SpecificationType.NUMBER);
-        ProductSpecificationUpdateDTO invalidRequest = new ProductSpecificationUpdateDTO(null, null, null);
-
-        when(repository.getByProductIdAndSpecificationId(product.getId(), specification.getId()))
-                .thenReturn(Optional.of(productSpecification));
-        when(specificationRepository.findById(specification.getId())).thenReturn(Optional.of(specification));
-
-        BusinessException actual = assertThrows(BusinessException.class, () ->
-                service.update(validId, validId, invalidRequest));
-
-        assertEquals(nullValueNumberMsg, actual.getMessage());
-    }
-
-    @Test
-    void shouldSetValueBooleanWhenUpdatingWithBooleanType() {
-        specification.setDataType(SpecificationType.BOOLEAN);
-        ProductSpecificationUpdateDTO validRequest = new ProductSpecificationUpdateDTO(
-                null, null, true
-        );
-
-        when(repository.getByProductIdAndSpecificationId(product.getId(), specification.getId()))
-                .thenReturn(Optional.of(productSpecification));
-        when(specificationRepository.findById(specification.getId())).thenReturn(Optional.of(specification));
-        when(repository.save(any(ProductSpecification.class))).thenReturn(productSpecification);
-
-        service.update(validId, validId, validRequest);
-
-        ArgumentCaptor<ProductSpecification> captor = ArgumentCaptor.forClass(ProductSpecification.class);
-        verify(repository).save(captor.capture());
-        ProductSpecification captured = captor.getValue();
-
-        assertEquals(validRequest.valueString(), captured.getValueString());
-    }
-
-    @Test
-    void shouldThrowBusinessExceptionWhenUpdatingWithNullBooleanString() {
-        specification.setDataType(SpecificationType.BOOLEAN);
-        ProductSpecificationUpdateDTO invalidRequest = new ProductSpecificationUpdateDTO(null, null, null);
-
-        when(repository.getByProductIdAndSpecificationId(product.getId(), specification.getId()))
-                .thenReturn(Optional.of(productSpecification));
-        when(specificationRepository.findById(specification.getId())).thenReturn(Optional.of(specification));
-
-        BusinessException actual = assertThrows(BusinessException.class, () ->
-                service.update(validId, validId, invalidRequest));
-
-        assertEquals(nullValueBooleanMsg, actual.getMessage());
-    }
-
-    @Test
     void shouldDeleteWhenDeletingWithValidIds() {
-        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
         when(repository.getByProductIdAndSpecificationId(validId, validId))
                 .thenReturn(Optional.of(productSpecification));
         doNothing().when(repository).delete(productSpecification);
@@ -428,28 +155,7 @@ public class ProductSpecificationServiceTest {
     }
 
     @Test
-    void shouldThrowResourceNotFoundExceptionWhenDeletingWithInvalidProductId() {
-        when(productRepository.findById(invalidId)).thenReturn(Optional.empty());
-
-        ResourceNotFoundException actual = assertThrows(ResourceNotFoundException.class, () ->
-                service.delete(invalidId, validId));
-
-        assertEquals(productNotFoundMsg, actual.getMessage());
-    }
-
-    @Test
-    void shouldThrowBusinessExceptionWhenDeletingWithRequiredSpecificationId() {
-        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
-
-        BusinessException actual = assertThrows(BusinessException.class, () ->
-                service.delete(validId, validId));
-
-        assertEquals("The specification is required and cannot be excluded", actual.getMessage());
-    }
-
-    @Test
     void shouldThrowResourceNotFoundExceptionWhenDeletingWithInvalidProductOrSpecificationId() {
-        when(productRepository.findById(validId)).thenReturn(Optional.of(product));
         when(repository.getByProductIdAndSpecificationId(validId, invalidId))
                 .thenReturn(Optional.empty());
 

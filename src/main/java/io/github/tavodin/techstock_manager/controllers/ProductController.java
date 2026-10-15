@@ -1,6 +1,5 @@
 package io.github.tavodin.techstock_manager.controllers;
 
-import io.github.tavodin.techstock_manager.dto.product.ProductAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.product.*;
 import io.github.tavodin.techstock_manager.services.ProductService;
 import io.github.tavodin.techstock_manager.services.ProductSpecificationService;
@@ -115,31 +114,6 @@ public class ProductController {
     @GetMapping("/{id}/specifications")
     public List<ProductSpecificationListDTO> findAllSpecifications(@PathVariable Long id) {
         return prodSpecService.findAll(id);
-    }
-
-    @PreAuthorize("hasAuthority('UPDATE_PRODUCT')")
-    @PostMapping("/{prodId}/specifications")
-    public ResponseEntity<ProductSpecificationDTO> saveSpecification(
-            @PathVariable Long prodId, @RequestBody @Valid ProductSpecificationSaveDTO request) {
-
-        ProductSpecificationDTO dto = prodSpecService.save(prodId, request);
-
-        URI uri = ServletUriComponentsBuilder
-                .fromCurrentRequestUri()
-                .path("/{id}")
-                .buildAndExpand(dto.getId())
-                .toUri();
-
-        return ResponseEntity.created(uri).body(dto);
-    }
-
-    @PreAuthorize("hasAuthority('UPDATE_PRODUCT')")
-    @PutMapping("/{prodId}/specifications/{specId}")
-    public ProductSpecificationDTO update(
-            @PathVariable Long prodId,
-            @PathVariable Long specId,
-            @RequestBody @Valid ProductSpecificationUpdateDTO request) {
-        return prodSpecService.update(prodId, specId, request);
     }
 
     @PreAuthorize("hasAuthority('UPDATE_PRODUCT')")
