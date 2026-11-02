@@ -1,9 +1,14 @@
 package io.github.tavodin.techstock_manager.services;
 
+import io.github.tavodin.techstock_manager.assemblers.PurchaseAssembler;
 import io.github.tavodin.techstock_manager.assemblers.SupplierAssembler;
+import io.github.tavodin.techstock_manager.dto.SupplierAutocompleteDTO;
 import io.github.tavodin.techstock_manager.dto.SupplierDTO;
 import io.github.tavodin.techstock_manager.dto.SupplierRequestDTO;
+import io.github.tavodin.techstock_manager.dto.purchase.PurchaseDTO;
+import io.github.tavodin.techstock_manager.entities.Purchase;
 import io.github.tavodin.techstock_manager.entities.Supplier;
+import io.github.tavodin.techstock_manager.enums.PurchaseStatus;
 import io.github.tavodin.techstock_manager.exceptions.AlreadyExistsException;
 import io.github.tavodin.techstock_manager.exceptions.ResourceNotFoundException;
 import io.github.tavodin.techstock_manager.repositories.SupplierRepository;
@@ -11,7 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -21,6 +25,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedModel;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -38,9 +44,14 @@ public class SupplierServiceTest {
     private SupplierAssembler assembler;
 
     @Mock
+    private PurchaseAssembler purchaseAssembler;
+
+    @Mock
     private PagedResourcesAssembler<Supplier> pagedAssembler;
 
-    @InjectMocks
+    @Mock
+    private PagedResourcesAssembler<Purchase> purchasePagedAssembler;
+
     private SupplierService service;
 
     private static final Long VALID_ID = 1L;
@@ -50,11 +61,20 @@ public class SupplierServiceTest {
     private static final String EXIST_EMAIL_MSG = "Email already registered";
 
     private Supplier supplier;
+    private Purchase purchase;
     private SupplierDTO dto;
     private SupplierRequestDTO request;
 
     @BeforeEach
     void setUp() {
+        service = new SupplierService(
+                repository,
+                assembler,
+                pagedAssembler,
+                purchaseAssembler,
+                purchasePagedAssembler
+        );
+
         LocalDateTime createdAt = LocalDateTime.of(2026, 07, 20, 14, 02);
         LocalDateTime updatedAt = createdAt.plusHours(1L);
 
@@ -69,6 +89,14 @@ public class SupplierServiceTest {
         supplier.setCreatedAt(createdAt);
         supplier.setUpdatedAt(updatedAt);
 
+        purchase = new Purchase(
+                LocalDate.of(2026, 10, 15),
+                PurchaseStatus.COMPLETED,
+                BigDecimal.valueOf(1999.99),
+                null,
+                null
+        );
+
         dto = new SupplierDTO(supplier);
 
         request = new SupplierRequestDTO(
@@ -77,6 +105,18 @@ public class SupplierServiceTest {
                 supplier.getEmail(),
                 supplier.getPhone()
         );
+    }
+
+    @Test
+    void shouldReturnPagedModelOfPurchaseDTOWhenGetAllPurchasesBySupplierId() {
+        Pageable pageable = PageRequest.of(0 , 5);
+        Page<Purchase> page = new PageImpl<>(List.of(purchase), pageable, 1);
+        PagedModel<PurchaseDTO> pagedModel = mock(PagedModel.class);
+
+        when(repository.getAllPurchasesBySupplierId(VALID_ID, pageable)).thenReturn(page);
+        when(purchasePagedAssembler.toModel(page, purchaseAssembler)).thenReturn(pagedModel);
+
+        service.getAllPurchasesBySupplierId(VALID_ID, pageable);
     }
 
     @Test
@@ -105,27 +145,86 @@ public class SupplierServiceTest {
     }
 
     @Test
-    void shouldTrimStringWhenGetAllWithStringWithSpaces() {
-        String name = " distribuidora  ";
+    void shouldReturnPagedModelOfSupplierDTOWhenFindAll() {
+        PagedModel<SupplierDTO> pagedModel = mock(PagedModel.class);
+        Pageable pageable = PageRequest.of(0, 5);
+        Page<Supplier> page = new PageImpl<>(
+                List.of(supplier),
+                pageable,
+                1
+        );
 
-        when(repository.getAllByName(name, any(Pageable.class)));
+        when(repository.getAllByName(null, pageable)).thenReturn(page);
+        when(pagedAssembler.toModel(
+                any(Page.class),
+                same(assembler)
+        )).thenReturn(pagedModel);
+
+        service.findAll(null, pageable);
+
+        verify(repository).getAllByName(null, pageable);
+        verify(pagedAssembler).toModel(any(Page.class), any(SupplierAssembler.class));
     }
 
     @Test
-    void shouldReturnPagedModelWhenFindAll() {
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<Supplier> page = new PageImpl<>(List.of(supplier));
+    void shouldTrimNameWhenFindAllWithNameWithSpaces() {
         PagedModel<SupplierDTO> pagedModel = mock(PagedModel.class);
+        Pageable pageable = PageRequest.of(0, 5);
+        Page<Supplier> page = new PageImpl<>(
+                List.of(supplier),
+                pageable,
+                1
+        );
+        String name = " distribuidora  ";
+
+        when(repository.getAllByName("distribuidora", pageable)).thenReturn(page);
+        when(pagedAssembler.toModel(
+                same(page),
+                same(assembler)
+        )).thenReturn(pagedModel);
+
+        service.findAll(name, pageable);
+
+        ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+        verify(repository).getAllByName(nameCaptor.capture(), eq(pageable));
+
+        assertEquals("distribuidora", nameCaptor.getValue());
+    }
+
+    @Test
+    void shouldReturnChangeNameToNullWhenFindAllWithBlankName() {
+        PagedModel<SupplierDTO> pagedModel = mock(PagedModel.class);
+        Pageable pageable = PageRequest.of(0, 5);
+        Page<Supplier> page = new PageImpl<>(
+                List.of(supplier),
+                pageable,
+                1
+        );
+        String name = " ";
 
         when(repository.getAllByName(null, pageable)).thenReturn(page);
-        when(pagedAssembler.toModel(page, assembler)).thenReturn(pagedModel);
+        when(pagedAssembler.toModel(eq(page), any(SupplierAssembler.class))).thenReturn(pagedModel);
 
-        PagedModel<SupplierDTO> actual = service.findAll(null, pageable);
+        service.findAll(name, pageable);
 
-        assertNotNull(actual);
+        ArgumentCaptor<String> nameCaptor = ArgumentCaptor.forClass(String.class);
+        verify(repository).getAllByName(nameCaptor.capture(), eq(pageable));
 
-        verify(repository).findAll(pageable);
-        verify(pagedAssembler).toModel(page, assembler);
+        assertNull(nameCaptor.getValue());
+    }
+
+    @Test
+    void shouldReturnListOfSupplierAutocompleteDTOWhenGetAllAutocomplete() {
+        Pageable pageable = PageRequest.of(0, 5);
+        List<SupplierAutocompleteDTO> suppliers = List.of(
+                new SupplierAutocompleteDTO(supplier.getId(), supplier.getName())
+        );
+        when(repository.getAllAutocomplete("distri", pageable)).thenReturn(suppliers);
+
+        List<SupplierAutocompleteDTO> result = service.getAllAutocomplete("distri");
+
+        assertNotNull(result);
+        assertTrue(!result.isEmpty());
     }
 
     @Test

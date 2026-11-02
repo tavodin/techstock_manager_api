@@ -27,7 +27,6 @@ public class SupplierService {
     private final SupplierRepository repository;
     private final SupplierAssembler assembler;
     private final PagedResourcesAssembler<Supplier> pagedAssembler;
-
     private final PurchaseAssembler purchaseAssembler;
     private final PagedResourcesAssembler<Purchase> purchasePagedAssembler;
 
